@@ -20,6 +20,7 @@ import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 import { UserAccountNav } from "./user-account-nav";
+import Image from "next/image";
 
 interface NavBarProps {
   scroll?: boolean;
@@ -56,7 +57,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
       >
         <div className="flex gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
-            <Icons.logo />
+            <Image src="/images/logo-1.png" width={100} height={100} alt="logo" />
             <span className="font-urban text-xl font-bold">
               {siteConfig.name}
             </span>

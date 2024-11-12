@@ -1,9 +1,9 @@
 {
-  "name": "saas-starter",
+  "name": "player-connect",
   "version": "0.3.1",
   "private": true,
   "author": {
-    "name": "mickasmt",
+    "name": "player connect",
     "url": "https://twitter.com/mickasmt"
   },
   "scripts": {

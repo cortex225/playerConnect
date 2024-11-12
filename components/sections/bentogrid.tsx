@@ -69,7 +69,7 @@ export default function BentoGrid() {
                       y2="72"
                       gradientUnits="userSpaceOnUse"
                     >
-                      <stop stopColor="purple" stopOpacity="0" />
+                      <stop stopColor="blue" stopOpacity="0" />
                       <stop
                         className="text-indigo-600"
                         offset="1"
@@ -164,7 +164,7 @@ export default function BentoGrid() {
                       gradientUnits="userSpaceOnUse"
                     >
                       <stop
-                        className="text-purple-600/80"
+                        className="text-blue-600/80"
                         stopColor="currentColor"
                       />
                       <stop
@@ -261,11 +261,11 @@ export default function BentoGrid() {
                       gradientUnits="userSpaceOnUse"
                     >
                       <stop
-                        className="text-purple-500/50"
+                        className="text-blue-500/50"
                         stopColor="currentColor"
                       />
                       <stop
-                        className="text-purple-950/5"
+                        className="text-blue-950/5"
                         offset="1"
                         stopColor="currentColor"
                         stopOpacity="0.01"
@@ -312,7 +312,7 @@ export default function BentoGrid() {
                   </p>
                 </div>
               </div>
-              <div className="relative mt-6 before:absolute before:inset-0 before:mx-auto before:w-px before:bg-purple-500/50 sm:-my-8 sm:-mr-8">
+              <div className="relative mt-6 before:absolute before:inset-0 before:mx-auto before:w-px before:bg-blue-500/50 sm:-my-8 sm:-mr-8">
                 <div className="relative flex h-full flex-col justify-center space-y-6 py-6">
                   <div className="relative flex w-[calc(50%+0.875rem)] items-center justify-end gap-2">
                     <span className="block h-fit rounded-md border bg-muted/50 px-2 py-1 text-xs">
