@@ -5,63 +5,69 @@ import NextAuth, { type DefaultSession } from "next-auth";
 
 import { prisma } from "@/lib/db";
 import { getUserById } from "@/lib/user";
+import {parseCookies} from "@/lib/parseCookies";
 
-// More info: https://authjs.dev/getting-started/typescript#module-augmentation
 declare module "next-auth" {
-  interface Session {
-    user: {
-      role: UserRole;
-    } & DefaultSession["user"];
-  }
+    interface Session {
+        user: {
+            role: UserRole;
+        } & DefaultSession["user"];
+    }
 }
 
 export const {
-  handlers: { GET, POST },
-  auth,
+    handlers: { GET, POST },
+    auth,
 } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    // error: "/auth/error",
-  },
-  callbacks: {
-    async session({ token, session }) {
-      if (session.user) {
-        if (token.sub) {
-          session.user.id = token.sub;
-        }
-
-        if (token.email) {
-          session.user.email = token.email;
-        }
-
-        if (token.role) {
-          session.user.role = token.role;
-        }
-
-        session.user.name = token.name;
-        session.user.image = token.picture;
-      }
-
-      return session;
+    adapter: PrismaAdapter(prisma),
+    session: { strategy: "jwt" },
+    pages: {
+        signIn: "/",
+        // error: "/auth/error",
     },
+    callbacks: {
+        async session({ token, session }) {
+            if (session.user) {
+                if (token.sub) {
+                    session.user.id = token.sub;
+                }
 
-    async jwt({ token }) {
-      if (!token.sub) return token;
+                if (token.email) {
+                    session.user.email = token.email;
+                }
 
-      const dbUser = await getUserById(token.sub);
+                if (token.role) {
+                    session.user.role = token.role as UserRole;
+                }
 
-      if (!dbUser) return token;
+                session.user.name = token.name;
+                session.user.image = token.picture;
+            }
 
-      token.name = dbUser.name;
-      token.email = dbUser.email;
-      token.picture = dbUser.image;
-      token.role = dbUser.role;
+            return session;
+        },
 
-      return token;
+        async jwt({ token, account, req }) {
+            if (account && account.provider === "google") {
+                const cookies = parseCookies(req?.headers?.cookie);
+                const userRole = cookies['user_role'];
+
+                if (userRole) {
+                    token.role = userRole; // Ajoute le rôle au token JWT
+                }
+            }
+
+            const dbUser = await getUserById(token.sub);
+            if (dbUser) {
+                token.name = dbUser.name;
+                token.email = dbUser.email;
+                token.picture = dbUser.image;
+                token.role = dbUser.role; // S'assure que le rôle en BD est pris en compte
+            }
+
+            return token;
+        },
     },
-  },
-  ...authConfig,
-  // debug: process.env.NODE_ENV !== "production"
+    ...authConfig,
+    // debug: process.env.NODE_ENV !== "production"
 });
