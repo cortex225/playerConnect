@@ -6,14 +6,97 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
+// Enums pour les rôles et caractéristiques spécifiques des utilisateurs et athlètes
 enum UserRole {
   ADMIN
   USER
+  ATHLETE
+  RECRUITER
 }
+
+enum Gender {
+  MASCULIN
+  FEMININ
+}
+
+enum DominantHand {
+  GAUCHE
+  DROITE
+}
+
+enum DominantFoot {
+  GAUCHE
+  DROITE
+}
+
+enum ProgramType {
+  CIVILE
+  SCOLAIRE
+  SCOLAIRE_CIVILE
+}
+
+enum Level {
+  HIGH_SCHOOL
+  COLLEGIAL
+  UNIVERSITAIRE
+}
+
+enum SportType {
+  BASKETBALL
+  SOCCER
+  FOOTBALL
+  RUGBY
+}
+
+enum BasketballPosition {
+  POINT_GUARD
+  SHOOTING_GUARD
+  SMALL_FORWARD
+  POWER_FORWARD
+  CENTER
+}
+
+enum SoccerPosition {
+  FORWARD
+  MIDFIELDER
+  DEFENDER
+  GOALKEEPER
+}
+
+enum FootballPosition {
+  QUARTERBACK
+  RUNNING_BACK
+  WIDE_RECEIVER
+  TIGHT_END
+  OFFENSIVE_LINE
+  LINEBACKER
+  DEFENSIVE_LINE
+  CORNERBACK
+  SAFETY
+  KICKER
+  PUNTER
+}
+
+enum DivisionLevel {
+  D1
+  D2
+  D3
+  D4
+  USPORT
+}
+
+enum CategoryLevel {
+  BENJAMIN
+  CADET
+  JUVENILE
+  SENIOR
+}
+
+// Modèles pour la gestion des utilisateurs et comptes
 
 model Account {
   id                String   @id @default(cuid())
@@ -59,8 +142,10 @@ model User {
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
   role          UserRole  @default(USER)
 
-  accounts Account[]
-  sessions Session[]
+  accounts  Account[]
+  sessions  Session[]
+  athlete   Athlete?
+  recruiter Recruiter?
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
@@ -69,6 +154,179 @@ model User {
 
   @@map(name: "users")
 }
+
+// Modèle pour les athlètes
+
+model Athlete {
+  id            Int            @id @default(autoincrement())
+  userId        String         @unique
+  gender        Gender? // Rendu optionnel
+  age           Int? // Rendu optionnel
+  city          String? // Optionnel
+  height        Float? // Optionnel
+  weight        Float? // Optionnel
+  dominantHand  DominantHand? // Optionnel
+  dominantFoot  DominantFoot? // Optionnel
+  teamName      String? // Optionnel
+  programType   ProgramType? // Rendu optionnel
+  categoryLevel CategoryLevel? // Rendu optionnel
+  divisionLevel DivisionLevel? // Rendu optionnel
+  sport         Sport?         @relation(fields: [sportId], references: [id])
+  sportId       String? // Rend sportId nullable, permet null
+
+  basketballPosition BasketballPosition? // Optionnel
+  soccerPosition     SoccerPosition? // Optionnel
+  footballPosition   FootballPosition? // Optionnel
+
+  performances  Performance[]
+  media         Media[]
+  events        Event[]
+  notifications Notification[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map(name: "athletes")
+}
+
+// Modèle pour les recruteurs
+
+model Recruiter {
+  id           Int     @id @default(autoincrement())
+  userId       String  @unique
+  organization String?
+  position     String?
+  region       String?
+  experience   Int?
+
+  invitations   Invitation[]
+  notifications Notification[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map(name: "recruiters")
+}
+
+// Modèle pour les médias des athlètes
+
+model Media {
+  id          Int      @id @default(autoincrement())
+  athleteId   Int
+  url         String
+  mediaType   String
+  description String?
+  uploadedAt  DateTime @default(now())
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@map(name: "media")
+}
+
+// Modèle pour les événements des athlètes
+
+model Event {
+  id                       Int      @id @default(autoincrement())
+  athleteId                Int
+  title                    String
+  location                 String
+  eventDate                DateTime
+  isPublic                 Boolean
+  requiresParentalApproval Boolean
+
+  athlete     Athlete      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  invitations Invitation[]
+
+  @@map(name: "events")
+}
+
+// Modèle pour les invitations des recruteurs
+
+model Invitation {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  recruiterId Int
+  isIncognito Boolean
+  status      String
+  sentAt      DateTime @default(now())
+
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@map(name: "invitations")
+}
+
+// Modèle pour les notifications
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
+
+  athlete   Athlete?   @relation(fields: [userId], references: [userId], map: "athlete_userId_fkey")
+  recruiter Recruiter? @relation(fields: [userId], references: [userId], map: "recruiter_userId_fkey")
+
+  @@map(name: "notifications")
+}
+
+// Modèle pour les sports
+
+model Sport {
+  id       String     @id @default(cuid())
+  name     SportType  @unique
+  athletes Athlete[]
+  Position Position[]
+
+  @@map(name: "sports")
+}
+
+// Modèle pour les performances d'un athlète dans un match
+
+model Performance {
+  id         Int      @id @default(autoincrement())
+  athleteId  Int
+  positionId Int
+  date       DateTime
+  score      Float    @default(0)
+
+  athlete  Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  kpis     KPI[]
+
+  @@map(name: "performances")
+}
+
+// Modèle pour les KPI (indicateurs de performance)
+
+model KPI {
+  id            Int    @id @default(autoincrement())
+  name          String
+  weight        Float
+  value         Float  @default(0)
+  positionId    Int
+  performanceId Int
+
+  position    Position    @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  performance Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
+
+  @@map(name: "kpis")
+}
+
+// Modèle pour la position dans un sport
+
+model Position {
+  id      Int    @id @default(autoincrement())
+  name    String
+  sportId String
+  sport   Sport  @relation(fields: [sportId], references: [id], onDelete: Cascade)
+
+  performances Performance[]
+  kpis         KPI[]
+
+  @@map(name: "positions")
+}
+
+// Modèle pour les tokens de vérification d'email
 
 model VerificationToken {
   identifier String
