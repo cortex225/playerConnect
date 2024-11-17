@@ -25,6 +25,9 @@ import {
     Trash,
     User,
     X,
+    CalendarDays,
+    LayoutDashboard,
+    CircleHelp,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -37,8 +40,11 @@ export const Icons = {
     chevronLeft: ChevronLeft,
     chevronRight: ChevronRight,
     check: Check,
+    circle_help: CircleHelp,
+    calendar_days: CalendarDays,
     close: X,
     copy: Copy,
+    layout_dashboard: LayoutDashboard,
     ellipsis: MoreVertical,
     gitHub: ({...props}: LucideProps) => (
         <svg
