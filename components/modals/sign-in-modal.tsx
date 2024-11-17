@@ -1,88 +1,92 @@
-import {signIn} from "next-auth/react";
-import {Dispatch, SetStateAction, useCallback, useMemo, useState} from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from "react";
+import { signIn } from "next-auth/react";
 
-import {Icons} from "@/components/shared/icons";
-import {Button} from "@/components/ui/button";
-import {Modal} from "@/components/ui/modal";
-import {siteConfig} from "@/config/site";
+
+
+import { siteConfig } from "@/config/site";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { Icons } from "@/components/shared/icons";
 
 function SignInModal({
-                         showSignInModal,
-                         setShowSignInModal,
-                     }: {
-    showSignInModal: boolean;
-    setShowSignInModal: Dispatch<SetStateAction<boolean>>;
+  showSignInModal,
+  setShowSignInModal,
+}: {
+  showSignInModal: boolean;
+  setShowSignInModal: Dispatch<SetStateAction<boolean>>;
 }) {
-    const [signInClicked, setSignInClicked] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<"ATHLETE" | "RECRUITER" | null>(null);
+  const [signInClicked, setSignInClicked] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<
+    "ATHLETE" | "RECRUITER" | null
+  >(null);
 
-    const handleSignIn = async () => {
-        if (!selectedRole) return;
-        document.cookie = `user_role=${selectedRole}; path=/;`;
+  const handleSignIn = async () => {
+    if (!selectedRole) return;
+    document.cookie = `user_role=${selectedRole}; path=/;`;
 
-        setSignInClicked(true);
+    setSignInClicked(true);
 
-        // Transmet le rôle comme paramètre personnalisé à NextAuth
-        await signIn("google", {
-            callbackUrl: `/?role=${selectedRole}`,
-            redirect: true,
-        });
-        console.log(`${selectedRole}`);
-    };
+    // Transmet le rôle comme paramètre personnalisé à NextAuth
+    await signIn("google", {
+      callbackUrl: `/?role=${selectedRole}`,
+      redirect: true,
+    });
+    console.log(`${selectedRole}`);
+  };
 
-    return (
-        <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
-            <div className="w-full">
-                <div
-                    className="flex flex-col items-center justify-center space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
-                    <a href={siteConfig.url}>
-                        <Icons.logo className="size-10"/>
-                    </a>
-                    <h3 className="font-urban text-2xl font-bold">Sign In</h3>
-                    <p className="text-sm text-gray-500">Choose your role to personalize your experience:</p>
+  return (
+    <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
+      <div className="w-full">
+        <div className="flex flex-col items-center justify-center space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
+          <a href={siteConfig.url}>
+            <Icons.logo className="size-10" />
+          </a>
+          <h3 className="font-urban text-2xl font-bold">Sign In</h3>
+          <p className="text-sm text-gray-500">
+            Choose your role to personalize your experience:
+          </p>
+        </div>
 
-                </div>
+        {/* Section de sélection de rôle */}
+        <div className="flex flex-col items-center space-y-2 p-4 md:px-16">
+          <div className="flex space-x-4">
+            {/* Bouton pour sélectionner "Athlète" */}
+            <Button
+              variant={selectedRole === "ATHLETE" ? "default" : "outline"}
+              onClick={() => setSelectedRole("ATHLETE")}
+              size="default"
+            >
+              Athlète
+            </Button>
+            {/* Bouton pour sélectionner "Recruteur" */}
+            <Button
+              variant={selectedRole === "RECRUITER" ? "default" : "outline"}
+              onClick={() => setSelectedRole("RECRUITER")}
+              size="default"
+            >
+              Recruteur
+            </Button>
+          </div>
+        </div>
 
-                {/* Section de sélection de rôle */}
-                <div className="flex flex-col items-center space-y-2 px-4 py-4 md:px-16">
-                    <div className="flex space-x-4">
-                        {/* Bouton pour sélectionner "Athlète" */}
-                        <Button
-                            variant={selectedRole === "ATHLETE" ? "default" : "outline"}
-                            onClick={() => setSelectedRole("ATHLETE")}
-                            size="default"
-                        >
-                            Athlète
-                        </Button>
-                        {/* Bouton pour sélectionner "Recruteur" */}
-                        <Button
-                            variant={selectedRole === "RECRUITER" ? "default" : "outline"}
-                            onClick={() => setSelectedRole("RECRUITER")}
-                            size="default"
-                        >
-                            Recruteur
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Bouton de connexion Google, activé seulement si un rôle est sélectionné */}
-                <div className="flex flex-col space-y-4 bg-secondary/50 px-4 py-8 md:px-16">
-                    <Button
-                        variant="default"
-                        disabled={signInClicked || !selectedRole} // Désactive si pas de rôle sélectionné
-                        onClick={handleSignIn}
-                    >
-                        {signInClicked ? (
-                            <Icons.spinner className="mr-2 size-4 animate-spin"/>
-                        ) : (
-                            <Icons.google className="mr-2 size-4"/>
-                        )}{" "}
-                        Sign In with Google
-                    </Button>
-                </div>
-            </div>
-        </Modal>
-    );
+        {/* Bouton de connexion Google, activé seulement si un rôle est sélectionné */}
+        <div className="flex flex-col space-y-4 bg-secondary/50 px-4 py-8 md:px-16">
+          <Button
+            variant="default"
+            disabled={signInClicked || !selectedRole} // Désactive si pas de rôle sélectionné
+            onClick={handleSignIn}
+          >
+            {signInClicked ? (
+              <Icons.spinner className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Icons.google className="mr-2 size-4" />
+            )}{" "}
+            Sign In with Google
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
 }
 
 export function useSignInModal() {

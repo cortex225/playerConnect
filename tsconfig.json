@@ -41,7 +41,7 @@
     ".next/types/**/*.ts",
     ".contentlayer/generated",
     "contentlayer.config.ts"
-  ],
+, "prisma/seed.js"  ],
   "exclude": [
     "node_modules"
   ]
