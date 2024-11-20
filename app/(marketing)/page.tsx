@@ -42,9 +42,6 @@ export default async function IndexPage(req: NextApiRequest) {
            <RecruiterDialogCreate />
          )}
 
-         <div className="flex flex-col items-center justify-center gap-10 py-20">
-            je suis un {session?.user?.role}
-         </div>
             <HeroLanding/>
             <PreviewLanding/>
             <Powered/>

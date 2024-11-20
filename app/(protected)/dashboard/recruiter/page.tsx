@@ -4,6 +4,7 @@ import {Button} from "@/components/ui/button";
 import {DashboardHeader} from "@/components/dashboard/header";
 import {DashboardShell} from "@/components/dashboard/shell";
 import {EmptyPlaceholder} from "@/components/shared/empty-placeholder";
+import {redirect} from "next/navigation";
 
 export const metadata = constructMetadata({
     title: "Accueil – Player Connect",
@@ -12,13 +13,14 @@ export const metadata = constructMetadata({
 
 export default async function DashboardPage() {
     const user = await getCurrentUser();
-
+    if (!user || user.role !== "RECRUITER") redirect("/login");
     return (
         <DashboardShell>
             <DashboardHeader
                 heading="Panel"
                 text={`Current Role : ${user?.role} — Change your role in settings.`}
             />
+            YOOOOOOOOOOOOO
             <div>
                 <EmptyPlaceholder>
                     <EmptyPlaceholder.Icon name="post"/>
