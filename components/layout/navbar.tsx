@@ -2,8 +2,9 @@
 
 import { useContext } from "react";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
+import { useSelectedLayoutSegment } from "next/navigation";
 
 import { adminConfig } from "@/config/admin";
 import { dashboardConfig } from "@/config/dashboard";
@@ -20,7 +21,6 @@ import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 import { UserAccountNav } from "./user-account-nav";
-import Image from "next/image";
 
 interface NavBarProps {
   scroll?: boolean;
@@ -43,127 +43,130 @@ export function NavBar({ scroll = false }: NavBarProps) {
   };
 
   const links =
-    (selectedLayout && configMap[selectedLayout]) || marketingConfig.mainNav;
+      (selectedLayout && configMap[selectedLayout]) || marketingConfig.mainNav;
+
+  // Détermine si on est sur une page de dashboard correspondant au rôle
+  const isUserOnDashboardPage =
+      (session?.user?.role === "ADMIN" && selectedLayout === "admin") ||
+      (session?.user?.role === "ATHLETE" && selectedLayout === "dashboard-athlete") ||
+      (session?.user?.role === "RECRUITER" && selectedLayout === "dashboard-recruiter");
 
   return (
-    <header
-      className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
-        scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
-      }`}
-    >
-      <MaxWidthWrapper
-        className="flex h-14 items-center justify-between py-4"
-        large={documentation}
+      <header
+          className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
+              scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
+          }`}
       >
-        <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-2">
-            <Image src="/images/logo-1.png" width={100} height={100} alt="logo" />
-            <span className="font-urban text-xl font-bold">
+        <MaxWidthWrapper
+            className="flex h-14 items-center justify-between py-4"
+            large={documentation}
+        >
+          {/* Logo */}
+          <div className="flex gap-6 md:gap-10">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image src="/images/logo-1.png" width={100} height={100} alt="logo" />
+              <span className="font-urban text-xl font-bold">
               {siteConfig.name}
             </span>
-          </Link>
+            </Link>
 
-          {links && links.length > 0 ? (
-            <nav className="hidden gap-6 md:flex">
-              {(admin ? adminConfig.mainNav : links).map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.disabled ? "#" : item.href}
-                  prefetch={true}
-                  className={cn(
-                    "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
-                    item.href.startsWith(`/${selectedLayout}`)
-                      ? "text-foreground"
-                      : "text-foreground/60",
-                    item.disabled && "cursor-not-allowed opacity-80",
-                  )}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {/* right header for docs */}
-          {documentation ? (
-            <div className="hidden flex-1 items-center space-x-4 sm:justify-end lg:flex">
-              <div className="hidden lg:flex lg:grow-0">
-                <DocsSearch />
-              </div>
-              <div className="flex lg:hidden">
-                <Icons.search className="size-6 text-muted-foreground" />
-              </div>
-              <div className="flex space-x-4">
-                <Link
-                  href={siteConfig.links.github}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Icons.gitHub className="size-7" />
-                  <span className="sr-only">GitHub</span>
-                </Link>
-              </div>
-            </div>
-          ) : null}
-
-          {session ? (
-            <>
-              {dashBoard || admin ? (
-                <div className="flex items-center space-x-3">
-                  {dashBoard && session.user.role === "ADMIN" ? (
-                    <Link href="/admin" className="hidden md:block">
-                      <Button
-                        className="gap-2 px-4"
-                        variant="outline"
-                        size="sm"
-                        rounded="xl"
+            {/* Navigation Links */}
+            {links && links.length > 0 ? (
+                <nav className="hidden gap-6 md:flex">
+                  {(admin ? adminConfig.mainNav : links).map((item, index) => (
+                      <Link
+                          key={index}
+                          href={item.disabled ? "#" : item.href}
+                          prefetch={true}
+                          className={cn(
+                              "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+                              item.href.startsWith(`/${selectedLayout}`)
+                                  ? "text-foreground"
+                                  : "text-foreground/60",
+                              item.disabled && "cursor-not-allowed opacity-80"
+                          )}
                       >
-                        <span>Admin</span>
-                      </Button>
+                        {item.title}
+                      </Link>
+                  ))}
+                </nav>
+            ) : null}
+          </div>
+
+          {/* Right-side Header */}
+          <div className="flex items-center space-x-3">
+            {documentation ? (
+                <div className="hidden flex-1 items-center space-x-4 sm:justify-end lg:flex">
+                  <div className="hidden lg:flex lg:grow-0">
+                    <DocsSearch />
+                  </div>
+                  <div className="flex space-x-4">
+                    <Link
+                        href={siteConfig.links.github}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                      <Icons.gitHub className="size-7" />
+                      <span className="sr-only">GitHub</span>
                     </Link>
-                  ) : null}
-                  <UserAccountNav user={session.user} />
+                  </div>
                 </div>
-              ) : (
-                <Link
-                  href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
-                  className="hidden md:block"
-                >
-                  <Button
-                    className="gap-2 px-4"
+            ) : null}
+
+            {/* Authenticated state */}
+            {status === "authenticated" && session ? (
+                <div className="flex items-center space-x-3">
+                  {isUserOnDashboardPage ? (
+                      <UserAccountNav user={session.user} />
+                  ) : (
+                      <Link
+                          href={
+                            session.user.role === "ADMIN"
+                                ? "/admin"
+                                : session.user.role === "ATHLETE"
+                                    ? "/dashboard/athlete"
+                                    : "/dashboard/recruiter"
+                          }
+                          className="hidden md:block"
+                      >
+                        <Button
+                            className="gap-2 px-4"
+                            variant="default"
+                            size="sm"
+                            rounded="full"
+                        >
+                    <span>
+                      {session.user.role === "ATHLETE"
+                          ? "Dashboard Athlete"
+                          : "Dashboard Recruiter"}
+                    </span>
+                        </Button>
+                      </Link>
+                  )}
+                </div>
+            ) : status === "unauthenticated" ? (
+                <Button
+                    className="hidden gap-2 px-4 md:flex"
                     variant="default"
                     size="sm"
                     rounded="full"
-                  >
-                    <span>Dashboard</span>
-                  </Button>
-                </Link>
-              )}
-            </>
-          ) : status === "unauthenticated" ? (
-            <Button
-              className="hidden gap-2 px-4 md:flex"
-              variant="default"
-              size="sm"
-              rounded="full"
-              onClick={() => setShowSignInModal(true)}
-            >
-              <span>Sign In</span>
-              <Icons.arrowRight className="size-4" />
-            </Button>
-          ) : (
-            <div className="hidden lg:flex">
-              {dashBoard || admin ? (
-                <Skeleton className="size-9 rounded-full" />
-              ) : (
-                <Skeleton className="h-9 w-24 rounded-full" />
-              )}
-            </div>
-          )}
-        </div>
-      </MaxWidthWrapper>
-    </header>
+                    onClick={() => setShowSignInModal(true)}
+                >
+                  <span>Sign In</span>
+                  <Icons.arrowRight className="size-4" />
+                </Button>
+            ) : (
+                // Loading state
+                <div className="hidden lg:flex">
+                  {dashBoard || admin ? (
+                      <Skeleton className="size-9 rounded-full" />
+                  ) : (
+                      <Skeleton className="h-9 w-24 rounded-full" />
+                  )}
+                </div>
+            )}
+          </div>
+        </MaxWidthWrapper>
+      </header>
   );
 }

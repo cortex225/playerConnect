@@ -31,9 +31,12 @@ export default async function middleware(req) {
     session?.user?.role === "USER" &&
     (roleCookie === "ATHLETE" || roleCookie === "RECRUITER")
   ) {
-    
-    console.log(`Affichage de la modale pour le rôle: ${roleCookie}`);
-    return NextResponse.redirect(new URL("/", req.url));
+    if(roleCookie === "ATHLETE"){
+      return NextResponse.redirect(new URL("/dashboard-athlete", req.url));
+    }
+    if(roleCookie === "RECRUITER"){
+      return NextResponse.redirect(new URL("/dashboard-recruiter", req.url));
+    }
   }
 
   return NextResponse.next();

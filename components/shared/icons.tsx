@@ -27,7 +27,7 @@ import {
     X,
     CalendarDays,
     LayoutDashboard,
-    CircleHelp,
+    CircleHelp, MessagesSquare, Users, BarChart2, Star, Mail,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -46,6 +46,13 @@ export const Icons = {
     copy: Copy,
     layout_dashboard: LayoutDashboard,
     ellipsis: MoreVertical,
+    messages_square:MessagesSquare,
+    users:Users,
+    star:Star,
+    file_text:FileText,
+    mail:Mail,
+    bar_chart_2:BarChart2,
+
     gitHub: ({...props}: LucideProps) => (
         <svg
             aria-hidden="true"

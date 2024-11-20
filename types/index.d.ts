@@ -12,9 +12,11 @@ export type MainNavItem = NavItem;
 
 export type SidebarNavItem = {
     title: string;
+    href?: string;
     disabled?: boolean;
     external?: boolean;
     icon?: keyof typeof Icons;
+    roles?: Array<"ADMIN" | "ATHLETE" | "RECRUITER">;
 } & (
     | {
     href: string;
