@@ -4,8 +4,7 @@ import {getCurrentUser} from "@/lib/session";
 import {constructMetadata} from "@/lib/utils";
 import {DashboardHeader} from "@/components/dashboard/header";
 import {DashboardShell} from "@/components/dashboard/shell";
-
-import AthletesTable from "@/components/dashboard/datatable/AthletesTable";
+import {MessagingInterface} from "@/components/chat/messagerie";
 
 export const metadata = constructMetadata({
     title: "Billing – SaaS Starter",
@@ -25,11 +24,11 @@ export default async function AthletesPage() {
     return (
         <DashboardShell>
             <DashboardHeader
-                heading="All Athletes"
-                text="Manage your athletes and their profiles."
+                heading="Messages"
+                text="Manage your messages."
             />
             <div className="grid gap-8">
-                <AthletesTable/>
+                <MessagingInterface/>
             </div>
         </DashboardShell>
     );

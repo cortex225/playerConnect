@@ -1,61 +1,59 @@
 "use client";
-import React from 'react'
+import React, {useState} from 'react'
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {
+import {Calendar} from "@/components/ui/calendar";
+import {Button} from "@/components/ui/button";
+import {cn} from "@/lib/utils";
 
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-} from 'recharts'
-export const RecruitmentProgress = () => {
-    // Fake data for recruiter stats
-    const recruiterStats = [
-        { name: 'Athletes Scouted', value: 150 },
-        { name: 'Successful Recruits', value: 45 },
-        { name: 'Ongoing Negotiations', value: 20 },
-        { name: 'Potential Prospects', value: 85 },
-    ];
+
+export const LittleCalendar = () => {
+
+    const [date, setDate] = useState<Date | undefined>(new Date())
+
+    // Fake data for calendar events
+    const calendarEvents = [
+        { id: 1, name: "Team A Tryouts", date: new Date(2024, 2, 15) },
+        { id: 2, name: "Scouting Meeting", date: new Date(2024, 2, 18) },
+        { id: 3, name: "College Fair", date: new Date(2024, 2, 22) },
+        { id: 4, name: "Player Interview", date: new Date(2024, 2, 25) },
+        { id: 5, name: "Tournament Watch", date: new Date(2024, 2, 28) },
+    ]
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
     return (
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle>Recruitment Progress</CardTitle>
+                    <CardTitle>Calendar</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="w-full h-[200px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={recruiterStats}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {recruiterStats.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
-                                    ))}
-                                </Pie>
-                                <Tooltip/>
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="flex justify-center mt-4">
-                        {recruiterStats.map((entry, index) => (
-                            <div key={`legend-${index}`} className="flex items-center mx-2">
-                                <div className="w-3 h-3 mr-1"
-                                     style={{backgroundColor: COLORS[index % COLORS.length]}}
-                                ></div>
-                                <span className="text-xs">{entry.name}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="rounded-md border"
+                        components={{
+                            day: ({ day, date }) => {
+                                const event = calendarEvents.find(ev => ev.date.toDateString() === date.toDate().toDateString())
+                                return (
+                                    <div className="relative">
+                                        <Button
+                                            variant={date.toDate().toDateString() === day.toDate().toDateString() ? "default" : "ghost"}
+                                            className={cn(
+                                                "w-9 h-9 p-0 font-normal aria-selected:opacity-100",
+                                                event && "bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-100 dark:hover:bg-blue-700"
+                                            )}
+                                        >
+                                            {date.toDate().getDate()}
+                                        </Button>
+                                        {event && (
+                                            <div className="absolute bottom-0 left-1/2 w-1 h-1 bg-blue-600 rounded-full transform -translate-x-1/2"></div>
+                                        )}
+                                    </div>
+                                )
+                            },
+                        }}
+                    />
                 </CardContent>
             </Card>
         </>

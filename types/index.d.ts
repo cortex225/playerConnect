@@ -55,6 +55,9 @@ export type DashboardConfig = {
     mainNav: MainNavItem[];
     sidebarNav: SidebarNavItem[];
 };
+export  type  DashboardRecruiterConfig = {
+    recruiterStats: recruiterStatsItem[];
+}
 
 export type SubscriptionPlan = {
     title: string;
@@ -96,4 +99,38 @@ export type InfoLdg = {
 export type ColumnType = string | boolean | null;
 export type PlansRow = { feature: string; tooltip?: string } & {
     [key in (typeof plansColumns)[number]]: ColumnType;
+};
+
+
+
+export type Athlete = {
+    id: number;
+    age: number;
+    rating?: number;
+    sport: {
+        id: string;
+        name: string;
+    } | null;
+    category?: {
+        name: string;
+    } | null;
+    performances?: {
+        id: number;
+        score: number;
+        date: string;
+        position: {
+            name: string;
+        };
+        KPI?: {
+            id: number;
+            name: string;
+            value: number;
+        }[];
+    }[];
+    user: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        image: string | null;
+    };
 };

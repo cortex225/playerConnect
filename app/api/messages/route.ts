@@ -1,22 +1,43 @@
-import { prisma } from "@/lib/db";
-import { NextResponse } from "next/server";
+// app/api/messages/route.ts
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { pusherServer } from '@/lib/pusher';
+import { authOptions } from '@/lib/auth';
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const { id } = params;
-
-    if (!id) {
-        return NextResponse.json({ error: "Message ID requis" }, { status: 400 });
-    }
-
+export async function POST(req: Request) {
     try {
-        await prisma.message.update({
-            where: { id },
-            data: { isRead: true },
-        });
+        const session = await getServerSession(authOptions);
 
-        return NextResponse.json({ success: true });
+        if (!session?.user) {
+            return new NextResponse('Unauthorized', { status: 401 });
+        }
+
+        const body = await req.json();
+        const { content, receiverId } = body;
+
+        if (!content || !receiverId) {
+            return new NextResponse('Missing required fields', { status: 400 });
+        }
+
+        const message = {
+            id: Date.now().toString(),
+            content,
+            sender: session.user.id,
+            receiver: receiverId,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+        };
+
+        // Trigger pour le canal privé du destinataire
+        await pusherServer.trigger(
+            `private-messages-${receiverId}`,
+            'new-message',
+            message
+        );
+
+        return NextResponse.json(message);
     } catch (error) {
-        console.error("Erreur API /messages/[id] :", error);
-        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+        console.error('MESSAGE_POST', error);
+        return new NextResponse('Internal Error', { status: 500 });
     }
 }

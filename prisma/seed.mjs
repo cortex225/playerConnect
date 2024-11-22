@@ -1,5 +1,5 @@
-import { faker } from "@faker-js/faker";
-import { PrismaClient, SportType, UserRole, CategoryLevel } from "@prisma/client";
+import {faker} from "@faker-js/faker";
+import {PrismaClient, SportType, UserRole, CategoryLevel} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -11,9 +11,9 @@ async function main() {
     const sports = await Promise.all(
         sportTypes.map(async (sportType) => {
             return prisma.sport.upsert({
-                where: { name: sportType },
+                where: {name: sportType},
                 update: {},
-                create: { name: sportType },
+                create: {name: sportType},
             });
         })
     );
@@ -63,7 +63,12 @@ async function main() {
 
         for (const position of positions) {
             await prisma.position.upsert({
-                where: { name: position },
+                where: {
+                    name_sportId: { // Clé composite générée par Prisma
+                        name: position,
+                        sportId: sport.id,
+                    },
+                },
                 update: {},
                 create: {
                     name: position,
@@ -79,7 +84,12 @@ async function main() {
     for (const sport of sports) {
         for (const levelName of levels) {
             const level = await prisma.level.upsert({
-                where: { name: levelName },
+                where: {
+                    name_sportId: { // Clé composite générée par Prisma
+                        name: levelName, // Le nom du niveau (ex. "Scolaire")
+                        sportId: sport.id, // L'ID du sport associé
+                    },
+                },
                 update: {},
                 create: {
                     name: levelName,
@@ -91,8 +101,12 @@ async function main() {
             const categories = Object.values(CategoryLevel);
             for (const category of categories) {
                 await prisma.category.upsert({
-                    where: { name: category },
-                    update: {},
+                    where: {
+                        name_levelId: { // Utilisation de la clé composite générée par Prisma
+                            name: category, // Nom de la catégorie (ex. "BENJAMIN")
+                            levelId: level.id, // ID du niveau associé (ex. "Scolaire")
+                        },
+                    }, update: {},
                     create: {
                         name: category,
                         levelId: level.id,
@@ -116,17 +130,17 @@ async function main() {
 
         const randomSport = sports[Math.floor(Math.random() * sports.length)];
         const randomCategory = await prisma.category.findFirst({
-            where: { level: { sportId: randomSport.id } },
+            where: {level: {sportId: randomSport.id}},
         });
 
         const athlete = await prisma.athlete.create({
             data: {
                 userId: user.id,
                 gender: faker.helpers.arrayElement(["MASCULIN", "FEMININ"]),
-                age: faker.number.int({ min: 18, max: 40 }),
+                age: faker.number.int({min: 18, max: 40}),
                 city: faker.location.city(),
-                height: faker.number.int({ min: 150, max: 210 }),
-                weight: faker.number.int({ min: 50, max: 100 }),
+                height: faker.number.int({min: 150, max: 210}),
+                weight: faker.number.int({min: 50, max: 100}),
                 programType: faker.helpers.arrayElement(["CIVILE", "SCOLAIRE"]),
                 categoryId: randomCategory?.id || null,
                 sportId: randomSport.id,
@@ -139,7 +153,7 @@ async function main() {
     // Étape 5 : Créer des performances et KPI pour chaque athlète
     for (const athlete of athletes) {
         const athletePositions = await prisma.position.findMany({
-            where: { sportId: athlete.sportId },
+            where: {sportId: athlete.sportId},
         });
 
         for (let i = 0; i < 3; i++) {
@@ -187,7 +201,7 @@ async function main() {
                 organization: faker.company.name(),
                 position: faker.person.jobTitle(),
                 region: faker.location.state(),
-                experience: faker.number.int({ min: 0, max: 30 }),
+                experience: faker.number.int({min: 0, max: 30}),
             },
         });
     }

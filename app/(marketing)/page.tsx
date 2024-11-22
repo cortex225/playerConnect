@@ -6,9 +6,6 @@ import { auth } from "@/auth";
 
 
 import { infos } from "@/config/landing";
-import { parseCookies } from "@/lib/parseCookies";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AthleteForm } from "@/components/forms/athlete-form";
 import { AthleteDialogCreate } from "@/components/modals/athlete/create";
 import { RecruiterDialogCreate } from "@/components/modals/recruiter/create";
 import BentoGrid from "@/components/sections/bentogrid";
@@ -18,6 +15,7 @@ import InfoLanding from "@/components/sections/info-landing";
 import Powered from "@/components/sections/powered";
 import PreviewLanding from "@/components/sections/preview-landing";
 import Testimonials from "@/components/sections/testimonials";
+
 
 
 
@@ -50,6 +48,9 @@ export default async function IndexPage(req: NextApiRequest) {
             <InfoLanding data={infos[1]}/>
             <Features/>
             <Testimonials/>
+            {/*<MessagingInterface/>*/}
+
+
         </>
     );
 }
