@@ -109,9 +109,9 @@ export default function AthletesTable() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex justify-between items-center">
+                <CardTitle className="flex items-center justify-between">
                     Athletes List
-                    <div className="flex space-x-2 items-center">
+                    <div className="flex items-center space-x-2">
                         <Label htmlFor="search" className="sr-only">
                             Search
                         </Label>
@@ -203,7 +203,7 @@ export default function AthletesTable() {
                         )}
                     </TableBody>
                 </Table>
-                <div className="flex justify-between items-center mt-4">
+                <div className="mt-4 flex items-center justify-between">
                     <Button
                         variant="outline"
                         disabled={currentPage === 1}

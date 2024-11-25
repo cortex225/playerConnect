@@ -105,32 +105,19 @@ export type PlansRow = { feature: string; tooltip?: string } & {
 
 export type Athlete = {
     id: number;
-    age: number;
-    rating?: number;
-    sport: {
-        id: string;
-        name: string;
-    } | null;
-    category?: {
-        name: string;
-    } | null;
-    performances?: {
-        id: number;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+    sport: string | null;
+    category: string | null;
+    bestPerformance?: {
         score: number;
-        date: string;
-        position: {
-            name: string;
-        };
-        KPI?: {
+        date: Date;
+        position: string | null;
+        KPIs: Array<{
             id: number;
             name: string;
             value: number;
-        }[];
-    }[];
-    user: {
-        id: string;
-        name: string | null;
-        email: string | null;
-        image: string | null;
-    };
+        }>;
+    } | null;
 };

@@ -5,7 +5,9 @@ import { prisma } from "@/lib/db";
 export async function GET() {
   try {
     const sports = await prisma.sport.findMany({
-      select: { id: true, name: true },
+      include: {
+        positions: true
+      }
     });
     console.log("Sports retrieved:", sports);
     return NextResponse.json(sports);

@@ -77,7 +77,7 @@ export const dashboardConfig: DashboardConfig = {
       title: "Settings",
       href: "/dashboard/settings",
       icon: "settings",
-      roles: ["ADMIN", "ATHLETE"], // Pas pour les recruteurs
+      roles: ["ADMIN", "ATHLETE", "RECRUITER"], // Pas pour les recruteurs
     },
   ],
 };

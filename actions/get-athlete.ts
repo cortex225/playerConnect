@@ -1,5 +1,7 @@
 "use server";
 import {prisma} from "@/lib/db";
+import { Athlete } from "@/types";
+
 
 export async function getAllAthletes() {
     try {
@@ -78,5 +80,83 @@ export async function getAthleteById(id: number) {
     } catch (error) {
         console.error("Erreur lors de la récupération de l'athlète:", error);
         throw new Error("Erreur lors de la récupération de l'athlète");
+    }
+}
+
+
+
+export async function getTopAthletes() {
+    try {
+        // D'abord, récupérer les IDs des 5 meilleurs athlètes
+        const topAthleteIds = await prisma.performance.groupBy({
+            by: ['athleteId'],
+            _max: {
+                score: true
+            },
+            orderBy: {
+                _max: {
+                    score: 'desc'
+                }
+            },
+            take: 5
+        });
+
+        // Ensuite, récupérer les détails complets de ces athlètes
+        const athletes = await prisma.athlete.findMany({
+            where: {
+                id: {
+                    in: topAthleteIds.map(a => a.athleteId)
+                }
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        image: true,
+                    },
+                },
+                sport: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                category: {
+                    select: {
+                        name: true,
+                    },
+                },
+                performances: {
+                    select: {
+                        id: true,
+                        score: true,
+                        date: true,
+                        position: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                        KPI: {
+                            select: {
+                                id: true,
+                                name: true,
+                                value: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        score: 'desc'
+                    },
+                    take: 1
+                },
+            },
+        });
+
+        return athletes;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des athlètes :", error);
+        throw new Error("Impossible de récupérer les athlètes");
     }
 }

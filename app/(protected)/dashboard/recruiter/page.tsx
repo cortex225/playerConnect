@@ -32,18 +32,18 @@ export default async function DashboardPage() {
     return (
         <DashboardShell>
 
-            <header className="bg-background p-4 rounded-2xl">
-                <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center">
+            <header className="rounded-2xl bg-background p-4">
+                <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
                     {/* Section gauche : Avatar et infos */}
                     <div className="flex justify-between">
                         <ConnectedRecruiter/>
                         {/* Icônes de notification et messagerie */}
-                        <div className="flex justify-end items-center space-x-2">
+                        <div className="flex items-center justify-end space-x-2">
                             {/* Notification */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="icon">
-                                        <Bell className="h-5 w-5"/>
+                                        <Bell className="size-5"/>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="icon">
-                                        <MessageCircle className="h-5 w-5"/>
+                                        <MessageCircle className="size-5"/>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -71,11 +71,11 @@ export default async function DashboardPage() {
                     {/* Section droite : Recherche et actions */}
                     <div className="flex flex-col space-y-3 md:flex-row md:items-center md:space-x-4 md:space-y-0">
                         <form className="relative w-full md:w-auto">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400"/>
+                            <Search className="absolute left-2.5 top-2.5 size-4 text-gray-500 dark:text-gray-400"/>
                             <Input
                                 type="search"
                                 placeholder="Search athletes..."
-                                className="pl-8 w-full md:w-[200px] lg:w-[300px]"
+                                className="w-full pl-8 md:w-[200px] lg:w-[300px]"
                             />
                         </form>
 
@@ -84,12 +84,12 @@ export default async function DashboardPage() {
                 </div>
             </header>
             <div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-4">
                     {/* Quick Stats */}
                     <QuickStats/>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                     {/* Matches Carousel */}
                     <UpcomingMatches/>
 
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
                     <RecruitmentProgress/>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {/* Top Athletes */}
 
                     <TopAthletes/>
