@@ -25,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import AthleteDialog from "@/components/modals/athlete/athlete-profile-dialog";
+import AthleteProfileDialog from "@/components/modals/athlete/athlete-profile-dialog";
 
 export default function AthletesTable() {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
@@ -43,8 +43,8 @@ export default function AthletesTable() {
     async function fetchAthletes() {
       try {
         const data = await getAllAthletes();
-        setAthletes(data);
-        setFilteredAthletes(data);
+        setAthletes(data as Athlete[]);
+        setFilteredAthletes(data as Athlete[]);
       } catch (error) {
         console.error("Error fetching athletes:", error);
       }
@@ -231,10 +231,10 @@ export default function AthletesTable() {
 
       {/* Athlete Profile Dialog */}
       {selectedAthlete && (
-        <AthleteDialog
+        <AthleteProfileDialog
           athlete={selectedAthlete}
-          setSelectedAthlete={setSelectedAthlete}
           selectedAthlete={selectedAthlete}
+          onClose={() => setSelectedAthlete(null)}
         />
       )}
     </Card>

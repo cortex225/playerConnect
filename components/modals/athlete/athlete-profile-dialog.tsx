@@ -15,13 +15,13 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "rec
 type AthleteDialogProps = {
   athlete: Athlete;
   selectedAthlete: Athlete | null;
-  setSelectedAthlete: React.Dispatch<React.SetStateAction<Athlete | null>>;
+  onClose: () => void;
 };
 
 export default function AthleteProfileDialog({ 
   athlete, 
   selectedAthlete, 
-  setSelectedAthlete 
+  onClose 
 }: AthleteDialogProps) {
   const [activeTab, setActiveTab] = useState<string>("overview");
 
@@ -32,7 +32,7 @@ export default function AthleteProfileDialog({
   }));
 
   return (
-    <Dialog open={!!selectedAthlete} onOpenChange={() => setSelectedAthlete(null)}>
+    <Dialog open={!!selectedAthlete} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
         <Card className="w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -56,7 +56,7 @@ export default function AthleteProfileDialog({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSelectedAthlete(null)}
+              onClick={onClose}
             >
               <X className="size-4" />
             </Button>
