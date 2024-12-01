@@ -100,9 +100,9 @@ export default function AthleteProfileDialog({
               </TabsContent>
               <TabsContent value="details">
                 <div className="pt-4">
-                  <h3 className="text-lg font-semibold mb-2">Performance Details</h3>
+                  <h3 className="mb-2 text-lg font-semibold">Performance Details</h3>
                   {athlete.performances.map((perf, index) => (
-                    <div key={perf.id} className="mb-2 p-2 border rounded">
+                    <div key={perf.id} className="mb-2 rounded border p-2">
                       <p>Performance {index + 1}</p>
                       <p>Score: {perf.score.toFixed(2)}</p>
                       <p>Date: {perf.date.toLocaleDateString()}</p>
