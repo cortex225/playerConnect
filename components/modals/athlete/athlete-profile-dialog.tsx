@@ -73,8 +73,8 @@ export default function AthleteProfileDialog({
         return [1, 2, 3, 4, 5].map((star) => (
             <Star
                 key={star}
-                className={`h-4 w-4 ${
-                    star <= (rating || 0) ? "text-yellow-400 fill-current" : "text-gray-300"
+                className={`size-4 ${
+                    star <= (rating || 0) ? "fill-current text-yellow-400" : "text-gray-300"
                 }`}
             />
         ));
@@ -84,7 +84,7 @@ export default function AthleteProfileDialog({
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" onClick={() => setSelectedAthlete(athlete)}>
-                    <Eye className="h-4 w-4 mr-1"/>
+                    <Eye className="mr-1 size-4"/>
                     Voir le profil
                 </Button>
             </DialogTrigger>
@@ -99,7 +99,7 @@ export default function AthleteProfileDialog({
                     <div className="grid gap-4 py-4">
                         {/* Profil principal de l'athlète */}
                         <div className="flex items-center gap-4">
-                            <Avatar className="h-20 w-20">
+                            <Avatar className="size-20">
                                 {selectedAthlete.user?.image ? (
                                     <AvatarImage
                                         src={selectedAthlete.user.image}
@@ -124,7 +124,7 @@ export default function AthleteProfileDialog({
                                     Sport : {selectedAthlete.sport?.name || "Sport inconnu"}, Âge :{" "}
                                     {selectedAthlete.age || "N/A"}
                                 </p>
-                                <div className="flex items-center mt-1">
+                                <div className="mt-1 flex items-center">
                                     {renderStars(selectedAthlete.rating)}
                                     <span className="ml-2 text-sm text-gray-600">
                                         ({selectedAthlete.rating || "Pas de note"})
@@ -134,7 +134,7 @@ export default function AthleteProfileDialog({
                         </div>
 
                         {/* Résumé des performances */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Résumé des performances</CardTitle>

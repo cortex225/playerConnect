@@ -1,6 +1,6 @@
 "use server";
 
-import {auth} from "@/auth";
+import {auth} from "@/lib/auth";
 import {stripe} from "@/lib/stripe";
 import {getUserSubscriptionPlan} from "@/lib/subscription";
 import {absoluteUrl} from "@/lib/utils";

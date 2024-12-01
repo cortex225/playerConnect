@@ -1,7 +1,6 @@
-
 import { NextApiRequest } from 'next';
 import { cookies } from 'next/headers';
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 
 
 

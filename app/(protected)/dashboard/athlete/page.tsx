@@ -26,11 +26,12 @@ import {
   YAxis,
 } from "recharts";
 
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -43,68 +44,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { LittleCalendar } from "@/components/dashboard/dashboard-athlete/little-calendar";
+import { KPIChart } from "@/components/dashboard/dashboard-athlete/kpi-chart";
 import MediaCarousel from "@/components/dashboard/dashboard-athlete/media-carousel";
+import { PerformanceStats } from "@/components/dashboard/dashboard-athlete/performance-stats";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { AthleteForm } from "@/components/forms/athlete-form";
-
-const performanceData = [
-  { name: "Jan", score: 30 },
-  { name: "Feb", score: 45 },
-  { name: "Mar", score: 55 },
-  { name: "Apr", score: 70 },
-  { name: "May", score: 65 },
-  { name: "Jun", score: 80 },
-  { name: "Jul", score: 75 },
-  { name: "Aug", score: 85 },
-  { name: "Sep", score: 90 },
-  { name: "Oct", score: 95 },
-  { name: "Nov", score: 88 },
-  { name: "Dec", score: 100 },
-];
-
-const kpiData = [
-  { subject: "Mon", Performance: 120, fullMark: 150 },
-  { subject: "Tue", Performance: 98, fullMark: 150 },
-  { subject: "Wed", Performance: 86, fullMark: 150 },
-  { subject: "Thu", Performance: 99, fullMark: 150 },
-  { subject: "Fri", Performance: 85, fullMark: 150 },
-  { subject: "Sat", Performance: 65, fullMark: 150 },
-  { subject: "Sun", Performance: 65, fullMark: 150 },
-];
-
-const topRecruiters = [
-  {
-    id: 1,
-    name: "Sarah Thompson",
-    role: "NCAA Division I Scout",
-    university: "Blue Mountain University",
-  },
-  {
-    id: 2,
-    name: "Michael Rodriguez",
-    role: "Professional Team Scout",
-    university: "Golden State Warriors",
-  },
-  {
-    id: 3,
-    name: "Jennifer Williams",
-    role: "College Recruiter",
-    university: "Riverside College",
-  },
-  {
-    id: 4,
-    name: "David Chen",
-    role: "Sports Academy Director",
-    university: "Elite Sports Academy",
-  },
-  {
-    id: 5,
-    name: "Emily Parker",
-    role: "Youth Development Scout",
-    university: "National Sports Association",
-  },
-];
+import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
+import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
 
 export const metadata = constructMetadata({
   title: "Profil Athlète – Player Connect",
@@ -115,14 +60,35 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ATHLETE") redirect("/login");
 
-  // const mediaCarouselRef = useRef<HTMLDivElement>(null)
+  const athlete = await prisma.athlete.findUnique({
+    where: {
+      userId: user.id,
+    },
+    include: {
+      positions: {
+        include: {
+          position: true
+        }
+      },
+      sport: true,
+      category: true
+    }
+  });
+  console.log("athlete", athlete);
+
+  if (!athlete || !athlete.sport) {
+    redirect("/onboarding");
+  }
+
+  const positions = athlete.positions.map((p) => p.position);
+  console.log("positions", positions);
 
   return (
     <DashboardShell>
       <header className="rounded-2xl bg-background p-4">
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           {/* Section gauche : Avatar et infos */}
-          <div className="flex justify-between">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-4">
               <Avatar className="size-10 shrink-0">
                 <AvatarImage src={user.image || ""} alt={user.name || ""} />
@@ -144,7 +110,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Icônes de notification et messagerie */}
-            <div className="flex items-center justify-end space-x-2">
+            <div className="flex items-center justify-start space-x-2 sm:justify-end">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -174,19 +140,27 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
-      <div>
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-1">
-          {/* Quick Stats */}
-          <MediaCarousel />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Top Athletes */}
-
-          {/* <TopAthletes/> */}
-
-          {/* Calendar */}
-          {/* <LittleCalendar/> */}
+      <div className="mt-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          {/* Media Carousel - 4 colonnes sur desktop */}
+          <div className="col-span-5">
+            <MediaCarousel />
+          </div>
+          {/* KPI Chart - 3 colonnes sur desktop */}
+          <div className="col-span-2">
+            <KPIChart />
+          </div>
+          {/* Performance Stats - 4 colonnes sur desktop */}
+          <div className="col-span-7">
+            <PerformanceStats
+              positions={positions}
+              sportType={athlete.sport.name}
+            />
+          </div>
+          {/* Top Recruiters - 3 colonnes sur desktop */}
+          <div className="col-span-7">
+            <TopRecruiters />
+          </div>
         </div>
       </div>
     </DashboardShell>

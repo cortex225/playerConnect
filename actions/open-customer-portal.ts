@@ -1,7 +1,7 @@
 "use server";
 
 import {redirect} from "next/navigation";
-import {auth} from "@/auth";
+import {auth} from "@/lib/auth";
 
 import {stripe} from "@/lib/stripe";
 import {absoluteUrl} from "@/lib/utils";

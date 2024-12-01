@@ -1,12 +1,11 @@
 // app/api/messages/route.ts
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from "@/lib/auth";
 import { pusherServer } from '@/lib/pusher';
-import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
         if (!session?.user) {
             return new NextResponse('Unauthorized', { status: 401 });

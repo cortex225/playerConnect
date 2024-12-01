@@ -12,7 +12,11 @@ import { AthleteFormValues } from "@/lib/validations/athlete";
 
 
 
-
+/**
+ * Crée un nouvel athlète en base de données
+ * @param data Les informations de l'athlète à créer
+ * @returns L'athlète créé ou une erreur si la création a échoué
+ */
 export async function createAthlete(data: AthleteFormValues) {
   try {
     const user = await getCurrentUser();
@@ -40,10 +44,20 @@ export async function createAthlete(data: AthleteFormValues) {
         city: data.city,
         height: data.height,
         weight: data.weight,
-        teamName: data.teamName,
-        divisionLevel: data.divisionLevel,
-        categoryLevel: data.categoryLevel,
-        sportId: data.sportId, 
+        dominantHand: data.dominantHand,
+        dominantFoot: data.dominantFoot,
+        programType: data.programType,
+        categoryId: data.categoryId,
+        sportId: data.sportId,
+        positions: {
+          create: data.positions.map(positionId => ({
+            position: {
+              connect: {
+                id: positionId
+              }
+            }
+          }))
+        }
       },
     });
 

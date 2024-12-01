@@ -1,6 +1,6 @@
 import React from 'react'
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {auth} from "@/auth";
+import {auth} from "@/lib/auth";
 
 export default async function ConnectedRecruiter() {
     const session = await auth();
@@ -23,5 +23,3 @@ export default async function ConnectedRecruiter() {
         </>
     )
 }
-
-

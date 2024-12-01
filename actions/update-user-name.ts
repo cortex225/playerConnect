@@ -1,6 +1,6 @@
 "use server";
 
-import {auth} from "@/auth";
+import {auth} from "@/lib/auth";
 import {prisma} from "@/lib/db";
 import {userNameSchema} from "@/lib/validations/user";
 import {revalidatePath} from "next/cache";
