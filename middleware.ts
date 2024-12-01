@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
+
 import { auth } from "@/lib/auth";
-
-
-
-
-
-
 
 export default async function middleware(req) {
   const session = await auth(); // Récupère la session utilisateur
@@ -33,10 +28,10 @@ export default async function middleware(req) {
     session?.user?.role === "USER" &&
     (roleCookie === "ATHLETE" || roleCookie === "RECRUITER")
   ) {
-    if(roleCookie === "ATHLETE"){
+    if (roleCookie === "ATHLETE") {
       return NextResponse.redirect(new URL("/dashboard-athlete", req.url));
     }
-    if(roleCookie === "RECRUITER"){
+    if (roleCookie === "RECRUITER") {
       return NextResponse.redirect(new URL("/dashboard-recruiter", req.url));
     }
   }

@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateAthletePositions } from "@/actions/update-athlete-positions";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Position, Sport } from "@prisma/client";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import {
   MultiSelector,
@@ -23,9 +18,14 @@ import {
   MultiSelectorList,
   MultiSelectorTrigger,
 } from "@/components/ui/extension/multi-select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 const updatePositionsSchema = z.object({
   positions: z.array(z.string()),
@@ -39,7 +39,11 @@ interface UpdatePositionsFormProps {
   currentPositions: string[];
 }
 
-export function UpdatePositionsForm({ athleteId, sportId, currentPositions }: UpdatePositionsFormProps) {
+export function UpdatePositionsForm({
+  athleteId,
+  sportId,
+  currentPositions,
+}: UpdatePositionsFormProps) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
@@ -78,7 +82,9 @@ export function UpdatePositionsForm({ athleteId, sportId, currentPositions }: Up
         toast.error(result.error || "Une erreur est survenue");
       }
     } catch (error) {
-      toast.error("Une erreur est survenue lors de la mise à jour des positions");
+      toast.error(
+        "Une erreur est survenue lors de la mise à jour des positions",
+      );
     } finally {
       setIsPending(false);
     }

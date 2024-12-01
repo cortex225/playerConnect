@@ -31,7 +31,13 @@ import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -48,8 +54,9 @@ import { KPIChart } from "@/components/dashboard/dashboard-athlete/kpi-chart";
 import MediaCarousel from "@/components/dashboard/dashboard-athlete/media-carousel";
 import { PerformanceStats } from "@/components/dashboard/dashboard-athlete/performance-stats";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
 import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
+
+import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
 
 export const metadata = constructMetadata({
   title: "Profil Athlète – Player Connect",
@@ -67,12 +74,12 @@ export default async function DashboardPage() {
     include: {
       positions: {
         include: {
-          position: true
-        }
+          position: true,
+        },
       },
       sport: true,
-      category: true
-    }
+      category: true,
+    },
   });
   console.log("athlete", athlete);
 
@@ -121,7 +128,7 @@ export default async function DashboardPage() {
                   <DropdownMenuItem>
                     Nouvelle demande de recruteur
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Rappel d'événement</DropdownMenuItem>
+                  <DropdownMenuItem>Rappel d&apos;événement</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -132,8 +139,12 @@ export default async function DashboardPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Message d'un recruteur</DropdownMenuItem>
-                  <DropdownMenuItem>Discussion avec l'équipe</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Message d&apos;un recruteur
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Discussion avec l&apos;équipe
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

@@ -1,9 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+
 import { prisma } from "@/lib/db";
 
-export async function updateAthletePositions(athleteId: number, positionIds: string[]) {
+export async function updateAthletePositions(
+  athleteId: number,
+  positionIds: string[],
+) {
   try {
     // First, remove all existing positions
     await prisma.athletePosition.deleteMany({

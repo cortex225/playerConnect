@@ -1,23 +1,24 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandItem,
-  CommandEmpty,
-  CommandList,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import { Command as CommandPrimitive } from "cmdk";
-import { X as RemoveIcon, Check } from "lucide-react";
 import React, {
-  KeyboardEvent,
   createContext,
   forwardRef,
+  KeyboardEvent,
   useCallback,
   useContext,
   useState,
 } from "react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Check, X as RemoveIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import {
+  Command,
+  CommandEmpty,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 interface MultiSelectorProps
   extends React.ComponentPropsWithoutRef<typeof CommandPrimitive> {
@@ -243,7 +244,7 @@ const MultiSelectorTrigger = forwardRef<
           key={item}
           className={cn(
             "flex items-center gap-1 rounded-xl px-1",
-            activeIndex === index && "ring-2 ring-muted-foreground ",
+            activeIndex === index && "ring-2 ring-muted-foreground",
           )}
           variant={"secondary"}
         >
@@ -362,7 +363,7 @@ const MultiSelectorItem = forwardRef<
         setInputValue("");
       }}
       className={cn(
-        "flex cursor-pointer justify-between rounded-md px-2 py-1 transition-colors ",
+        "flex cursor-pointer justify-between rounded-md px-2 py-1 transition-colors",
         className,
         isIncluded && "cursor-default opacity-50",
         props.disabled && "cursor-not-allowed opacity-50",

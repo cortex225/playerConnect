@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { createPerformance } from "@/actions/create-performance";
 import { TrendingUp } from "lucide-react";
 import {
   Area,
@@ -24,14 +26,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useState } from "react";
-import { createPerformance } from "@/actions/create-performance";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { PerformanceForm } from "@/components/forms/performance-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 export const PerformanceStats = ({ positions, sportType }) => {
   const [open, setOpen] = useState(false);

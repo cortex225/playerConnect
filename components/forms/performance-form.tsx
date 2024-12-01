@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Position, SportType } from "@prisma/client";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import {
@@ -112,7 +112,7 @@ export function PerformanceForm({
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                           >
                             {field.value ? (
@@ -140,14 +140,17 @@ export function PerformanceForm({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="positionId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Position</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez votre position" />
@@ -177,13 +180,21 @@ export function PerformanceForm({
                     name={`stats.${index}.value`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{sportStats[sportType].find(s => s.key === stat.key)?.label}</FormLabel>
+                        <FormLabel>
+                          {
+                            sportStats[sportType].find(
+                              (s) => s.key === stat.key,
+                            )?.label
+                          }
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             placeholder="0"
                             {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />

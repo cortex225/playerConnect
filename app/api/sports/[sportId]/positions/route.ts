@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/db";
 
 export async function GET(
   request: Request,
-  { params }: { params: { sportId: string } }
+  { params }: { params: { sportId: string } },
 ) {
   try {
     const positions = await prisma.position.findMany({

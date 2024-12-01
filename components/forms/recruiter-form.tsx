@@ -1,11 +1,11 @@
 "use client";
 
-import { useState,useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createRecruiter } from "@/actions/create-recruiter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createRecruiter } from "@/actions/create-recruiter";
 
 import {
   recruiterFormSchema,
@@ -45,8 +45,6 @@ export function RecruiterForm() {
     },
   });
 
-
-
   async function onSubmit(data: RecruiterFormValues) {
     setIsPending(true);
     try {
@@ -79,7 +77,9 @@ export function RecruiterForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Informations sur l'organisation */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informations professionnelles</h3>
+              <h3 className="text-lg font-medium">
+                Informations professionnelles
+              </h3>
               <FormField
                 control={form.control}
                 name="organization"
@@ -87,7 +87,10 @@ export function RecruiterForm() {
                   <FormItem>
                     <FormLabel>Organisation</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nom de votre organisation" {...field} />
+                      <Input
+                        placeholder="Nom de votre organisation"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,7 +104,10 @@ export function RecruiterForm() {
                   <FormItem>
                     <FormLabel>Poste</FormLabel>
                     <FormControl>
-                      <Input placeholder="Poste occupé (e.g. Manager)" {...field} />
+                      <Input
+                        placeholder="Poste occupé (e.g. Manager)"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,7 +119,9 @@ export function RecruiterForm() {
 
             {/* Informations supplémentaires */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informations complémentaires</h3>
+              <h3 className="text-lg font-medium">
+                Informations complémentaires
+              </h3>
 
               <FormField
                 control={form.control}
@@ -122,7 +130,10 @@ export function RecruiterForm() {
                   <FormItem>
                     <FormLabel>Région</FormLabel>
                     <FormControl>
-                      <Input placeholder="Votre région (e.g. Île-de-France)" {...field} />
+                      <Input
+                        placeholder="Votre région (e.g. Île-de-France)"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,7 +161,7 @@ export function RecruiterForm() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isPending}>
-                            {isPending && (
+              {isPending && (
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
               )}
               Créer mon profil

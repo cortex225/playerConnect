@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAthlete } from "@/actions/create-athlete";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CategoryLevel, DominantFoot, DominantHand, Gender, ProgramType, Sport } from "@prisma/client";
+import {
+  CategoryLevel,
+  DominantFoot,
+  DominantHand,
+  Gender,
+  ProgramType,
+  Sport,
+} from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -20,6 +27,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
+} from "@/components/ui/extension/multi-select";
 import {
   Form,
   FormControl,
@@ -38,14 +53,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Icons } from "@/components/shared/icons";
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger,
-} from "@/components/ui/extension/multi-select";
 
 interface Position {
   id: string;
@@ -54,8 +61,12 @@ interface Position {
 }
 
 export function AthleteForm() {
-  const [sports, setSports] = useState<Array<Sport & { positions: Position[] }>>([]);
-  const [currentSportPositions, setCurrentSportPositions] = useState<Position[]>([]);
+  const [sports, setSports] = useState<
+    Array<Sport & { positions: Position[] }>
+  >([]);
+  const [currentSportPositions, setCurrentSportPositions] = useState<
+    Position[]
+  >([]);
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
@@ -201,7 +212,9 @@ export function AthleteForm() {
                           type="number"
                           placeholder="Taille en cm"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -220,7 +233,9 @@ export function AthleteForm() {
                           type="number"
                           placeholder="Poids en kg"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />

@@ -1,24 +1,21 @@
 // pages/api/users/connected.ts (suite)
-import { NextApiRequest, NextApiResponse } from 'next'
-import { pusherServer } from '@/lib/pusher'
+import { NextResponse } from "next/server";
 
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' })
-    }
+import { pusherServer } from "@/lib/pusher";
 
-    try {
-        const { user } = req.body
+export async function POST(request: Request) {
+  try {
+    const { user } = await request.json();
 
-        // Trigger l'événement de mise à jour des utilisateurs connectés
-        await pusherServer.trigger('connected-users', 'update', user)
+    // Trigger l'événement de mise à jour des utilisateurs connectés
+    await pusherServer.trigger("connected-users", "update", user);
 
-        res.status(200).json({ success: true })
-    } catch (error) {
-        console.error('Error:', error)
-        res.status(500).json({ message: 'Error updating connected users' })
-    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error:", error);
+    return NextResponse.json(
+      { message: "Error updating connected users" },
+      { status: 500 }
+    );
+  }
 }

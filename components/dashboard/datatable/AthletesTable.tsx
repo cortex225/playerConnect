@@ -1,228 +1,242 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getAllAthletes } from "@/actions/get-athlete";
+import { Athlete } from "@/types";
+import { Eye } from "lucide-react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getAllAthletes } from "@/actions/get-athlete";
-import { Eye, Star } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import AthleteDialog from "@/components/modals/athlete/athlete-profile-dialog";
 
-import { Athlete } from "@/types";
-
-
-
 export default function AthletesTable() {
-    const [athletes, setAthletes] = useState<Athlete[]>([]);
-    const [filteredAthletes, setFilteredAthletes] = useState<Athlete[]>([]);
-    const [searchQuery, setSearchQuery] = useState<string>("");
-    const [sportFilter, setSportFilter] = useState<string>("All");
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const itemsPerPage = 10;
-    const [sortField, setSortField] = useState<keyof Athlete | null>(null);
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-    const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
+  const [athletes, setAthletes] = useState<Athlete[]>([]);
+  const [filteredAthletes, setFilteredAthletes] = useState<Athlete[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sportFilter, setSportFilter] = useState<string>("All");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
+  const [sortField, setSortField] = useState<keyof Athlete["user"] | "performance" | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedAthlete, setSelectedAthlete] = useState<Athlete | null>(null);
 
-    // Fetch athletes data
-    useEffect(() => {
-        async function fetchAthletes() {
-            try {
-                const data: Athlete[] = await getAllAthletes();
-                setAthletes(data);
-                setFilteredAthletes(data);
+  // Fetch athletes data
+  useEffect(() => {
+    async function fetchAthletes() {
+      try {
+        const data = await getAllAthletes();
+        setAthletes(data);
+        setFilteredAthletes(data);
+      } catch (error) {
+        console.error("Error fetching athletes:", error);
+      }
+    }
 
-            } catch (error) {
-                console.error("Error fetching athletes:", error);
-            }
-        }
+    fetchAthletes();
+  }, []);
 
-        fetchAthletes();
-    }, []);
+  // Filter athletes based on search query and sport filter
+  useEffect(() => {
+    let filtered = athletes;
 
-    // Apply filters, search, and sorting
-    useEffect(() => {
-        let filtered = [...athletes];
+    if (searchQuery) {
+      filtered = filtered.filter((athlete) =>
+        athlete.user.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
-        // Filter by sport
-        if (sportFilter !== "All") {
-            filtered = filtered.filter((athlete) => athlete.sport?.name === sportFilter);
-        }
+    if (sportFilter !== "All") {
+      filtered = filtered.filter(
+        (athlete) => athlete.sport?.name === sportFilter
+      );
+    }
 
-        // Search by name
-        if (searchQuery) {
-            filtered = filtered.filter((athlete) =>
-                athlete.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
+    setFilteredAthletes(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [athletes, searchQuery, sportFilter]);
 
-        // Sort by the selected field
-        if (sortField) {
-            filtered.sort((a, b) => {
-                const aValue = getFieldValue(a, sortField);
-                const bValue = getFieldValue(b, sortField);
+  // Sort athletes
+  const sortAthletes = (field: keyof Athlete["user"] | "performance") => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
 
-                if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-                if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-                return 0;
-            });
-        }
+    const sorted = [...filteredAthletes].sort((a, b) => {
+      if (field === "performance") {
+        const aScore = a.performances[0]?.score ?? 0;
+        const bScore = b.performances[0]?.score ?? 0;
+        return sortDirection === "asc" ? aScore - bScore : bScore - aScore;
+      }
 
-        setFilteredAthletes(filtered);
-    }, [athletes, searchQuery, sportFilter, sortField, sortDirection]);
+      const aValue = a.user[field] || "";
+      const bValue = b.user[field] || "";
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue.toString())
+        : bValue.localeCompare(aValue.toString());
+    });
 
-    // Helper to get the field value for sorting
-    const getFieldValue = (athlete: Athlete, field: keyof Athlete) => {
-        if (field === "rating") {
-            return athlete.performances?.[0]?.score || 0;
-        }
-        if (field === "sport") {
-            return athlete.sport?.name || "";
-        }
-        if (field === "performances") {
-            return athlete.performances?.length || 0;
-        }
-        if (field === "user") {
-            return athlete.user?.name || "";
-        }
-        return athlete[field] || "";
-    };
+    setFilteredAthletes(sorted);
+  };
 
-    // Pagination logic
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentAthletes = filteredAthletes.slice(startIndex, startIndex + itemsPerPage);
-    const totalPages = Math.ceil(filteredAthletes.length / itemsPerPage);
+  // Get unique sports for filter
+  const uniqueSports = ["All", ...Array.from(new Set(athletes.map((a) => a.sport?.name || "Unknown").filter((name) => name !== "Unknown")))];
 
-    // Toggle sort direction
-    const toggleSort = (field: keyof Athlete) => {
-        if (sortField === field) {
-            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-        } else {
-            setSortField(field);
-            setSortDirection("asc");
-        }
-    };
+  // Pagination
+  const totalPages = Math.ceil(filteredAthletes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAthletes = filteredAthletes.slice(startIndex, endIndex);
 
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    Athletes List
-                    <div className="flex items-center space-x-2">
-                        <Label htmlFor="search" className="sr-only">
-                            Search
-                        </Label>
-                        <Input
-                            id="search"
-                            type="text"
-                            placeholder="Search by name"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Athletes</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-4 grid gap-4 md:grid-cols-2">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="search">Search</Label>
+            <Input
+              id="search"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="sport">Sport</Label>
+            <Select
+              value={sportFilter}
+              onValueChange={(value) => setSportFilter(value)}
+            >
+              <SelectTrigger id="sport">
+                <SelectValue placeholder="Select sport" />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueSports.map((sport) => (
+                  <SelectItem key={sport} value={sport}>
+                    {sport}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Athlete</TableHead>
+                <TableHead>Sport</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Performance</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentAthletes.map((athlete) => (
+                <TableRow key={athlete.id}>
+                  <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage
+                          src={athlete.user.image || undefined}
+                          alt={athlete.user.name || ""}
                         />
-                        <Select value={sportFilter} onValueChange={setSportFilter}>
-                            <SelectTrigger id="sport-filter" className="w-[180px]">
-                                <SelectValue placeholder="Filter by Sport" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="All">All Sports</SelectItem>
-                                {Array.from(new Set(athletes.map((athlete) => athlete.sport?.name)))
-                                    .filter(Boolean)
-                                    .map((sport) => (
-                                        <SelectItem key={sport} value={sport!}>
-                                            {sport}
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
+                        <AvatarFallback>
+                          {athlete.user.name
+                            ? athlete.user.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                            : "A"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{athlete.user.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {athlete.user.email}
+                        </div>
+                      </div>
                     </div>
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead onClick={() => toggleSort("user")}>Name</TableHead>
-                            <TableHead onClick={() => toggleSort("sport")}>Sport</TableHead>
-                            <TableHead onClick={() => toggleSort("age")}>Age</TableHead>
-                            <TableHead onClick={() => toggleSort("rating")}>Score</TableHead>
-                            <TableHead>Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {currentAthletes.length > 0 ? (
-                            currentAthletes.map((athlete) => (
-                                <TableRow key={athlete.id}>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={athlete.user?.image || "/placeholder.svg"} alt={athlete.user?.name || "Athlete"} />
-                                                <AvatarFallback>
-                                                    {athlete.user?.name
-                                                        ?.split(" ")
-                                                        .map((n) => n[0])
-                                                        .join("") || "N/A"}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <span>{athlete.user?.name || "Unknown"}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{athlete.sport?.name || "N/A"}</TableCell>
-                                    <TableCell>{athlete.age || "N/A"}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <Star
-                                                    key={star}
-                                                    className={`h-4 w-4 ${
-                                                        star <= (athlete.performances?.[0]?.score || 0) / 20
-                                                            ? "text-yellow-400"
-                                                            : "text-gray-300"
-                                                    }`}
-                                                />
-                                            ))}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <AthleteDialog
-                                            athlete={athlete}
-                                            setSelectedAthlete={setSelectedAthlete}
-                                            selectedAthlete={selectedAthlete}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center text-gray-500">
-                                    No athletes found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-                <div className="mt-4 flex items-center justify-between">
+                  </TableCell>
+                  <TableCell>{athlete.sport?.name || "N/A"}</TableCell>
+                  <TableCell>{athlete.category?.name || "N/A"}</TableCell>
+                  <TableCell>
+                    {athlete.performances[0] ? (
+                      <div className="flex items-center space-x-2">
+                        <span>{athlete.performances[0].score.toFixed(1)}</span>
+                      </div>
+                    ) : (
+                      "No performance"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
                     <Button
-                        variant="outline"
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((prev) => prev - 1)}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedAthlete(athlete)}
                     >
-                        Previous
+                      <Eye className="size-4" />
                     </Button>
-                    <span>
-            Page {currentPage} of {totalPages}
-          </span>
-                    <Button
-                        variant="outline"
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                    >
-                        Next
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
-    );
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4 flex justify-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </CardContent>
+
+      {/* Athlete Profile Dialog */}
+      {selectedAthlete && (
+        <AthleteDialog
+          athlete={selectedAthlete}
+          setSelectedAthlete={setSelectedAthlete}
+          selectedAthlete={selectedAthlete}
+        />
+      )}
+    </Card>
+  );
 }

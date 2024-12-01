@@ -35,7 +35,6 @@ export function RecruiterDialogCreate() {
           </DialogDescription>
         </DialogHeader>
         <RecruiterForm />
-
       </DialogContent>
     </Dialog>
   );

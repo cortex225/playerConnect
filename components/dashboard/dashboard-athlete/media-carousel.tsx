@@ -4,7 +4,13 @@ import React, { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Play, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const mediaItems = [
   { id: 1, title: "Match Highlights vs Eagles", thumbnail: "/placeholder.jpg" },
@@ -33,7 +39,7 @@ export default function MediaCarousel() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Media/Highlight
-            <Button >Add Media +</Button>
+            <Button>Add Media +</Button>
           </CardTitle>
           <CardDescription className="text-sm">
             Your recent videos and highlights
@@ -51,12 +57,18 @@ export default function MediaCarousel() {
                     <Video className="size-12 text-muted-foreground group-hover:hidden" />
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button size="icon" variant="secondary" className="size-12 rounded-full">
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="size-12 rounded-full"
+                    >
                       <Play className="size-6" />
                     </Button>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
-                    <h3 className="text-sm font-semibold text-white">{item.title}</h3>
+                    <h3 className="text-sm font-semibold text-white">
+                      {item.title}
+                    </h3>
                   </div>
                 </div>
               ))}

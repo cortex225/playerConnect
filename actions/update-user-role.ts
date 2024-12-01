@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
 
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { userRoleSchema } from "@/lib/validations/user";
 

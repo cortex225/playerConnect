@@ -35,7 +35,6 @@ export function AthleteDialogCreate() {
           </DialogDescription>
         </DialogHeader>
         <AthleteForm />
-  
       </DialogContent>
     </Dialog>
   );

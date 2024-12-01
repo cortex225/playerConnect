@@ -1,26 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function useMessages(userId: string) {
-    const [messages, setMessages] = useState([]);
-    const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState([]);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!userId) return;
+  useEffect(() => {
+    if (!userId) return;
 
-        const fetchMessages = async () => {
-            try {
-                const res = await fetch(`/api/messages?userId=${userId}`);
-                if (!res.ok) throw new Error("Erreur lors de la récupération des messages");
-                const data = await res.json();
-                setMessages(data);
-                console.log(data);
-            } catch (err) {
-                setError(err.message);
-            }
-        };
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/messages?userId=${userId}`);
+        if (!res.ok)
+          throw new Error("Erreur lors de la récupération des messages");
+        const data = await res.json();
+        setMessages(data);
+        console.log(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
 
-        fetchMessages();
-    }, [userId]);
+    fetchMessages();
+  }, [userId]);
 
-    return { messages, error };
+  return { messages, error };
 }

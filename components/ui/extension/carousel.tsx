@@ -1,19 +1,20 @@
 "use client";
 
 import React, {
+  createContext,
   forwardRef,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon } from "@radix-ui/react-icons";
 import { EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronRightIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { ChevronLeftIcon } from "@radix-ui/react-icons";
-import { createContext } from "react";
+import { Button } from "@/components/ui/button";
 
 type CarouselContextProps = {
   carouselOptions?: EmblaOptionsType;

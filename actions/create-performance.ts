@@ -1,8 +1,7 @@
 "use server";
-import { getCurrentUser } from "@/lib/session";
 
 import { prisma } from "@/lib/db";
-
+import { getCurrentUser } from "@/lib/session";
 
 export async function createPerformance(values: {
   date: Date;

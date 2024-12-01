@@ -6,8 +6,8 @@ export async function GET() {
   try {
     const sports = await prisma.sport.findMany({
       include: {
-        positions: true
-      }
+        positions: true,
+      },
     });
     console.log("Sports retrieved:", sports);
     return NextResponse.json(sports);

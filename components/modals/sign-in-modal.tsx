@@ -1,7 +1,11 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { signIn } from "next-auth/react";
-
-
 
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
@@ -90,22 +94,22 @@ function SignInModal({
 }
 
 export function useSignInModal() {
-    const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
 
-    const SignInModalCallback = useCallback(() => {
-        return (
-            <SignInModal
-                showSignInModal={showSignInModal}
-                setShowSignInModal={setShowSignInModal}
-            />
-        );
-    }, [showSignInModal, setShowSignInModal]);
-
-    return useMemo(
-        () => ({
-            setShowSignInModal,
-            SignInModal: SignInModalCallback,
-        }),
-        [setShowSignInModal, SignInModalCallback],
+  const SignInModalCallback = useCallback(() => {
+    return (
+      <SignInModal
+        showSignInModal={showSignInModal}
+        setShowSignInModal={setShowSignInModal}
+      />
     );
+  }, [showSignInModal, setShowSignInModal]);
+
+  return useMemo(
+    () => ({
+      setShowSignInModal,
+      SignInModal: SignInModalCallback,
+    }),
+    [setShowSignInModal, SignInModalCallback],
+  );
 }

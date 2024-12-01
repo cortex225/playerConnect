@@ -3,14 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-
-
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { AthleteFormValues } from "@/lib/validations/athlete";
-
-
-
 
 /**
  * Crée un nouvel athlète en base de données
@@ -50,14 +45,14 @@ export async function createAthlete(data: AthleteFormValues) {
         categoryId: data.categoryId,
         sportId: data.sportId,
         positions: {
-          create: data.positions.map(positionId => ({
+          create: data.positions.map((positionId) => ({
             position: {
               connect: {
-                id: positionId
-              }
-            }
-          }))
-        }
+                id: positionId,
+              },
+            },
+          })),
+        },
       },
     });
 

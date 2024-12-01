@@ -63,7 +63,7 @@ pnpm run dev
 > [!WARNING]  
 > You need update `.react-email` folder before use `pnpm run email`. Check the
 > link [here](https://github.com/resend/react-email/issues/868#issuecomment-1828411325) if you have the error :
-`renderToReadableStream not found`
+> `renderToReadableStream not found`
 
 ## Roadmap
 

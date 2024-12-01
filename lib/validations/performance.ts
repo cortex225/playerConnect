@@ -1,4 +1,4 @@
-import * as z from "zod"
+import * as z from "zod";
 
 export const performanceFormSchema = z.object({
   date: z.date({
@@ -11,11 +11,11 @@ export const performanceFormSchema = z.object({
     z.object({
       key: z.string(),
       value: z.number(),
-    })
+    }),
   ),
-})
+});
 
-export type PerformanceFormValues = z.infer<typeof performanceFormSchema>
+export type PerformanceFormValues = z.infer<typeof performanceFormSchema>;
 
 // Statistiques spécifiques par sport
 export const sportStats = {
@@ -59,4 +59,4 @@ export const sportStats = {
     { key: "lineouts", label: "Touches gagnées" },
     { key: "scrums", label: "Mêlées gagnées" },
   ],
-}
+};

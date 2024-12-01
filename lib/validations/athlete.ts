@@ -1,4 +1,10 @@
-import { CategoryLevel, DominantFoot, DominantHand, Gender, ProgramType } from "@prisma/client";
+import {
+  CategoryLevel,
+  DominantFoot,
+  DominantHand,
+  Gender,
+  ProgramType,
+} from "@prisma/client";
 import * as z from "zod";
 
 export const athleteFormSchema = z.object({

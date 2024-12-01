@@ -1,9 +1,16 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
 import { Position } from "@prisma/client";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
 
 interface ProfileCardProps {
   user: {
@@ -51,15 +58,16 @@ export function ProfileCard({ user, athlete, positions }: ProfileCardProps) {
               <h3 className="text-lg font-medium">Informations Personnelles</h3>
               <div className="grid gap-2">
                 <div>
-                  <span className="font-medium">Sport:</span> {athlete.sport?.name}
+                  <span className="font-medium">Sport:</span>{" "}
+                  {athlete.sport?.name}
                 </div>
                 <div>
                   <span className="font-medium">Positions:</span>
                   <div className="mt-2">
-                    <UpdatePositionsForm 
+                    <UpdatePositionsForm
                       athleteId={athlete.id}
                       sportId={athlete.sportId}
-                      currentPositions={positions.map(p => p.id)}
+                      currentPositions={positions.map((p) => p.id)}
                     />
                   </div>
                 </div>
@@ -73,10 +81,12 @@ export function ProfileCard({ user, athlete, positions }: ProfileCardProps) {
                   <span className="font-medium">Ville:</span> {athlete.city}
                 </div>
                 <div>
-                  <span className="font-medium">Taille:</span> {athlete.height} cm
+                  <span className="font-medium">Taille:</span> {athlete.height}{" "}
+                  cm
                 </div>
                 <div>
-                  <span className="font-medium">Poids:</span> {athlete.weight} kg
+                  <span className="font-medium">Poids:</span> {athlete.weight}{" "}
+                  kg
                 </div>
               </div>
             </div>

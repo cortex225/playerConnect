@@ -1,201 +1,120 @@
-import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    RadarChart,
-    Radar,
-    PolarGrid,
-    PolarAngleAxis,
-    PolarRadiusAxis,
-} from "recharts";
+"use client";
+
+import React, { useState } from "react";
+import { Athlete } from "@/types";
+import { X } from "lucide-react";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
-import { Eye, Star } from "lucide-react";
-import { Athlete } from "@/types";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 
-type Props = {
-    athlete: Athlete;
-    setSelectedAthlete: (athlete: Athlete | null) => void;
-    selectedAthlete: Athlete | null;
+type AthleteDialogProps = {
+  athlete: Athlete;
+  selectedAthlete: Athlete | null;
+  setSelectedAthlete: React.Dispatch<React.SetStateAction<Athlete | null>>;
 };
 
-export default function AthleteProfileDialog({
-                                                 athlete,
-                                                 setSelectedAthlete,
-                                                 selectedAthlete,
-                                             }: Props) {
-    // Générer les données de performances pour le LineChart
-    const performanceData =
-        athlete.performances?.map((performance) => ({
-            date: performance.date
-                ? new Date(performance.date).toLocaleDateString()
-                : "Date inconnue",
-            score: performance.score || 0,
-        })) || [];
+export default function AthleteProfileDialog({ 
+  athlete, 
+  selectedAthlete, 
+  setSelectedAthlete 
+}: AthleteDialogProps) {
+  const [activeTab, setActiveTab] = useState<string>("overview");
 
-    // Générer les données pour le RadarChart en agrégeant les KPI par sujet
-    const kpiData =
-        athlete.performances?.flatMap((performance) =>
-            performance.KPI?.map((kpi) => ({
-                subject: kpi.name || "Inconnu",
-                value: kpi.value || 0,
-            })) || []
-        ) || [];
+  const performanceData = athlete.performances.map((perf, index) => ({
+    name: `Performance ${index + 1}`,
+    score: perf.score,
+    date: perf.date.toLocaleDateString()
+  }));
 
-    // Agréger les KPI par sujet pour éviter les doublons
-    const aggregatedKpiData = Object.values(
-        kpiData.reduce((acc, { subject, value }) => {
-            if (!acc[subject]) {
-                acc[subject] = { subject, value };
-            } else {
-                acc[subject].value += value;
-            }
-            return acc;
-        }, {} as Record<string, { subject: string; value: number }>)
-    );
-
-
-    // Fonction pour afficher les étoiles
-    const renderStars = (rating: number | undefined) => {
-        return [1, 2, 3, 4, 5].map((star) => (
-            <Star
-                key={star}
-                className={`size-4 ${
-                    star <= (rating || 0) ? "fill-current text-yellow-400" : "text-gray-300"
-                }`}
-            />
-        ));
-    };
-
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="sm" onClick={() => setSelectedAthlete(athlete)}>
-                    <Eye className="mr-1 size-4"/>
-                    Voir le profil
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[900px]">
-                <DialogHeader>
-                    <DialogTitle>Profil de l'athlète</DialogTitle>
-                    <DialogDescription>
-                        Informations détaillées sur {selectedAthlete?.user?.name || "cet athlète"}.
-                    </DialogDescription>
-                </DialogHeader>
-                {selectedAthlete && (
-                    <div className="grid gap-4 py-4">
-                        {/* Profil principal de l'athlète */}
-                        <div className="flex items-center gap-4">
-                            <Avatar className="size-20">
-                                {selectedAthlete.user?.image ? (
-                                    <AvatarImage
-                                        src={selectedAthlete.user.image}
-                                        alt={selectedAthlete.user.name || "Athlète"}
-                                    />
-                                ) : (
-                                    <AvatarFallback>
-                                        {selectedAthlete.user?.name
-                                            ? selectedAthlete.user.name
-                                                .split(" ")
-                                                .map((n) => n[0])
-                                                .join("")
-                                            : "N/A"}
-                                    </AvatarFallback>
-                                )}
-                            </Avatar>
-                            <div>
-                                <h2 className="text-2xl font-bold">
-                                    {selectedAthlete.user?.name || "Athlète inconnu"}
-                                </h2>
-                                <p className="text-gray-500">
-                                    Sport : {selectedAthlete.sport?.name || "Sport inconnu"}, Âge :{" "}
-                                    {selectedAthlete.age || "N/A"}
-                                </p>
-                                <div className="mt-1 flex items-center">
-                                    {renderStars(selectedAthlete.rating)}
-                                    <span className="ml-2 text-sm text-gray-600">
-                                        ({selectedAthlete.rating || "Pas de note"})
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Résumé des performances */}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Résumé des performances</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <ResponsiveContainer width="100%" height={200}>
-                                        <LineChart data={performanceData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="date" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="score"
-                                                stroke="#3b82f6"
-                                                strokeWidth={2}
-                                            />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Indicateurs Clés de Performance</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    {aggregatedKpiData.length > 0 ? (
-                                        <ResponsiveContainer width="100%" height={200}>
-                                            <RadarChart
-                                                cx="50%"
-                                                cy="50%"
-                                                outerRadius="100%"
-                                                data={aggregatedKpiData}
-                                            >
-                                                <PolarGrid/>
-                                                <PolarAngleAxis dataKey="subject"/>
-                                                <PolarRadiusAxis/>
-                                                <Radar
-                                                    name="Performance"
-                                                    dataKey="value"
-                                                    stroke="#3b82f6"
-                                                    fill="#3b82f6"
-                                                    fillOpacity={0.7}
-                                                />
-                                            </RadarChart>
-                                        </ResponsiveContainer>
-                                    ) : (
-                                        <p>Aucune donnée de KPI disponible pour cet athlète.</p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Actions en bas */}
-                        <div className="flex justify-end space-x-2">
-                            <Button variant="outline">Contacter l'athlète</Button>
-                            <Button>Ajouter à la liste de suivi</Button>
-                        </div>
+  return (
+    <Dialog open={!!selectedAthlete} onOpenChange={() => setSelectedAthlete(null)}>
+      <DialogContent className="max-w-4xl">
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center space-x-4">
+              <Avatar className="size-20">
+                <AvatarImage src={athlete.user.image || undefined} alt={athlete.user.name || ""} />
+                <AvatarFallback>
+                  {athlete.user.name
+                    ? athlete.user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                    : "A"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-2xl font-bold">{athlete.user.name}</CardTitle>
+                <p className="text-sm text-muted-foreground">{athlete.user.email}</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedAthlete(null)}
+            >
+              <X className="size-4" />
+            </Button>
+          </CardHeader>
+          <Separator />
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="performance">Performance</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+              </TabsList>
+              <TabsContent value="overview">
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">Basic Information</h3>
+                    <p>Sport: {athlete.sport?.name || "Not specified"}</p>
+                    <p>Category: {athlete.category?.name || "Not specified"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Latest Performance</h3>
+                    {athlete.performances[0] ? (
+                      <p>Score: {athlete.performances[0].score.toFixed(2)}</p>
+                    ) : (
+                      <p>No performance data</p>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="performance">
+                <div className="h-[400px] pt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={performanceData}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="score" stroke="#8884d8" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+              <TabsContent value="details">
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold mb-2">Performance Details</h3>
+                  {athlete.performances.map((perf, index) => (
+                    <div key={perf.id} className="mb-2 p-2 border rounded">
+                      <p>Performance {index + 1}</p>
+                      <p>Score: {perf.score.toFixed(2)}</p>
+                      <p>Date: {perf.date.toLocaleDateString()}</p>
+                      {perf.position && <p>Position: {perf.position.name}</p>}
                     </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    )
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </DialogContent>
+    </Dialog>
+  );
 }
