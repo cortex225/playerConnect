@@ -13,7 +13,8 @@
     "tailwindcss/no-custom-classname": "off",
     "tailwindcss/classnames-order": "error",
     "react-hooks/exhaustive-deps": "off",
-    "react/no-unescaped-entities": "off"
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-page-custom-font": "off"
   },
   "settings": {
     "tailwindcss": {
