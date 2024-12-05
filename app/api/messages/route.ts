@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { pusherServer } from "@/lib/pusher";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -28,16 +29,28 @@ export async function POST(req: Request) {
       isRead: false,
     };
 
-    // Trigger pour le canal privé du destinataire
-    await pusherServer.trigger(
-      `private-messages-${receiverId}`,
-      "new-message",
-      message,
-    );
+    // Sauvegarder le message dans la base de données
+    await prisma.message.create({
+      data: {
+        content: message.content,
+        senderId: message.sender,
+        receiverId: message.receiver,
+        isRead: false,
+      },
+    });
+
+    // Si Pusher est configuré, envoyer la notification en temps réel
+    if (pusherServer) {
+      await pusherServer.trigger(
+        `private-user-${receiverId}`,
+        "new-message",
+        message,
+      );
+    }
 
     return NextResponse.json(message);
   } catch (error) {
-    console.error("MESSAGE_POST", error);
+    console.error("[MESSAGES_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
