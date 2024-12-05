@@ -61,6 +61,8 @@ export function MessagingInterface() {
     });
 
     // Configuration de Pusher
+    if (!pusherClient) return;
+
     pusherClient.connection.bind("connected", () => {
       setConnectionStatus("connected");
       setIsLoading(false);
@@ -99,11 +101,45 @@ export function MessagingInterface() {
     });
 
     return () => {
+      if (!pusherClient) return;
       pusherClient.unsubscribe(`private-messages-${session.user.id}`);
       pusherClient.unsubscribe("connected-users");
       pusherClient.connection.unbind_all();
     };
   }, [session, status, selectedUser, connectUser]);
+
+  useEffect(() => {
+    if (!pusherClient) return;
+
+    // Subscribe to the channel
+    const channel = pusherClient.subscribe(`private-user-${session?.user?.id}`);
+
+    // Bind to the event
+    channel.bind("new-message", (message: Message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (!pusherClient) return;
+      pusherClient.unsubscribe(`private-user-${session?.user?.id}`);
+    };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!pusherClient) return;
+
+    // Authenticate with Pusher
+    pusherClient.connection.bind("connected", () => {
+      console.log("Connected to Pusher");
+    });
+
+    return () => {
+      if (!pusherClient) return;
+      pusherClient.connection.unbind_all();
+      pusherClient.disconnect();
+    };
+  }, []);
 
   const handleSendMessage = async () => {
     if (!session?.user) return;

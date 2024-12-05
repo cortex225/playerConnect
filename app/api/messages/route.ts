@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -20,35 +20,36 @@ export async function POST(req: Request) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
-    const message = {
-      id: Date.now().toString(),
-      content,
-      sender: session.user.id,
-      receiver: receiverId,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
-
-    // Sauvegarder le message dans la base de données
-    await prisma.message.create({
+    // Créer le message dans la base de données
+    const dbMessage = await prisma.message.create({
       data: {
-        content: message.content,
-        senderId: message.sender,
-        receiverId: message.receiver,
+        content,
+        senderId: session.user.id,
+        recipientId: receiverId,
         isRead: false,
       },
     });
+
+    // Message pour Pusher avec plus d'informations
+    const pusherMessage = {
+      id: dbMessage.id,
+      content: dbMessage.content,
+      sender: session.user.id,
+      recipient: receiverId,
+      timestamp: dbMessage.createdAt,
+      isRead: false,
+    };
 
     // Si Pusher est configuré, envoyer la notification en temps réel
     if (pusherServer) {
       await pusherServer.trigger(
         `private-user-${receiverId}`,
         "new-message",
-        message,
+        pusherMessage,
       );
     }
 
-    return NextResponse.json(message);
+    return NextResponse.json(pusherMessage);
   } catch (error) {
     console.error("[MESSAGES_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

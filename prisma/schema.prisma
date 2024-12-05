@@ -132,17 +132,20 @@ model VerificationToken {
   @@map(name: "verification_tokens")
 }
 
+// Messages entre utilisateurs
 model Message {
-  id          String   @id @default(cuid()) // Identifiant unique pour chaque message
-  content     String // Contenu du message
-  senderId    String // Référence au User qui envoie le message
-  sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
-  recipientId String // Référence au User qui reçoit le message
-  recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
-  timestamp   DateTime @default(now()) // Horodatage du message
-  isRead      Boolean  @default(false) // Statut du message (lu ou non)
+  id        String   @id @default(cuid())
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relations avec l'expéditeur et le destinataire
+  sender     User   @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId   String
+  recipient  User   @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
+  recipientId String
 
-  @@map(name: "messages") // Nom de la table dans la base de données
+  @@map(name: "messages")
 }
 
 // --- Modèles Sportifs ---

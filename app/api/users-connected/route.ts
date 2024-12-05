@@ -5,6 +5,10 @@ import { pusherServer } from "@/lib/pusher";
 
 export async function POST(request: Request) {
   try {
+    if (!pusherServer) {
+      return new NextResponse("Pusher not configured", { status: 500 });
+    }
+
     const { user } = await request.json();
 
     // Trigger l'événement de mise à jour des utilisateurs connectés
