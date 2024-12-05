@@ -14,6 +14,11 @@ export default {
     Google({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          redirect_uri: 'https://player-connect.vercel.app/api/auth/callback/google',
+        },
+      },
     }),
     Resend({
       apiKey: env.RESEND_API_KEY,
