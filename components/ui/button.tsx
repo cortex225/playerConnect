@@ -18,6 +18,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        disable: "pointer-events-none opacity-50",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -25,10 +26,19 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
       },
+      rounded: {
+        default: "rounded-md",
+        sm: "rounded-sm",
+        lg: "rounded-lg",
+        xl: "rounded-xl",
+        "2xl": "rounded-2xl",
+        full: "rounded-full",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      rounded: "default",
     },
   },
 );

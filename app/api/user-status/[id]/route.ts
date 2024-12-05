@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-
 import { prisma } from "@/lib/db";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: { id: string } }
 ) {
   const { id } = params;
 
@@ -29,7 +28,10 @@ export async function GET(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error("Erreur API /user-status/[id] :", error);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    console.error("Erreur lors de la récupération du statut utilisateur:", error);
+    return NextResponse.json(
+      { error: "Erreur serveur" },
+      { status: 500 },
+    );
   }
 }

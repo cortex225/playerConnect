@@ -124,6 +124,15 @@ export type Performance = {
 export type Athlete = {
   id: number;
   userId: string;
+  gender: string;
+  age: number;
+  city: string;
+  height: number;
+  weight: number;
+  dominantHand: string;
+  dominantFoot: string;
+  programType: string;
+  categoryId: string;
   user: {
     id: string;
     name: string | null;

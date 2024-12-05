@@ -4,7 +4,6 @@ import { UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
 
 import { prisma } from "@/lib/db";
-import { parseCookies } from "@/lib/parseCookies";
 import { getUserById } from "@/lib/user";
 
 declare module "next-auth" {
@@ -47,22 +46,20 @@ export const {
       return session;
     },
 
-    async jwt({ token, account, req }) {
+    async jwt({ token, account }) {
       if (account && account.provider === "google") {
-        const cookies = parseCookies(req?.headers?.cookie);
-        const userRole = cookies["user_role"];
-
-        if (userRole) {
-          token.role = userRole; // Ajoute le rôle au token JWT
-        }
+        // Set a default role for new Google users
+        token.role = UserRole.USER; // You can adjust this default role as needed
       }
 
-      const dbUser = await getUserById(token.sub);
-      if (dbUser) {
-        token.name = dbUser.name;
-        token.email = dbUser.email;
-        token.picture = dbUser.image;
-        token.role = dbUser.role; // S'assure que le rôle en BD est pris en compte
+      if (token.sub) {
+        const dbUser = await getUserById(token.sub);
+        if (dbUser) {
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+          token.picture = dbUser.image;
+          token.role = dbUser.role; // S'assure que le rôle en BD est pris en compte
+        }
       }
 
       return token;

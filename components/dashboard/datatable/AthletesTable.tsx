@@ -43,8 +43,8 @@ export default function AthletesTable() {
     async function fetchAthletes() {
       try {
         const data = await getAllAthletes();
-        setAthletes(data as Athlete[]);
-        setFilteredAthletes(data as Athlete[]);
+        setAthletes(data as unknown as Athlete[]);
+        setFilteredAthletes(data as unknown as Athlete[]);
       } catch (error) {
         console.error("Error fetching athletes:", error);
       }
@@ -209,7 +209,7 @@ export default function AthletesTable() {
         </div>
 
         {/* Pagination */}
-        <div className="mt-4 flex justify-center space-x-2">
+        <div className="mt-4 flex justify-end space-x-2">
           <Button
             variant="outline"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

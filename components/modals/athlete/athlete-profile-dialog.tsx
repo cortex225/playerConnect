@@ -34,7 +34,7 @@ export default function AthleteProfileDialog({
   return (
     <Dialog open={!!selectedAthlete} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
-        <Card className="w-full">
+        <Card className="w-full border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center space-x-4">
               <Avatar className="size-20">
@@ -48,20 +48,14 @@ export default function AthleteProfileDialog({
                     : "A"}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="my-5 space-y-1">
                 <CardTitle className="text-2xl font-bold">{athlete.user.name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{athlete.user.email}</p>
+                <p className="text-sm text-muted-foreground">{athlete.sport?.name}, Age: {athlete.age} ans</p>
+                <p className="text-sm text-muted-foreground">{athlete.category?.name}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-            >
-              <X className="size-4" />
-            </Button>
+          
           </CardHeader>
-          <Separator />
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -113,6 +107,12 @@ export default function AthleteProfileDialog({
               </TabsContent>
             </Tabs>
           </CardContent>
+          <div className="flex h-14 items-center justify-end p-6">
+            <Button variant="secondary">Contact Athlete</Button>
+            <Button  className="ml-4">
+              Add to Witchlist
+            </Button>
+          </div>
         </Card>
       </DialogContent>
     </Dialog>
