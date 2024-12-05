@@ -15,9 +15,21 @@ export const dashboardConfig: DashboardConfig = {
   sidebarNav: [
     {
       title: "Dashboard",
-      href: "/dashboard",
+      href: "/dashboard/admin",
       icon: "layout_dashboard",
-      roles: ["ADMIN", "ATHLETE", "RECRUITER"], // Disponible pour tous les rôles
+      roles: ["ADMIN"],
+    },
+    {
+      title: "Dashboard",
+      href: "/dashboard/athlete",
+      icon: "layout_dashboard",
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Dashboard",
+      href: "/dashboard/recruiter",
+      icon: "layout_dashboard",
+      roles: ["RECRUITER"],
     },
     {
       title: "Athletes",
@@ -33,47 +45,51 @@ export const dashboardConfig: DashboardConfig = {
     },
     {
       title: "Applications",
+      href: "/dashboard/athlete/applications",
+      icon: "file_text",
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Recruiter Applications",
       href: "/dashboard/recruiter/applications",
       icon: "file_text",
-      roles: ["ATHLETE", "RECRUITER"], // Non disponible pour les administrateurs
+      roles: ["RECRUITER"],
     },
     {
       title: "Messages",
-      href: "/dashboard/recruiter/messages",
-      icon: "calendar_days",
-      roles: ["ATHLETE", "RECRUITER"], // Non disponible pour les administrateurs
+      href: "/dashboard/messages",
+      icon: "messages_square",
+      roles: ["ATHLETE", "RECRUITER"],
     },
     {
       title: "Calendar",
-      href: "/dashboard/recruiter/calendar",
+      href: "/dashboard/calendar",
       icon: "calendar_days",
-      roles: ["ATHLETE", "RECRUITER"], // Non disponible pour les administrateurs
+      roles: ["ATHLETE", "RECRUITER"],
     },
-
     {
       title: "Analytics",
       href: "/dashboard/analytics",
       icon: "bar_chart_2",
-      roles: ["ATHLETE", "RECRUITER"], // Non disponible pour les administrateurs
+      roles: ["ATHLETE", "RECRUITER"],
     },
-
     {
       title: "Billing",
       href: "/dashboard/billing",
       icon: "billing",
-      roles: ["ADMIN", "RECRUITER"], // Accessible uniquement aux recruteurs et admins
+      roles: ["ADMIN", "RECRUITER"],
     },
     {
       title: "Help Center",
-      href: "/dashboard/help-center",
+      href: "/dashboard/help",
       icon: "circle_help",
-      roles: ["ADMIN", "ATHLETE", "RECRUITER"], // Disponible pour tous
+      roles: ["ADMIN", "ATHLETE", "RECRUITER"],
     },
     {
       title: "Settings",
       href: "/dashboard/settings",
       icon: "settings",
-      roles: ["ADMIN", "ATHLETE", "RECRUITER"], // Pas pour les recruteurs
+      roles: ["ADMIN", "ATHLETE", "RECRUITER"],
     },
   ],
 };
