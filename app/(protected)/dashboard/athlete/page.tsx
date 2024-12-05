@@ -93,61 +93,59 @@ export default async function DashboardPage() {
   return (
     <DashboardShell>
       <header className="rounded-2xl bg-background p-4">
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <div className="flex flex-col space-y-0 md:flex-row md:items-center md:justify-between md:space-y-0">
           {/* Section gauche : Avatar et infos */}
-          <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
-            <div className="flex items-center space-x-4">
-              <Avatar className="size-10 shrink-0">
-                <AvatarImage src={user.image || ""} alt={user.name || ""} />
-                <AvatarFallback>
-                  {user.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <h1 className="truncate text-lg font-bold dark:text-white">
-                  {user.name}
-                </h1>
-                <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                  Athlète
-                </p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <Avatar className="size-15 shrink-0">
+              <AvatarImage src={user.image || ""} alt={user.name || ""} />
+              <AvatarFallback>
+                {user.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-lg font-bold dark:text-white">
+                {user.name}
+              </h1>
+              <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                Athlète
+              </p>
             </div>
+          </div>
 
-            {/* Icônes de notification et messagerie */}
-            <div className="flex items-center justify-start space-x-2 sm:justify-end">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Bell className="size-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    Nouvelle demande de recruteur
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>Rappel d&apos;événement</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {/* Icônes de notification et messagerie */}
+          <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Bell className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  Nouvelle demande de recruteur
+                </DropdownMenuItem>
+                <DropdownMenuItem>Rappel d&apos;événement</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MessageCircle className="size-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    Message d&apos;un recruteur
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Discussion avec l&apos;équipe
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MessageCircle className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  Message d&apos;un recruteur
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Discussion avec l&apos;équipe
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

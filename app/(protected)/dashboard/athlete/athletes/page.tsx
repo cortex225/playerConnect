@@ -27,7 +27,7 @@ export default async function AthletesPage() {
         heading="All Athletes"
         text="Manage your athletes and their profiles."
       />
-      <div className="grid gap-8">
+      <div className="grid gap-2">
         <AthletesTable />
       </div>
     </DashboardShell>

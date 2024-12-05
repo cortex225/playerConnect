@@ -123,33 +123,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           {/* Authenticated state */}
           {status === "authenticated" && session ? (
             <div className="flex items-center space-x-3">
-              {isUserOnDashboardPage ? (
-                <UserAccountNav user={session.user} />
-              ) : (
-                <Link
-                  href={
-                    session.user.role === "ADMIN"
-                      ? "/admin"
-                      : session.user.role === "ATHLETE"
-                        ? "/dashboard/athlete"
-                        : "/dashboard/recruiter"
-                  }
-                  className="hidden md:block"
-                >
-                  <Button
-                    className="gap-2 px-4"
-                    variant="default"
-                    size="sm"
-                    rounded="full"
-                  >
-                    <span>
-                      {session.user.role === "ATHLETE"
-                        ? "Dashboard Athlete"
-                        : "Dashboard Recruiter"}
-                    </span>
-                  </Button>
-                </Link>
-              )}
+              <UserAccountNav user={session.user} />
             </div>
           ) : status === "unauthenticated" ? (
             <Button
@@ -165,11 +139,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           ) : (
             // Loading state
             <div className="hidden lg:flex">
-              {dashBoard || admin ? (
-                <Skeleton className="size-9 rounded-full" />
-              ) : (
-                <Skeleton className="h-9 w-24 rounded-full" />
-              )}
+              <Skeleton className="size-9 rounded-full" />
             </div>
           )}
         </div>
