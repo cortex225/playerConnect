@@ -83,7 +83,7 @@ export function AthleteForm() {
       programType: undefined,
       categoryId: undefined,
       sportId: undefined,
-      positions: [],
+      positions: [], // On garde le tableau pour la compatibilité avec le schema
     },
   });
 
@@ -344,7 +344,8 @@ export function AthleteForm() {
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
-                        form.setValue("positions", []); // Reset positions when sport changes
+                        // Reset position when sport changes
+                        form.setValue("positions", []);
                       }}
                       defaultValue={field.value}
                     >
@@ -371,31 +372,28 @@ export function AthleteForm() {
                 name="positions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Positions</FormLabel>
-                    <FormControl>
-                      <MultiSelector
-                        values={field.value}
-                        onValuesChange={field.onChange}
-                        loop
-                        className="max-w-[450px]"
-                      >
-                        <MultiSelectorTrigger>
-                          <MultiSelectorInput placeholder="Sélectionnez vos positions (max 3)" />
-                        </MultiSelectorTrigger>
-                        <MultiSelectorContent>
-                          <MultiSelectorList>
-                            {currentSportPositions.map((position) => (
-                              <MultiSelectorItem
-                                key={position.id}
-                                value={position.name}
-                              >
-                                {position.name}
-                              </MultiSelectorItem>
-                            ))}
-                          </MultiSelectorList>
-                        </MultiSelectorContent>
-                      </MultiSelector>
-                    </FormControl>
+                    <FormLabel>Position</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        // On met la position sélectionnée dans un tableau pour maintenir la compatibilité
+                        field.onChange([value]);
+                      }}
+                      defaultValue={field.value?.[0] || undefined}
+                      disabled={!form.watch("sportId")}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez votre position" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {currentSportPositions.map((position) => (
+                          <SelectItem key={position.id} value={position.id}>
+                            {position.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
