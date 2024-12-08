@@ -10,8 +10,13 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
   const user = await getCurrentUser();
 
   if (user) {
-    if (user.role === "ADMIN") redirect("/admin");
-    redirect("/dashboard");
+    if (user.role === "ADMIN") {
+      redirect("/admin");
+    } else if (user.role === "ATHLETE") {
+      redirect("/dashboard/athlete");
+    } else if (user.role === "RECRUITER") {
+      redirect("/dashboard/recruiter");
+    }
   }
 
   return <div className="min-h-screen">{children}</div>;

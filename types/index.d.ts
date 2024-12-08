@@ -138,6 +138,8 @@ export type Athlete = {
     name: string | null;
     email: string | null;
     image: string | null;
+    password?: string | null;
+    role: UserRole;
   };
   sport: {
     id: string;

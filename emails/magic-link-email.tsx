@@ -27,44 +27,47 @@ export const MagicLinkEmail = ({
   siteName,
 }: MagicLinkEmailProps) => (
   <Html>
-    <Head />
-    <Preview>
-      The sales intelligence platform that helps you uncover qualified leads.
-    </Preview>
-    <Tailwind>
-      <Body className="bg-white font-sans">
-        <Container className="mx-auto py-5 pb-12">
-          <Icons.logo className="m-auto block size-10" />
-          <Text className="text-base">Hi {firstName},</Text>
-          <Text className="text-base">
-            Welcome to {siteName} ! Click the link below to{" "}
-            {mailType === "login" ? "sign in to" : "activate"} your account.
-          </Text>
-          <Section className="my-5 text-center">
-            <Button
-              className="inline-block rounded-md bg-zinc-900 px-4 py-2 text-base text-white no-underline"
-              href={actionUrl}
-            >
-              {mailType === "login" ? "Sign in" : "Activate Account"}
-            </Button>
-          </Section>
-          <Text className="text-base">
-            This link expires in 24 hours and can only be used once.
-          </Text>
-          {mailType === "login" ? (
-            <Text className="text-base">
-              If you did not try to log into your account, you can safely ignore
-              it.
-            </Text>
-          ) : null}
-          <Hr className="my-4 border-t-2 border-gray-300" />
+  <Head />
+  <Preview>
+    Welcome to {siteName}! Your gateway to better connections and smarter solutions.
+  </Preview>
+  <Tailwind>
+    <Body className="bg-gray-50 font-sans text-gray-800">
+      <Container className="mx-auto max-w-md px-4 py-8">
+        <div className="text-center">
+          <Icons.logo className="mx-auto mb-6 size-12" />
+        </div>
+        <Text className="mb-4 text-lg font-semibold">
+          Bonjour {firstName},
+        </Text>
+        <Text className="mb-6 text-base leading-relaxed">
+          Bienvenue sur <strong>{siteName}</strong> ! Cliquez sur le bouton ci-dessous pour{" "}
+          {mailType === "login" ? "vous connecter à" : "activer"} votre compte.
+        </Text>
+        <Section className="my-6 text-center">
+          <Button
+            className="rounded-md bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-lg transition hover:bg-blue-700"
+            href={actionUrl}
+          >
+            {mailType === "login" ? "Se connecter" : "Activer mon compte"}
+          </Button>
+        </Section>
+        <Text className="mb-4 text-sm leading-relaxed text-gray-600">
+          Ce lien est valable pendant 24 heures et ne peut être utilisé qu'une seule fois.
+        </Text>
+        {mailType === "login" && (
           <Text className="text-sm text-gray-600">
-            123 Code Street, Suite 404, Devtown, CA 98765
+            Si vous n’avez pas tenté de vous connecter, vous pouvez ignorer cet e-mail en toute sécurité.
           </Text>
-        </Container>
-      </Body>
-    </Tailwind>
-  </Html>
+        )}
+        <Hr className="my-8 border-t-2 border-gray-300" />
+        <Text className="text-center text-xs text-gray-500">
+          123 Code Street, Suite 404, Devtown, CA 98765
+        </Text>
+      </Container>
+    </Body>
+  </Tailwind>
+</Html>
 );
 
 export default MagicLinkEmail;
