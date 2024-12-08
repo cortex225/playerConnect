@@ -60,6 +60,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  password      String?   // Ajout du champ password optionnel
   role          UserRole  @default(USER) // Définit si l'utilisateur est Admin, Athlete ou Recruiter
   isOnline      Boolean   @default(false)
   lastActivity  DateTime?

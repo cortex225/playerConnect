@@ -1,143 +1,93 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
-import { Menu, X } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useSelectedLayoutSegment } from "next/navigation";
 
+import { adminConfig } from "@/config/admin";
 import { dashboardConfig } from "@/config/dashboard";
-import { docsConfig } from "@/config/docs";
-import { marketingConfig } from "@/config/marketing";
-import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { DocsSidebarNav } from "@/components/docs/sidebar-nav";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icons } from "@/components/shared/icons";
-
 import { ModeToggle } from "./mode-toggle";
+import { SidebarNavItem, UserRole } from "@/types/nav";
+import Link from "next/link";
+import React from "react";
 
-export function NavMobile() {
+interface MobileNavProps {
+  items?: SidebarNavItem[];
+}
+
+export function NavMobile({ items }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const session = useSession();
   const selectedLayout = useSelectedLayoutSegment();
-  const documentation = selectedLayout === "docs";
-
-  const configMap = {
-    docs: docsConfig.mainNav,
-    dashboard: dashboardConfig.mainNav,
-  };
-
-  const links =
-    (selectedLayout && configMap[selectedLayout]) || marketingConfig.mainNav;
+  const userRole = session.data?.user?.role as UserRole;
 
   // prevent body scroll when modal is open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "unset";
     }
   }, [open]);
 
-  const { data: session } = useSession();
+  // Déterminer les items de navigation en fonction du rôle
+  const navItems = React.useMemo(() => {
+    if (!userRole) return [];
+    
+    // Si des items sont fournis via props, les utiliser
+    if (items) return items;
+
+    // Sinon, utiliser les items par défaut en fonction du rôle
+    return userRole === "ADMIN" 
+      ? adminConfig.sidebarNav 
+      : dashboardConfig.sidebarNav;
+  }, [items, userRole]);
+
+  // Filtrer les items en fonction du rôle
+  const filteredItems = navItems.filter(item => 
+    !item.roles || item.roles.includes(userRole)
+  );
 
   return (
-    <>
-      <button
-        onClick={() => setOpen(!open)}
-        className={cn(
-          "fixed right-2 top-2.5 z-50 rounded-full p-2 transition-colors duration-200 hover:bg-muted focus:outline-none active:bg-muted md:hidden",
-          open && "hover:bg-muted active:bg-muted",
-        )}
-      >
-        {open ? (
-          <X className="size-5 text-muted-foreground" />
-        ) : (
-          <Menu className="size-5 text-muted-foreground" />
-        )}
-      </button>
-
-      <nav
-        className={cn(
-          "fixed inset-0 z-20 hidden w-full overflow-auto bg-background px-5 py-16 lg:hidden",
-          open && "block",
-        )}
-      >
-        <ul className="grid divide-y divide-muted">
-          {links.map(({ title, href }) => (
-            <li key={href} className="py-3">
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden"
+        >
+          <Icons.ellipsis className="size-6" />
+          <span className="sr-only">Toggle Menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="pl-1 pr-0">
+        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
+          <div className="flex flex-col space-y-2">
+            {filteredItems.map((item, index) => (
               <Link
-                href={href}
-                onClick={() => setOpen(false)}
-                className="flex w-full font-medium capitalize"
+                key={index}
+                href={item.disabled || !item.href ? "#" : item.href}
+                className={cn(
+                  "text-foreground/70 transition-colors hover:text-foreground",
+                  item.disabled && "cursor-not-allowed opacity-60",
+                  item.href && item.href.includes(selectedLayout?.toString() || "")
+                    ? "text-foreground"
+                    : "text-foreground/60"
+                )}
               >
-                {title}
+                {item.title}
               </Link>
-            </li>
-          ))}
-
-          {session ? (
-            <>
-              {session.user.role === "ADMIN" ? (
-                <li className="py-3">
-                  <Link
-                    href="/admin"
-                    onClick={() => setOpen(false)}
-                    className="flex w-full font-medium capitalize"
-                  >
-                    Admin
-                  </Link>
-                </li>
-              ) : null}
-
-              <li className="py-3">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
-                >
-                  Dashboard
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li className="py-3">
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
-                >
-                  Login
-                </Link>
-              </li>
-
-              <li className="py-3">
-                <Link
-                  href="/register"
-                  onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
-                >
-                  Sign up
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
-
-        {documentation ? (
-          <div className="mt-8 block md:hidden">
-            <DocsSidebarNav setOpen={setOpen} />
+            ))}
           </div>
-        ) : null}
-
-        <div className="mt-5 flex items-center justify-end space-x-4">
-          <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
-            <Icons.gitHub className="size-6" />
-            <span className="sr-only">GitHub</span>
-          </Link>
+        </ScrollArea>
+        <div className="absolute bottom-4 left-6">
           <ModeToggle />
         </div>
-      </nav>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

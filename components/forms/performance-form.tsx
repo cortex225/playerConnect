@@ -89,7 +89,7 @@ export function PerformanceForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-8">
-        <Card>
+        <Card className="border-none">
           <CardHeader>
             <CardTitle>Ajouter des statistiques</CardTitle>
             <CardDescription>

@@ -1,4 +1,3 @@
-"use client";
 
 import Link from "next/link";
 import {
@@ -42,41 +41,66 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         </div>
         <DropdownMenuSeparator />
 
+        {/* Menu items basés sur le rôle */}
         {user.role === "ADMIN" ? (
-          <DropdownMenuItem asChild>
-            <Link href="/admin" className="flex items-center space-x-2.5">
-              <Lock className="size-4" />
-              <p className="text-sm">Admin</p>
-            </Link>
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem asChild>
-            <Link
-              href="/dashboard/billing"
-              className="flex items-center space-x-2.5"
-            >
-              <CreditCard className="size-4" />
-              <p className="text-sm">Billing</p>
-            </Link>
-          </DropdownMenuItem>
-        )}
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/admin" className="flex items-center space-x-2.5">
+                <Lock className="size-4" />
+                <p className="text-sm">Admin Dashboard</p>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/settings" className="flex items-center space-x-2.5">
+                <Settings className="size-4" />
+                <p className="text-sm">Settings</p>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        ) : user.role === "ATHLETE" ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/athlete" className="flex items-center space-x-2.5">
+                <LayoutDashboard className="size-4" />
+                <p className="text-sm">Athlete Dashboard</p>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/athlete/billing" className="flex items-center space-x-2.5">
+                <CreditCard className="size-4" />
+                <p className="text-sm">Billing</p>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/athlete/settings" className="flex items-center space-x-2.5">
+                <Settings className="size-4" />
+                <p className="text-sm">Settings</p>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        ) : user.role === "RECRUITER" ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/recruiter" className="flex items-center space-x-2.5">
+                <LayoutDashboard className="size-4" />
+                <p className="text-sm">Recruiter Dashboard</p>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/recruiter/billing" className="flex items-center space-x-2.5">
+                <CreditCard className="size-4" />
+                <p className="text-sm">Billing</p>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/recruiter/settings" className="flex items-center space-x-2.5">
+                <Settings className="size-4" />
+                <p className="text-sm">Settings</p>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        ) : null}
 
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex items-center space-x-2.5">
-            <LayoutDashboard className="size-4" />
-            <p className="text-sm">Dashboard</p>
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <Link
-            href="/dashboard/settings"
-            className="flex items-center space-x-2.5"
-          >
-            <Settings className="size-4" />
-            <p className="text-sm">Settings</p>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
@@ -89,7 +113,7 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         >
           <div className="flex items-center space-x-2.5">
             <LogOut className="size-4" />
-            <p className="text-sm">Log out </p>
+            <p className="text-sm">Log out</p>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
