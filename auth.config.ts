@@ -1,3 +1,4 @@
+import { auth } from '@/lib/auth';
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -7,6 +8,7 @@ import bcrypt from "bcryptjs";
 
 import { env } from "@/env.mjs";
 import { prisma } from "@/lib/db";
+import { url } from 'inspector';
 
 interface Credentials {
   email: string;
@@ -85,6 +87,11 @@ export default {
     Google({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          url:"https://player-connect.vercel.app/api/auth/callback/google",
+        }
+      }
     }),
     Resend({
       apiKey: env.RESEND_API_KEY,
