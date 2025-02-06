@@ -101,8 +101,8 @@ export type PlansRow = { feature: string; tooltip?: string } & {
   [key in (typeof plansColumns)[number]]: ColumnType;
 };
 
-export type SportType = 'BASKETBALL' | 'SOCCER' | 'FOOTBALL' | 'RUGBY';
-export type CategoryLevel = 'BENJAMIN' | 'CADET' | 'JUVENILE' | 'SENIOR';
+export type SportType = "BASKETBALL" | "SOCCER" | "FOOTBALL" | "RUGBY";
+export type CategoryLevel = "BENJAMIN" | "CADET" | "JUVENILE" | "SENIOR";
 export type PositionType = string;
 
 export type KPI = {
@@ -150,3 +150,20 @@ export type Athlete = {
   } | null;
   performances: Performance[];
 };
+
+export type PerformanceFormValues = {
+  date: Date;
+  positionId: string;
+  stats: Array<{
+    key: string;
+    value: number;
+  }>;
+};
+
+export type PerformanceFormProps = {
+  positions: Array<{ id: string; name: string }>;
+  sportType: string;
+  onSubmit: (values: PerformanceFormValues) => Promise<void>;
+};
+
+export type SportStats = Record<string, Array<{ key: string; label: string }>>;

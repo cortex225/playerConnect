@@ -24,6 +24,18 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client"],
+    serverActions: true,
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Désactive les dépendances inutiles
+      canvas: false,
+      "utf-8-validate": false,
+      bufferutil: false,
+      encoding: false,
+    };
+    return config;
   },
 };
 
