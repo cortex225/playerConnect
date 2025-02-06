@@ -70,7 +70,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
               src="/images/logo-1.png"
               width={100}
               height={100}
-              alt="logo"
+              alt="logo Player Connect"
             />
             <span className="font-urban text-xl font-bold">
               {siteConfig.name}

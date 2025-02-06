@@ -14,7 +14,7 @@ export function constructMetadata({
   title = siteConfig.name,
   description = siteConfig.description,
   image = siteConfig.ogImage,
-  icons = "/favicon.ico",
+  icons = "/logo-black.png",
   noIndex = false,
 }: {
   title?: string;
@@ -27,11 +27,16 @@ export function constructMetadata({
     title,
     description,
     keywords: [
+      "Sport",
+      "Recruitement",
+      "Player",
+      "Player Connect",
       "Next.js",
       "React",
-      "Prisma",
-      "Neon",
-      "Auth.js",
+      "Recruitment",
+      "Startup",
+      "Stats",
+      "Athlete",
       "shadcn ui",
       "Resend",
       "React Email",
@@ -39,10 +44,10 @@ export function constructMetadata({
     ],
     authors: [
       {
-        name: "mickasmt",
+        name: "jlgouaho",
       },
     ],
-    creator: "mickasmt",
+    creator: "jlgouaho",
     openGraph: {
       type: "website",
       locale: "en_US",
@@ -56,7 +61,7 @@ export function constructMetadata({
       title,
       description,
       images: [image],
-      creator: "@miickasmt",
+      creator: "@jlgouaho",
     },
     icons,
     metadataBase: new URL(siteConfig.url),

@@ -17,12 +17,7 @@ import { Icons } from "@/components/shared/icons";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-
-const DEFAULT_LOGIN_REDIRECT = {
-  ATHLETE: "/dashboard/athlete",
-  RECRUITER: "/dashboard/recruiter",
-  ADMIN: "/admin",
-};
+import Image from "next/image";
 
 function SignInModal({
   showSignInModal,
@@ -58,7 +53,7 @@ function SignInModal({
       } else {
         toast.success("Connexion réussie");
         document.cookie = `user_role=${selectedRole}; path=/;`;
-        window.location.href = DEFAULT_LOGIN_REDIRECT[selectedRole];
+        window.location.href = `/?role=${selectedRole}`;
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -76,7 +71,7 @@ function SignInModal({
     setSignInClicked(true);
     try {
       await signIn("google", {
-        callbackUrl: DEFAULT_LOGIN_REDIRECT[selectedRole],
+        callbackUrl: `/?role=${selectedRole}`,
       });
     } catch (error) {
       console.error("Google sign in error:", error);
@@ -98,11 +93,22 @@ function SignInModal({
   return (
     <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
       <div className="w-full overflow-hidden md:max-w-md md:rounded-2xl md:shadow-xl">
+     
         <div className="flex flex-col items-center justify-center space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
-          <a href={siteConfig.url}>
-            <Icons.logo className="size-10" />
+        <a href={siteConfig.url} >
+            <Image
+              className="aspect-[1200/630]  object-cover md:rounded-t-xl"
+              src="/images/logo-1.png"
+              width={200}
+              height={200}
+              alt="Logo Player Connect"
+              priority
+            />
           </a>
           <h3 className="font-urban text-2xl font-bold">Sign In</h3>
+          <p className="text-sm text-muted-foreground">
+            Enter your email below to sign in to your account
+          </p>
         </div>
 
         {/* Section de sélection de rôle */}
@@ -184,17 +190,16 @@ function SignInModal({
             Google
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground">
-            By continuing, you agree to our{" "}
-            <a href="#" className="underline underline-offset-4 hover:text-primary">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="#" className="underline underline-offset-4 hover:text-primary">
-              Privacy Policy
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <a
+              href="/register"
+              className="font-medium hover:text-primary"
+              onClick={() => setShowSignInModal(false)}
+            >
+              Sign Up
             </a>
-            .
-          </p>
+          </p> 
         </div>
       </div>
     </Modal>
