@@ -50,6 +50,12 @@ export const dashboardConfig: DashboardConfig = {
       roles: ["ATHLETE"],
     },
     {
+      title: "Médias",
+      href: "/dashboard/athlete/media",
+      icon: "media",
+      roles: ["ATHLETE"],
+    },
+    {
       title: "Recruiter Applications",
       href: "/dashboard/recruiter/applications",
       icon: "file_text",

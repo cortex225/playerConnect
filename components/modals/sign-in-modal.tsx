@@ -8,16 +8,16 @@ import {
   useMemo,
   useState,
 } from "react";
+import Image from "next/image";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
-import { Icons } from "@/components/shared/icons";
 import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
-import Image from "next/image";
+import { Icons } from "@/components/shared/icons";
 
 function SignInModal({
   showSignInModal,
@@ -27,7 +27,9 @@ function SignInModal({
   setShowSignInModal: Dispatch<SetStateAction<boolean>>;
 }) {
   const [signInClicked, setSignInClicked] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<"ATHLETE" | "RECRUITER" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<
+    "ATHLETE" | "RECRUITER" | null
+  >(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -53,7 +55,16 @@ function SignInModal({
       } else {
         toast.success("Connexion réussie");
         document.cookie = `user_role=${selectedRole}; path=/;`;
-        window.location.href = `/?role=${selectedRole}`;
+
+        // Redirection avec l'URL complète
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const dashboardPath =
+          selectedRole === "ATHLETE"
+            ? `${baseUrl}/dashboard/athlete`
+            : `${baseUrl}/dashboard/recruiter`;
+
+        window.location.href = dashboardPath;
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -70,8 +81,15 @@ function SignInModal({
     document.cookie = `user_role=${selectedRole}; path=/;`;
     setSignInClicked(true);
     try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const dashboardPath =
+        selectedRole === "ATHLETE"
+          ? "/dashboard/athlete"
+          : "/dashboard/recruiter";
+
       await signIn("google", {
-        callbackUrl: `/?role=${selectedRole}`,
+        callbackUrl: `${baseUrl}${dashboardPath}`,
       });
     } catch (error) {
       console.error("Google sign in error:", error);
@@ -93,11 +111,10 @@ function SignInModal({
   return (
     <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
       <div className="w-full overflow-hidden md:max-w-md md:rounded-2xl md:shadow-xl">
-     
         <div className="flex flex-col items-center justify-center space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
-        <a href={siteConfig.url} >
+          <a href={siteConfig.url}>
             <Image
-              className="aspect-[1200/630]  object-cover md:rounded-t-xl"
+              className="aspect-[1200/630] object-cover md:rounded-t-xl"
               src="/images/logo-1.png"
               width={200}
               height={200}
@@ -153,7 +170,7 @@ function SignInModal({
               required
               disabled={signInClicked}
             />
-            <Button 
+            <Button
               type="submit"
               className="h-11 w-full rounded-xl bg-blue-500 hover:bg-blue-600"
               disabled={signInClicked || !selectedRole}
@@ -199,7 +216,7 @@ function SignInModal({
             >
               Sign Up
             </a>
-          </p> 
+          </p>
         </div>
       </div>
     </Modal>
@@ -220,6 +237,6 @@ export function useSignInModal() {
 
   return useMemo(
     () => ({ setShowSignInModal, SignInModal: SignInModalCallback }),
-    [setShowSignInModal, SignInModalCallback]
+    [setShowSignInModal, SignInModalCallback],
   );
 }

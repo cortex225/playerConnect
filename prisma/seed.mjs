@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker";
-import {
-  CategoryLevel,
-  PrismaClient,
-  SportType,
-  UserRole,
-} from "@prisma/client";
+import { CategoryLevel, PrismaClient, SportType, UserRole } from "@prisma/client";
+import "dotenv/config";
+
+
+
+
 
 const prisma = new PrismaClient();
 

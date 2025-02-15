@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Play, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { MediaForm } from "@/components/forms/media-form";
+
+// Définir l'interface pour le type Media
+interface Media {
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  type: string;
+  athleteId: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const mediaItems = [
   { id: 1, title: "Match Highlights vs Eagles", thumbnail: "/placeholder.jpg" },
@@ -26,6 +45,30 @@ const mediaItems = [
 
 export default function MediaCarousel() {
   const mediaCarouselRef = useRef<HTMLDivElement>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [medias, setMedias] = useState<Media[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchMedias = async () => {
+    try {
+      const response = await fetch('/api/media');
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des médias');
+      }
+      const data = await response.json();
+      // S'assurer que data est un tableau
+      setMedias(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Erreur lors du chargement des médias:", error);
+      setMedias([]); // En cas d'erreur, définir un tableau vide
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedias();
+  }, []);
 
   const scroll = (direction: number, ref: React.RefObject<HTMLDivElement>) => {
     if (ref.current) {
@@ -39,41 +82,51 @@ export default function MediaCarousel() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             Media/Highlight
-            <Button>Add Media +</Button>
+            <Button onClick={() => setIsDialogOpen(true)}>Add Media +</Button>
           </CardTitle>
           <CardDescription className="text-sm">
             Your recent videos and highlights
           </CardDescription>
         </CardHeader>
         <CardContent className="relative">
-          <div className="overflow-hidden" ref={mediaCarouselRef}>
-            <div className="flex space-x-4">
-              {mediaItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="group relative aspect-video w-80 flex-none cursor-pointer overflow-hidden rounded-lg bg-muted"
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Video className="size-12 text-muted-foreground group-hover:hidden" />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="size-12 rounded-full"
-                    >
-                      <Play className="size-6" />
-                    </Button>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
-                    <h3 className="text-sm font-semibold text-white">
-                      {item.title}
-                    </h3>
-                  </div>
-                </div>
-              ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-48">
+              <p>Chargement des médias...</p>
             </div>
-          </div>
+          ) : medias.length === 0 ? (
+            <div className="flex items-center justify-center h-48">
+              <p>Aucun média disponible. Ajoutez votre premier média !</p>
+            </div>
+          ) : (
+            <div className="overflow-hidden" ref={mediaCarouselRef}>
+              <div className="flex space-x-4">
+                {medias.map((media) => (
+                  <div
+                    key={media.id}
+                    className="group relative aspect-video w-80 flex-none cursor-pointer overflow-hidden rounded-lg bg-muted"
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Video className="size-12 text-muted-foreground group-hover:hidden" />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="size-12 rounded-full"
+                      >
+                        <Play className="size-6" />
+                      </Button>
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
+                      <h3 className="text-sm font-semibold text-white">
+                        {media.title}
+                      </h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <Button
             variant="outline"
             size="icon"
@@ -92,6 +145,18 @@ export default function MediaCarousel() {
           </Button>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Ajouter un nouveau média</DialogTitle>
+          </DialogHeader>
+          <MediaForm onSuccess={() => {
+            setIsDialogOpen(false);
+            fetchMedias();
+          }} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

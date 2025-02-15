@@ -4,7 +4,7 @@
  * @type {string[]}
  */
 export const publicRoutes = [
-  "/",
+  "/landing",
   "/blog",
   "/docs",
   "/guides",
@@ -29,6 +29,7 @@ export const apiAuthPrefix = "/api/auth";
 
 /**
  * The default redirect path after logging in
+ * The actual redirection will be handled by middleware based on user role
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/dashboard/athlete";
+export const DEFAULT_LOGIN_REDIRECT = "/dashboard";

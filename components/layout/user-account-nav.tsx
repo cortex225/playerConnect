@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import {
   CreditCard,
@@ -51,7 +50,10 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/admin/settings" className="flex items-center space-x-2.5">
+              <Link
+                href="/admin/settings"
+                className="flex items-center space-x-2.5"
+              >
                 <Settings className="size-4" />
                 <p className="text-sm">Settings</p>
               </Link>
@@ -60,19 +62,28 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         ) : user.role === "ATHLETE" ? (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/athlete" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/athlete"
+                className="flex items-center space-x-2.5"
+              >
                 <LayoutDashboard className="size-4" />
                 <p className="text-sm">Athlete Dashboard</p>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/athlete/billing" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/athlete/billing"
+                className="flex items-center space-x-2.5"
+              >
                 <CreditCard className="size-4" />
                 <p className="text-sm">Billing</p>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/athlete/settings" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/athlete/settings"
+                className="flex items-center space-x-2.5"
+              >
                 <Settings className="size-4" />
                 <p className="text-sm">Settings</p>
               </Link>
@@ -81,19 +92,28 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         ) : user.role === "RECRUITER" ? (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/recruiter" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/recruiter"
+                className="flex items-center space-x-2.5"
+              >
                 <LayoutDashboard className="size-4" />
                 <p className="text-sm">Recruiter Dashboard</p>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/recruiter/billing" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/recruiter/billing"
+                className="flex items-center space-x-2.5"
+              >
                 <CreditCard className="size-4" />
                 <p className="text-sm">Billing</p>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/recruiter/settings" className="flex items-center space-x-2.5">
+              <Link
+                href="/dashboard/recruiter/settings"
+                className="flex items-center space-x-2.5"
+              >
                 <Settings className="size-4" />
                 <p className="text-sm">Settings</p>
               </Link>
@@ -107,7 +127,7 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
           onSelect={(event) => {
             event.preventDefault();
             signOut({
-              callbackUrl: `${window.location.origin}/`,
+              callbackUrl: `${window.location.origin}/landing`,
             });
           }}
         >

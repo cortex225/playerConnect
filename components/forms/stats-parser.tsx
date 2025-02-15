@@ -55,7 +55,7 @@ export function StatsParser({ onStatsExtracted }: StatsParserProps) {
 
   const handleFileUpload = async (file: File) => {
     const buffer = await file.arrayBuffer();
-    const text = await extractTextFromPdf(buffer);
+    const text = await extractTextFromPdf(buffer); 
 
     // Envoyer le texte à OpenAI
     // const result = await openai.chat.completions.create({

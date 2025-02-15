@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { auth } from "@/lib/auth";
 
 export default async function middleware(req) {
@@ -6,56 +7,61 @@ export default async function middleware(req) {
   const cookieStore = req.cookies;
   const roleCookie = cookieStore.get("user_role")?.value;
 
-  // Si l'utilisateur est sur la page d'accueil et est authentifié, rediriger vers son dashboard
-  if (req.nextUrl.pathname === "/" && session?.user) {
-    const userRole = session.user.role;
-    let dashboardPath = "/dashboard";
-
-    switch (roleCookie) {
-      case "ADMIN":
-        dashboardPath = "/dashboard/admin";
-        break;
-      case "ATHLETE":
-        dashboardPath = "/dashboard/athlete";
-        break;
-      case "RECRUITER":
-        dashboardPath = "/dashboard/recruiter";
-        break;
+  // Protection des routes du dashboard
+  if (req.nextUrl.pathname.startsWith("/dashboard")) {
+    if (!session?.user) {
+      return NextResponse.redirect(new URL("/landing", req.url));
     }
 
-    return NextResponse.redirect(new URL(dashboardPath, req.url));
-  }
+    // Redirection de /dashboard vers le bon dashboard en fonction du rôle
+    if (req.nextUrl.pathname === "/dashboard") {
+      const dashboardPath =
+        roleCookie === "ATHLETE"
+          ? "/dashboard/athlete"
+          : "/dashboard/recruiter";
+      return NextResponse.redirect(new URL(dashboardPath, req.url));
+    }
 
-  const isProtectedRoute =
-    req.nextUrl.pathname.startsWith("/dashboard") ||
-    req.nextUrl.pathname.startsWith("/admin");
+    // Vérification du rôle pour les routes spécifiques
+    if (
+      req.nextUrl.pathname.startsWith("/dashboard/athlete") &&
+      roleCookie !== "ATHLETE"
+    ) {
+      return NextResponse.redirect(new URL("/dashboard/recruiter", req.url));
+    }
 
-  // Si l'utilisateur n'est pas authentifié, bloquer l'accès aux routes protégées
-  if (!session?.user && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  // Restreindre l'accès à l'admin uniquement aux utilisateurs avec le rôle ADMIN
-  if (req.nextUrl.pathname.startsWith("/admin")) {
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", req.url));
+    if (
+      req.nextUrl.pathname.startsWith("/dashboard/recruiter") &&
+      roleCookie !== "RECRUITER"
+    ) {
+      return NextResponse.redirect(new URL("/dashboard/athlete", req.url));
     }
   }
 
-  // Vérifier les accès aux dashboards spécifiques
-  if (session?.user) {
-    const userRole = session.user.role;
-    const path = req.nextUrl.pathname;
+  // Protection de la route onboarding
+  if (req.nextUrl.pathname.startsWith("/onboarding")) {
+    if (!session?.user) {
+      return NextResponse.redirect(new URL("/landing", req.url));
+    }
 
-    // Rediriger si l'utilisateur essaie d'accéder à un dashboard qui n'est pas le sien
-    if (path.startsWith("/dashboard/admin") && userRole !== "ADMIN") {
-      return NextResponse.redirect(new URL("/dashboard/" + userRole.toLowerCase(), req.url));
+    // Seuls les athlètes peuvent accéder à l'onboarding
+    if (roleCookie !== "ATHLETE") {
+      return NextResponse.redirect(new URL("/dashboard/recruiter", req.url));
     }
-    if (path.startsWith("/dashboard/athlete") && userRole !== "ATHLETE") {
-      return NextResponse.redirect(new URL("/dashboard/" + userRole.toLowerCase(), req.url));
-    }
-    if (path.startsWith("/dashboard/recruiter") && userRole !== "RECRUITER") {
-      return NextResponse.redirect(new URL("/dashboard/" + userRole.toLowerCase(), req.url));
+  }
+
+  // Redirection de la page d'accueil si déjà connecté
+  if (req.nextUrl.pathname === "/" || req.nextUrl.pathname === "/landing") {
+    if (session?.user) {
+      const dashboardPath =
+        roleCookie === "ATHLETE"
+          ? "/dashboard/athlete"
+          : "/dashboard/recruiter";
+      return NextResponse.redirect(new URL(dashboardPath, req.url));
+    } else {
+      if (req.nextUrl.pathname === "/") {
+        return NextResponse.redirect(new URL("/landing", req.url));
+      }
     }
   }
 

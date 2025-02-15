@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Utilisé pour les migrations Prisma
 }
 
 // --- Enums ---
@@ -282,14 +283,16 @@ model KPI {
 
 // Médias : vidéos ou images pour un athlète
 model Media {
-  id          Int      @id @default(autoincrement())
-  athleteId   Int
-  url         String
-  mediaType   String
+  id          String   @id @default(cuid())
+  title       String
   description String?
-  uploadedAt  DateTime @default(now())
+  url         String
+  type        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  athleteId Int
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@map(name: "media")
 }
