@@ -2,11 +2,17 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { constructMetadata } from "@/lib/utils";
 import { DataTable } from "@/components/dashboard/datatable/data-table";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardShell } from "@/components/dashboard/shell";
 
 import { columns } from "./columns";
+
+export const metadata = constructMetadata({
+  title: "Médias - Player Connect",
+  description: "Gérez vos médias et vos statistiques.",
+});
 
 export default async function MediaPage() {
   const session = await auth();
@@ -17,7 +23,11 @@ export default async function MediaPage() {
       userId: session.user.id,
     },
     include: {
-      media: true,
+      media: {
+        orderBy: {
+          createdAt: 'desc'
+        }
+      },
     },
   });
 
@@ -26,7 +36,7 @@ export default async function MediaPage() {
   const medias = athlete.media.map((media) => ({
     id: media.id,
     title: media.title,
-    description: media.description,
+    description: media.description || "",
     url: media.url,
     type: media.type,
     createdAt: media.createdAt,

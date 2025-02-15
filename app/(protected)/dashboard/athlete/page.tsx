@@ -72,22 +72,24 @@ export default async function DashboardPage() {
       userId: user.id,
     },
     include: {
+      media: true,
+      performances: true,
+      user: true,
+      sport: true,
       positions: {
         include: {
-          position: true,
-        },
-      },
-      sport: true,
-      category: true,
-    },
+          position: true
+        }
+      }
+    }
   });
   console.log("athlete", athlete);
 
-  if (!athlete || !athlete.sport) {
+  if (!athlete || !athlete.sportId) {
     redirect("/onboarding");
   }
 
-  const positions = athlete.positions.map((p) => p.position);
+  const positions = athlete.positions.map((p) => p.position.name);
   console.log("positions", positions);
 
   return (
@@ -163,7 +165,7 @@ export default async function DashboardPage() {
           <div className="col-span-7">
             <PerformanceStats
               positions={positions}
-              sportType={athlete.sport.name}
+              sportType={athlete.sport?.name || ""}
             />
           </div>
           {/* Top Recruiters - 3 colonnes sur desktop */}

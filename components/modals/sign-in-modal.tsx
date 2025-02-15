@@ -19,6 +19,12 @@ import { Modal } from "@/components/ui/modal";
 import { Separator } from "@/components/ui/separator";
 import { Icons } from "@/components/shared/icons";
 
+// Ajout de la constante pour les redirections par défaut
+const DEFAULT_LOGIN_REDIRECT = {
+  ATHLETE: "/dashboard/athlete",
+  RECRUITER: "/dashboard/recruiter",
+} as const;
+
 function SignInModal({
   showSignInModal,
   setShowSignInModal,
@@ -55,16 +61,9 @@ function SignInModal({
       } else {
         toast.success("Connexion réussie");
         document.cookie = `user_role=${selectedRole}; path=/;`;
-
-        // Redirection avec l'URL complète
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        const dashboardPath =
-          selectedRole === "ATHLETE"
-            ? `${baseUrl}/dashboard/athlete`
-            : `${baseUrl}/dashboard/recruiter`;
-
-        window.location.href = dashboardPath;
+        
+        // Utilisation du chemin de redirection basé sur le rôle
+        window.location.href = DEFAULT_LOGIN_REDIRECT[selectedRole];
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -81,15 +80,8 @@ function SignInModal({
     document.cookie = `user_role=${selectedRole}; path=/;`;
     setSignInClicked(true);
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const dashboardPath =
-        selectedRole === "ATHLETE"
-          ? "/dashboard/athlete"
-          : "/dashboard/recruiter";
-
       await signIn("google", {
-        callbackUrl: `${baseUrl}${dashboardPath}`,
+        callbackUrl: DEFAULT_LOGIN_REDIRECT[selectedRole],
       });
     } catch (error) {
       console.error("Google sign in error:", error);

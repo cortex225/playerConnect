@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const fileUrl = "/placeholder.mp4"; // À remplacer par l'URL réelle après upload
 
     // Récupérer l'athleteId associé à l'utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await db.athlete.findUnique({
       where: {
         userId: session.user.id
       }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     // Créer l'entrée média dans la base de données
-    const media = await prisma.media.create({
+    const media = await db.media.create({
       data: {
         title,
         description,

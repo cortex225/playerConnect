@@ -28,7 +28,7 @@ export function constructMetadata({
     description,
     keywords: [
       "Sport",
-      "Recruitement",
+      "Recruitment",
       "Player",
       "Player Connect",
       "Next.js",

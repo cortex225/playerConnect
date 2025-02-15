@@ -89,7 +89,7 @@ export default {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          url:"https://xbtwvljymsmlhvdbvkyw.supabase.co/auth/v1/callback",
+          url:"https://player-connect.vercel.app/api/auth/callback/google",
         }
       }
     }),

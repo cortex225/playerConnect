@@ -21,6 +21,9 @@ const nextConfig = {
         hostname: "randomuser.me",
       },
     ],
+    domains: [
+      'image.mux.com',
+    ],
   },
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client"],

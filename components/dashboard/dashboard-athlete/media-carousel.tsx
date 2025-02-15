@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Play, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ const mediaItems = [
 export default function MediaCarousel() {
   const mediaCarouselRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [medias, setMedias] = useState<Media[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -76,6 +79,11 @@ export default function MediaCarousel() {
     }
   };
 
+  const handleVideoClick = (media: Media) => {
+    setSelectedMedia(media);
+    setIsVideoDialogOpen(true);
+  };
+
   return (
     <>
       <Card className="col-span-3 h-full">
@@ -103,11 +111,20 @@ export default function MediaCarousel() {
                 {medias.map((media) => (
                   <div
                     key={media.id}
+                    onClick={() => handleVideoClick(media)}
                     className="group relative aspect-video w-80 flex-none cursor-pointer overflow-hidden rounded-lg bg-muted"
                   >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Video className="size-12 text-muted-foreground group-hover:hidden" />
+                    {/* Thumbnail */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={`https://image.mux.com/${media.url}/thumbnail.jpg`}
+                        alt={media.title}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
+
+                    {/* Overlay avec icône play */}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                       <Button
                         size="icon"
@@ -117,6 +134,8 @@ export default function MediaCarousel() {
                         <Play className="size-6" />
                       </Button>
                     </div>
+
+                    {/* Titre */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 transition-opacity group-hover:opacity-100">
                       <h3 className="text-sm font-semibold text-white">
                         {media.title}
@@ -155,6 +174,29 @@ export default function MediaCarousel() {
             setIsDialogOpen(false);
             fetchMedias();
           }} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog 
+        open={isVideoDialogOpen} 
+        onOpenChange={setIsVideoDialogOpen}
+      >
+        <DialogContent className="sm:max-w-[80vw] sm:max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>{selectedMedia?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedMedia && (
+            <div className="aspect-video w-full">
+              <video
+                src={selectedMedia.url}
+                controls
+                className="h-full w-full rounded-lg"
+                autoPlay
+              >
+                Votre navigateur ne supporte pas la lecture vidéo.
+              </video>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

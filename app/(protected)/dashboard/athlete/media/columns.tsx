@@ -3,8 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Trash } from "lucide-react";
 
+import { deleteMedia } from "@/actions/delete-media";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/use-toast";
 
 export type Media = {
   id: string;
@@ -29,6 +31,10 @@ export const columns: ColumnDef<Media>[] = [
   {
     accessorKey: "title",
     header: "Titre",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
   },
   {
     accessorKey: "type",
@@ -47,6 +53,30 @@ export const columns: ColumnDef<Media>[] = [
     cell: ({ row }) => {
       const media = row.original;
 
+      const handleDelete = async () => {
+        try {
+          const result = await deleteMedia(media.id);
+          if (result.error) {
+            toast({
+              title: "Erreur",
+              description: result.error,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Succès",
+              description: "Le média a été supprimé avec succès",
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la suppression",
+            variant: "destructive",
+          });
+        }
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -63,8 +93,11 @@ export const columns: ColumnDef<Media>[] = [
               Copier le lien
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Voir les détails</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={handleDelete}
+            >
+              <Trash className="mr-2 size-4" />
               Supprimer
             </DropdownMenuItem>
           </DropdownMenuContent>
