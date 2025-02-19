@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/select";
 import { StatsParser } from "@/components/forms/stats-parser";
 import { Icons } from "@/components/shared/icons";
+import { createPerformance } from "@/actions/performance"
 
 const sportStats: Record<string, Array<{ key: string; label: string }>> = {
   FOOTBALL: [
@@ -97,7 +98,7 @@ const steps: Step[] = [
 export function PerformanceForm({
   positions,
   sportType,
-  onSubmit,
+  athleteId,
 }: PerformanceFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPending, setIsPending] = useState(false);
@@ -140,7 +141,8 @@ export function PerformanceForm({
   async function onSubmitForm(values: PerformanceFormValues) {
     setIsPending(true);
     try {
-      await onSubmit(values);
+      const result = await createPerformance(athleteId, values);
+      if (result.error) throw new Error(result.error);
       toast.success("Statistiques ajoutées avec succès");
       form.reset();
       setCurrentStep(1);

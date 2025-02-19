@@ -19,7 +19,7 @@ export default async function ProtectedLayout({
 }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect("/landing");
 
   const navItems = user.role === "ADMIN" 
     ? adminConfig.sidebarNav 

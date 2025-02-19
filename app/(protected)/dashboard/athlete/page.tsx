@@ -55,6 +55,7 @@ import MediaCarousel from "@/components/dashboard/dashboard-athlete/media-carous
 import { PerformanceStats } from "@/components/dashboard/dashboard-athlete/performance-stats";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
+import { PerformanceForm } from "@/components/forms/performance-form";
 
 import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
 
@@ -65,32 +66,54 @@ export const metadata = constructMetadata({
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ATHLETE") redirect("/login");
+  if (!user || user.role !== "ATHLETE") redirect("/landing");
 
+  // D'abord, récupérer le sportId
+  const athleteBasic = await prisma.athlete.findUnique({
+    where: { userId: user.id },
+    select: { sportId: true }
+  });
+
+  if (!athleteBasic?.sportId) {
+    redirect("/onboarding");
+  }
+
+  // Ensuite, la requête complète avec un sportId garanti non-null
   const athlete = await prisma.athlete.findUnique({
-    where: {
-      userId: user.id,
-    },
+    where: { userId: user.id },
     include: {
       media: true,
       performances: true,
       user: true,
-      sport: true,
-      positions: {
+      sport: {
         include: {
-          position: true
+          positions: {
+            select: {
+              id: true,
+              name: true,
+              sportId: true
+            },
+            where: {
+              sportId: athleteBasic.sportId // Maintenant garanti non-null
+            }
+          }
         }
       }
     }
   });
+
   console.log("athlete", athlete);
 
-  if (!athlete || !athlete.sportId) {
+  if (!athlete?.sport?.positions) {
     redirect("/onboarding");
   }
 
-  const positions = athlete.positions.map((p) => p.position.name);
-  console.log("positions", positions);
+  // Utiliser les positions du sport directement
+  const positions = athlete.sport.positions;
+
+  const handleSubmit = async (data: any) => {
+    // Handle form submission
+  };
 
   return (
     <DashboardShell>
@@ -171,6 +194,14 @@ export default async function DashboardPage() {
           {/* Top Recruiters - 3 colonnes sur desktop */}
           <div className="col-span-7">
             <TopRecruiters />
+          </div>
+          {/* Performance Form - 4 colonnes sur desktop */}
+          <div className="col-span-7">
+            <PerformanceForm 
+              positions={positions}
+              sportType={athlete.sport.name}
+              athleteId={athlete.id}
+            />
           </div>
         </div>
       </div>

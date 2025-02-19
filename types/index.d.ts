@@ -106,17 +106,24 @@ export type CategoryLevel = "BENJAMIN" | "CADET" | "JUVENILE" | "SENIOR";
 export type PositionType = string;
 
 export type KPI = {
-  id: string;
+  id: number;
   name: string;
   value: number;
+  weight: number;
+  positionId: string;
+  performanceId: number;
 };
 
 export type Performance = {
   id: number;
+  athleteId: number;
+  positionId: string;
   score: number;
   date: Date;
   position: {
-    name: PositionType;
+    name: string;
+    id: string;
+    sportId: string;
   } | null;
   KPI: KPI[];
 };
@@ -124,15 +131,15 @@ export type Performance = {
 export type Athlete = {
   id: number;
   userId: string;
-  gender: string;
-  age: number;
-  city: string;
-  height: number;
-  weight: number;
-  dominantHand: string;
-  dominantFoot: string;
-  programType: string;
-  categoryId: string;
+  gender: string | null;
+  age: number | null;
+  city: string | null;
+  height: number | null;
+  weight: number | null;
+  dominantHand: string | null;
+  dominantFoot: string | null;
+  programType: string | null;
+  categoryId: string | null;
   user: {
     id: string;
     name: string | null;
@@ -149,6 +156,7 @@ export type Athlete = {
     name: CategoryLevel;
   } | null;
   performances: Performance[];
+  positions?: { position: { id: string; name: string } }[];
 };
 
 export type PerformanceFormValues = {
@@ -161,9 +169,13 @@ export type PerformanceFormValues = {
 };
 
 export type PerformanceFormProps = {
-  positions: Array<{ id: string; name: string }>;
-  sportType: string;
-  onSubmit: (values: PerformanceFormValues) => Promise<void>;
+  positions: Array<{ 
+    id: string; 
+    name: string;
+    sportId: string;
+  }>;
+  sportType: SportType;
+  athleteId: number;
 };
 
 export type SportStats = Record<string, Array<{ key: string; label: string }>>;
