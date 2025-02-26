@@ -36,7 +36,7 @@ export async function GET(
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         userId: session.user.id,
       },
@@ -47,7 +47,7 @@ export async function GET(
     }
 
     // Récupérer l'événement
-    const event = (await prisma.event.findUnique({
+    const event = (await prisma.event.findFirst({
       where: {
         id: eventId,
         athleteId: athlete.id,
@@ -103,7 +103,7 @@ export async function PUT(
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         userId: session.user.id,
       },
@@ -114,7 +114,7 @@ export async function PUT(
     }
 
     // Vérifier que l'événement appartient à l'athlète
-    const existingEvent = await prisma.event.findUnique({
+    const existingEvent = await prisma.event.findFirst({
       where: {
         id: eventId,
         athleteId: athlete.id,
@@ -179,7 +179,7 @@ export async function DELETE(
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         userId: session.user.id,
       },
@@ -190,7 +190,7 @@ export async function DELETE(
     }
 
     // Vérifier que l'événement appartient à l'athlète
-    const existingEvent = await prisma.event.findUnique({
+    const existingEvent = await prisma.event.findFirst({
       where: {
         id: eventId,
         athleteId: athlete.id,

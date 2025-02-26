@@ -7,6 +7,13 @@ import { constructMetadata } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -81,89 +88,138 @@ const MediaAthleteFallback = () => (
 );
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "RECRUITER") redirect("/login");
+  try {
+    const user = await getCurrentUser();
 
-  return (
-    <DashboardShell>
-      <header className="rounded-2xl bg-background p-4">
-        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
-          {/* Section gauche : Avatar et infos */}
-          <div className="flex justify-between">
-            <ConnectedRecruiter />
-            {/* Icônes de notification et messagerie */}
-            <div className="mx-9 flex items-center justify-end space-x-2">
-              {/* Notification */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Bell className="size-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>New athlete profile added</DropdownMenuItem>
-                  <DropdownMenuItem>Upcoming match reminder</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+    if (!user) {
+      redirect("/login");
+    }
 
-              {/* Messages */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MessageCircle className="size-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Message from John Doe</DropdownMenuItem>
-                  <DropdownMenuItem>Chat with coaching staff</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+    // Vérifier si l'utilisateur est un recruteur, mais ne pas rediriger immédiatement
+    // pour éviter les problèmes de session
+    const isRecruiter = user.role === "RECRUITER";
+
+    return (
+      <DashboardShell>
+        <header className="rounded-2xl bg-background p-4">
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
+            {/* Section gauche : Avatar et infos */}
+            <div className="flex justify-between">
+              <ConnectedRecruiter />
+              {/* Icônes de notification et messagerie */}
+              <div className="mx-9 flex items-center justify-end space-x-2">
+                {/* Notification */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Bell className="size-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      New athlete profile added
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Upcoming match reminder</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Messages */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <MessageCircle className="size-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Message from John Doe</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Chat with coaching staff
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Section droite : Recherche et actions */}
+            <div className="flex flex-col space-y-3 md:flex-row md:items-center md:space-x-4 md:space-y-0">
+              <form className="relative w-full md:w-auto">
+                <Search className="absolute left-2.5 top-2.5 size-4 text-gray-500 dark:text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Search athletes..."
+                  className="w-full pl-8 md:w-[200px] lg:w-[300px]"
+                />
+              </form>
+            </div>
+          </div>
+        </header>
+        <div className="flex flex-col gap-6 md:flex-row">
+          <div className="flex-1 space-y-6">
+            <div className="flex flex-col gap-6 md:flex-row">
+              {/* Quick Stats */}
+              <QuickStats />
+            </div>
+
+            <div className="flex flex-col gap-6">
+              {/* Matches Carousel */}
+              <UpcomingMatches />
+
+              {/* Recruitment Progress */}
+              {/* <RecruitmentProgress /> */}
+            </div>
+
+            <div className="flex flex-col gap-6">
+              {/* Top Athletes */}
+              <Suspense fallback={<TopAthletesFallback />}>
+                <TopAthletes />
+              </Suspense>
             </div>
           </div>
 
-          {/* Section droite : Recherche et actions */}
-          <div className="flex flex-col space-y-3 md:flex-row md:items-center md:space-x-4 md:space-y-0">
-            <form className="relative w-full md:w-auto">
-              <Search className="absolute left-2.5 top-2.5 size-4 text-gray-500 dark:text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search athletes..."
-                className="w-full pl-8 md:w-[200px] lg:w-[300px]"
-              />
-            </form>
-          </div>
-        </div>
-      </header>
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1 space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row">
-            {/* Quick Stats */}
-            <QuickStats />
-          </div>
-
-          <div className="flex flex-col gap-6">
-            {/* Matches Carousel */}
-            <UpcomingMatches />
-
-            {/* Recruitment Progress */}
-            {/* <RecruitmentProgress /> */}
-          </div>
-
-          <div className="flex flex-col gap-6">
-            {/* Top Athletes */}
-            <Suspense fallback={<TopAthletesFallback />}>
-              <TopAthletes />
+          {/* Aside for athlete media */}
+          <aside className="w-full md:w-[30%]">
+            <Suspense fallback={<MediaAthleteFallback />}>
+              <MediaAthlete />
             </Suspense>
-          </div>
+          </aside>
         </div>
-
-        {/* Aside for athlete media */}
-        <aside className="w-full md:w-[30%]">
-          <Suspense fallback={<MediaAthleteFallback />}>
-            <MediaAthlete />
-          </Suspense>
-        </aside>
-      </div>
-    </DashboardShell>
-  );
+      </DashboardShell>
+    );
+  } catch (error) {
+    console.error(
+      "Erreur lors du chargement du tableau de bord recruteur:",
+      error,
+    );
+    // Afficher un message d'erreur au lieu de rediriger automatiquement
+    return (
+      <DashboardShell>
+        <Card className="mx-auto max-w-md">
+          <CardHeader>
+            <CardTitle>Erreur de chargement</CardTitle>
+            <CardDescription>
+              Une erreur est survenue lors du chargement de votre tableau de
+              bord.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-muted-foreground">
+              Veuillez réessayer ultérieurement ou contacter le support si le
+              problème persiste.
+            </p>
+            <div className="flex justify-between">
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Réessayer
+              </Button>
+              <Button onClick={() => (window.location.href = "/login")}>
+                Retour à la connexion
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </DashboardShell>
+    );
+  }
 }

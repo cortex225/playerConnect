@@ -27,14 +27,16 @@ export async function GET() {
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         userId: session.user.id,
       },
     });
 
     if (!athlete) {
-      return new NextResponse("Athlète non trouvé", { status: 404 });
+      console.log(`Athlète non trouvé pour l'utilisateur ${session.user.id}`);
+      // Retourner un tableau vide au lieu d'une erreur 404
+      return NextResponse.json([]);
     }
 
     // Récupérer tous les événements de l'athlète
@@ -59,7 +61,8 @@ export async function GET() {
     return NextResponse.json(formattedEvents);
   } catch (error) {
     console.error("[EVENTS_GET]", error);
-    return new NextResponse("Erreur interne", { status: 500 });
+    // Retourner un tableau vide au lieu d'une erreur 500
+    return NextResponse.json([]);
   }
 }
 
@@ -80,7 +83,7 @@ export async function POST(req: Request) {
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         userId: session.user.id,
       },

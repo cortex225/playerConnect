@@ -4,22 +4,18 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 
+
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+
+
+
+
 
 // Définir l'interface pour le type Media
 interface Media {
@@ -170,103 +166,110 @@ export default function MediaAthlete() {
             Vidéos et highlights récents des athlètes
           </CardDescription>
         </CardHeader>
-        <CardContent className="max-h-[calc(100vh-200px)] overflow-y-auto pr-2">
-          {isLoading ? (
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="overflow-hidden rounded-lg border bg-card shadow-sm"
-                >
-                  <div className="flex items-center gap-3 border-b p-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="mt-1 h-3 w-16" />
-                    </div>
-                  </div>
-                  <Skeleton className="aspect-video w-full" />
-                  <div className="p-3">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="mt-2 h-4 w-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="flex h-48 flex-col items-center justify-center space-y-4">
-              <p className="text-center text-muted-foreground">{error}</p>
-              <Button variant="outline" onClick={handleRetry}>
-                Réessayer
-              </Button>
-            </div>
-          ) : medias.length === 0 ? (
-            <div className="flex h-48 items-center justify-center">
-              <p>Aucun média disponible.</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {medias.map((media) => (
-                <div
-                  key={media.id}
-                  className="overflow-hidden rounded-lg border bg-card shadow-sm"
-                >
-                  {/* En-tête avec info de l'athlète */}
-                  {media.athlete && (
+        <ScrollArea className="h-[calc(100vh-200px)]">
+          <CardContent className="pr-6">
+            {isLoading ? (
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="overflow-hidden rounded-lg border bg-card shadow-sm"
+                  >
                     <div className="flex items-center gap-3 border-b p-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={media.athlete.user.image || ""} />
-                        <AvatarFallback>
-                          {media.athlete.user.name?.charAt(0) || "A"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <Skeleton className="h-8 w-8 rounded-full" />
                       <div className="flex-1">
-                        <p className="font-medium">
-                          {media.athlete.user.name || "Athlète"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(media.createdAt)}
-                        </p>
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="mt-1 h-3 w-16" />
                       </div>
                     </div>
-                  )}
-
-                  {/* Miniature vidéo */}
-                  <div
-                    className="group relative aspect-video cursor-pointer"
-                    onClick={() => handleVideoClick(media)}
-                  >
-                    <Image
-                      src={thumbnails[media.id] || "/default-thumbnail.jpg"}
-                      alt={media.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="items-center rounded-full"
-                      >
-                        <Play className="h-5 w-5" />
-                      </Button>
+                    <Skeleton className="aspect-video w-full" />
+                    <div className="p-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="mt-2 h-4 w-full" />
                     </div>
                   </div>
-
-                  {/* Titre et description */}
-                  <div className="p-3">
-                    <h3 className="text-base font-semibold">{media.title}</h3>
-                    {media.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {media.description}
-                      </p>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="flex h-48 flex-col items-center justify-center space-y-4">
+                <p className="text-center text-muted-foreground">{error}</p>
+                <Button variant="outline" onClick={handleRetry}>
+                  Réessayer
+                </Button>
+              </div>
+            ) : medias.length === 0 ? (
+              <div className="flex h-48 flex-col items-center justify-center space-y-4">
+                <p className="text-center text-muted-foreground">
+                  Aucun média disponible.
+                </p>
+                <Button variant="outline" onClick={handleRetry}>
+                  Actualiser
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {medias.map((media) => (
+                  <div
+                    key={media.id}
+                    className="overflow-hidden rounded-lg border bg-card shadow-sm"
+                  >
+                    {/* En-tête avec info de l'athlète */}
+                    {media.athlete && (
+                      <div className="flex items-center gap-3 border-b p-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={media.athlete.user.image || ""} />
+                          <AvatarFallback>
+                            {media.athlete.user.name?.charAt(0) || "A"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {media.athlete.user.name || "Athlète"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDate(media.createdAt)}
+                          </p>
+                        </div>
+                      </div>
                     )}
+
+                    {/* Miniature vidéo */}
+                    <div
+                      className="group relative aspect-video cursor-pointer"
+                      onClick={() => handleVideoClick(media)}
+                    >
+                      <Image
+                        src={thumbnails[media.id] || "/default-thumbnail.jpg"}
+                        alt={media.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="items-center rounded-full"
+                        >
+                          <Play className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Titre et description */}
+                    <div className="p-3">
+                      <h3 className="text-base font-semibold">{media.title}</h3>
+                      {media.description && (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {media.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </ScrollArea>
       </Card>
 
       <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>

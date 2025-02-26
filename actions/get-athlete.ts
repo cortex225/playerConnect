@@ -63,13 +63,14 @@ export async function getAllAthletes() {
     return athletes;
   } catch (error) {
     console.error("Erreur lors de la récupération des athlètes :", error);
-    throw new Error("Impossible de récupérer les athlètes");
+    // Retourner un tableau vide au lieu de lancer une erreur
+    return [];
   }
 }
 
 export async function getAthleteById(id: number) {
   try {
-    const athlete = await prisma.athlete.findUnique({
+    const athlete = await prisma.athlete.findFirst({
       where: {
         id: id,
       },
@@ -81,7 +82,8 @@ export async function getAthleteById(id: number) {
     return athlete;
   } catch (error) {
     console.error("Erreur lors de la récupération de l'athlète:", error);
-    throw new Error("Erreur lors de la récupération de l'athlète");
+    // Retourner null au lieu de lancer une erreur
+    return null;
   }
 }
 
