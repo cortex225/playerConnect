@@ -1,5 +1,9 @@
 import { DashboardConfig } from "types";
 
+
+
+
+
 export const dashboardConfig: DashboardConfig = {
   mainNav: [
     {
@@ -69,9 +73,15 @@ export const dashboardConfig: DashboardConfig = {
     },
     {
       title: "Calendar",
-      href: "/dashboard/calendar",
+      href: "/dashboard/athlete/calendar",
       icon: "calendar_days",
-      roles: ["ATHLETE", "RECRUITER"],
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Calendar",
+      href: "/dashboard/recruiter/calendar",
+      icon: "calendar_days",
+      roles: ["RECRUITER"],
     },
     {
       title: "Analytics",

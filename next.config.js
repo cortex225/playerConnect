@@ -1,11 +1,17 @@
-const { withContentlayer } = require("next-contentlayer2");
-
 import("./env.mjs");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: [
+    "@fullcalendar/core",
+    "@fullcalendar/react",
+    "@fullcalendar/daygrid",
+    "@fullcalendar/timegrid",
+    "@fullcalendar/interaction",
+    // Ajoutez tous les autres modules FullCalendar que vous utilisez
+  ],
   images: {
     remotePatterns: [
       {
@@ -21,9 +27,7 @@ const nextConfig = {
         hostname: "randomuser.me",
       },
     ],
-    domains: [
-      'image.mux.com',
-    ],
+    domains: ["image.mux.com"],
   },
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client"],
@@ -37,9 +41,11 @@ const nextConfig = {
       "utf-8-validate": false,
       bufferutil: false,
       encoding: false,
+      punycode: false,
     };
+
     return config;
   },
 };
 
-module.exports = withContentlayer(nextConfig);
+module.exports = nextConfig;
