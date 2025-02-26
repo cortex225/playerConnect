@@ -30,22 +30,22 @@ export const footerLinks: SidebarNavItem[] = [
       { title: "Privacy", href: "/privacy" },
     ],
   },
-  {
-    title: "Product",
-    items: [
-      { title: "Security", href: "#" },
-      { title: "Customization", href: "#" },
-      { title: "Customers", href: "#" },
-      { title: "Changelog", href: "#" },
-    ],
-  },
-  {
-    title: "Docs",
-    items: [
-      { title: "Introduction", href: "#" },
-      { title: "Installation", href: "#" },
-      { title: "Components", href: "#" },
-      { title: "Code Blocks", href: "#" },
-    ],
-  },
+  // {
+  //   title: "Product",
+  //   items: [
+  //     { title: "Security", href: "#" },
+  //     { title: "Customization", href: "#" },
+  //     { title: "Customers", href: "#" },
+  //     { title: "Changelog", href: "#" },
+  //   ],
+  // },
+  // {
+  //   title: "Docs",
+  //   items: [
+  //     { title: "Introduction", href: "#" },
+  //     { title: "Installation", href: "#" },
+  //     { title: "Components", href: "#" },
+  //     { title: "Code Blocks", href: "#" },
+  //   ],
+  // },
 ];

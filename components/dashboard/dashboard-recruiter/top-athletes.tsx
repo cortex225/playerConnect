@@ -7,6 +7,7 @@ import { Star } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,41 +15,107 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type TopAthlete = Awaited<ReturnType<typeof getTopAthletes>>[number];
 
 export const TopAthletes = () => {
   const [athletes, setAthletes] = useState<TopAthlete[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const fetchAthletes = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
         const data = await getTopAthletes();
         setAthletes(data);
+        setRetryCount(0); // Réinitialiser le compteur en cas de succès
       } catch (error) {
         console.error("Erreur lors de la récupération des athlètes:", error);
+
+        // Si nous n'avons pas encore atteint le nombre maximum de tentatives
+        if (retryCount < 3) {
+          console.log(
+            `Tentative de récupération des athlètes échouée (${retryCount + 1}/3), nouvelle tentative dans 1s...`,
+          );
+          setTimeout(() => {
+            setRetryCount((prev) => prev + 1);
+          }, 1000);
+        } else {
+          setError(
+            "Impossible de charger les athlètes. Veuillez réessayer plus tard.",
+          );
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchAthletes();
-  }, []);
+  }, [retryCount]); // Relancer le fetch quand retryCount change
+
+  // Fonction pour réessayer le chargement
+  const handleRetry = () => {
+    setRetryCount(0); // Réinitialiser pour déclencher un nouveau fetch
+  };
 
   if (loading) {
     return (
-      <Card className="md:col-span-2">
+      <Card className="h-[45vh] md:col-span-2">
         <CardHeader>
           <CardTitle>Top Athletes</CardTitle>
-          <CardDescription>Loading...</CardDescription>
+          <CardDescription>
+            Chargement des meilleurs athlètes...
+          </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between space-x-4 p-4"
+              >
+                <div className="flex items-center space-x-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div>
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="mt-1 h-3 w-24" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-8" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="h-[45vh] md:col-span-2">
+        <CardHeader>
+          <CardTitle>Top Athletes</CardTitle>
+          <CardDescription>Une erreur est survenue</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex h-[30vh] flex-col items-center justify-center space-y-4">
+            <p className="text-center text-muted-foreground">{error}</p>
+            <Button variant="outline" onClick={handleRetry}>
+              Réessayer
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="md:col-span-2">
+    <Card className="h-[45vh] md:col-span-2">
       <CardHeader>
         <CardTitle>Top Athletes</CardTitle>
         <CardDescription>
@@ -56,7 +123,7 @@ export const TopAthletes = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-8">
+        <div className="space-y-3">
           {athletes.map((athlete) => (
             <div
               key={athlete.id}
@@ -64,16 +131,16 @@ export const TopAthletes = () => {
             >
               <div className="flex items-center space-x-4">
                 <Avatar>
-                  <AvatarImage 
-                    src={athlete.user?.image || undefined} 
-                    alt={athlete.user?.name || "Athlete"} 
+                  <AvatarImage
+                    src={athlete.user?.image || undefined}
+                    alt={athlete.user?.name || "Athlete"}
                   />
                   <AvatarFallback>
                     {athlete.user?.name
                       ? athlete.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
                       : "A"}
                   </AvatarFallback>
                 </Avatar>
@@ -82,7 +149,8 @@ export const TopAthletes = () => {
                     {athlete.user?.name || "Unknown Athlete"}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {athlete.sport?.name || "No Sport"} - {athlete.category?.name || "No Category"}
+                    {athlete.sport?.name || "No Sport"} -{" "}
+                    {athlete.category?.name || "No Category"}
                   </p>
                 </div>
               </div>

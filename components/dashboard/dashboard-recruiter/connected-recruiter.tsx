@@ -9,7 +9,7 @@ export default async function ConnectedRecruiter() {
   return (
     <>
       <div className="flex items-center space-x-4">
-        <Avatar className="size-10 shrink-0">
+        <Avatar className="size-16 shrink-0">
           <AvatarImage
             src="/placeholder.svg?height=40&width=40"
             alt="Sarah Thompson"
