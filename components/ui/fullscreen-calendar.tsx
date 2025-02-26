@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import frLocale from "@fullcalendar/core/locales/fr";
@@ -7,14 +8,34 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { format } from "date-fns";
+import {
+  add,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getDay,
+  isEqual,
+  isSameDay,
+  isSameMonth,
+  isToday,
+  parse,
+  startOfToday,
+  startOfWeek,
+} from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, CalendarIcon, Clock, MapPin, Palette } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MapPin,
+  Palette,
+  PlusCircleIcon,
+  SearchIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
-// Suppression des imports CSS problématiques
-// Les styles seront appliqués via globals.css
-
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +61,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
@@ -56,6 +78,25 @@ interface Event {
   color?: string;
 }
 
+interface CalendarData {
+  day: Date;
+  events: Event[];
+}
+
+interface FullScreenCalendarProps {
+  data?: CalendarData[];
+}
+
+const colStartClasses = [
+  "",
+  "col-start-2",
+  "col-start-3",
+  "col-start-4",
+  "col-start-5",
+  "col-start-6",
+  "col-start-7",
+];
+
 const eventColors = [
   { name: "Bleu", value: "blue", class: "bg-blue-500" },
   { name: "Rouge", value: "red", class: "bg-red-500" },
@@ -65,7 +106,14 @@ const eventColors = [
   { name: "Orange", value: "orange", class: "bg-orange-500" },
 ];
 
-export function AthleteCalendar() {
+export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
+  const today = startOfToday();
+  const [selectedDay, setSelectedDay] = React.useState(today);
+  const [currentMonth, setCurrentMonth] = React.useState(
+    format(today, "MMM-yyyy"),
+  );
+  const firstDayCurrentMonth = parse(currentMonth, "MMM-yyyy", new Date());
+  const { isDesktop } = useMediaQuery();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -76,6 +124,11 @@ export function AthleteCalendar() {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
   const router = useRouter();
+
+  const days = eachDayOfInterval({
+    start: startOfWeek(firstDayCurrentMonth),
+    end: endOfWeek(endOfMonth(firstDayCurrentMonth)),
+  });
 
   // Charger les événements depuis l'API
   useEffect(() => {
@@ -102,60 +155,35 @@ export function AthleteCalendar() {
     fetchEvents();
   }, []);
 
+  function previousMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
+  }
+
+  function nextMonth() {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
+    setCurrentMonth(format(firstDayNextMonth, "MMM-yyyy"));
+  }
+
+  function goToToday() {
+    setCurrentMonth(format(today, "MMM-yyyy"));
+  }
+
   // Gérer la création d'un nouvel événement
   const handleDateSelect = (selectInfo: any) => {
-    console.log("Selection info:", selectInfo);
-
-    // Créer des copies des dates pour éviter de modifier les objets originaux
-    const start = new Date(selectInfo.start);
-    const end = new Date(selectInfo.end);
-
-    // Pour la vue mois, la date de fin est le jour suivant à minuit
-    // On l'ajuste pour qu'elle soit le même jour que la date de début
-    if (selectInfo.view.type === "dayGridMonth") {
-      // Dans la vue mois, la date de fin est le jour suivant à minuit
-      // On veut que la date de fin soit le même jour que la date de début
-      end.setDate(end.getDate() - 1);
-    }
-
-    // Définir les heures de début et de fin en fonction de la sélection
-    const startTimeHours = start.getHours().toString().padStart(2, "0");
-    const startTimeMinutes = start.getMinutes().toString().padStart(2, "0");
-
-    // Formater l'heure de début pour le formulaire
-    const formattedStartTime = `${startTimeHours}:${startTimeMinutes}`;
-
-    // Pour l'heure de fin, on utilise soit l'heure de fin sélectionnée, soit on ajoute 1 heure par défaut
-    let formattedEndTime = "";
-    if (
-      selectInfo.view.type === "timeGridWeek" ||
-      selectInfo.view.type === "timeGridDay"
-    ) {
-      const endTimeHours = end.getHours().toString().padStart(2, "0");
-      const endTimeMinutes = end.getMinutes().toString().padStart(2, "0");
-      formattedEndTime = `${endTimeHours}:${endTimeMinutes}`;
-    } else {
-      // Pour la vue mois, on ajoute 1 heure par défaut
-      const endDate = new Date(start);
-      endDate.setHours(endDate.getHours() + 1);
-      const endTimeHours = endDate.getHours().toString().padStart(2, "0");
-      const endTimeMinutes = endDate.getMinutes().toString().padStart(2, "0");
-      formattedEndTime = `${endTimeHours}:${endTimeMinutes}`;
-    }
+    const start = new Date(selectInfo.startStr);
+    const end = new Date(selectInfo.endStr);
 
     setStartDate(start);
-    setEndDate(selectInfo.view.type === "dayGridMonth" ? start : end);
-    setStartTime(formattedStartTime);
-    setEndTime(formattedEndTime);
+    setEndDate(end);
+    setStartTime("09:00");
+    setEndTime("10:00");
 
     setSelectedEvent({
       id: "",
       title: "",
-      start: start.toISOString(),
-      end: (selectInfo.view.type === "dayGridMonth"
-        ? start
-        : end
-      ).toISOString(),
+      start: selectInfo.startStr,
+      end: selectInfo.endStr,
       allDay: selectInfo.allDay,
       location: "",
       description: "",
@@ -312,46 +340,165 @@ export function AthleteCalendar() {
 
   return (
     <>
-      <Card className="border-0 shadow-md">
+      <Card className="border-1 shadow-md">
         <CardHeader className="pb-2">
           <CardTitle className="text-2xl font-bold">
             Calendrier des événements
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
-            locale={frLocale}
-            events={events.map((event) => ({
-              ...event,
-              className: `fc-event-${event.color || "blue"}`,
-            }))}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            height="auto"
-            themeSystem="standard"
-            buttonText={{
-              today: "Aujourd'hui",
-              month: "Mois",
-              week: "Semaine",
-              day: "Jour",
-            }}
-            slotLabelFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }}
-          />
+          <div className="flex flex-1 flex-col">
+            {/* Calendar Header */}
+            <div className="flex flex-col space-y-4 p-4 md:flex-row md:items-center md:justify-between md:space-y-0 lg:flex-none">
+              <div className="flex flex-auto">
+                <div className="flex items-center gap-4">
+                  <div className="hidden w-20 flex-col items-center justify-center rounded-lg border bg-muted p-0.5 md:flex">
+                    <h1 className="p-1 text-xs uppercase text-muted-foreground">
+                      {format(today, "MMM")}
+                    </h1>
+                    <div className="flex w-full items-center justify-center rounded-lg border bg-background p-0.5 text-lg font-bold">
+                      <span>{format(today, "d")}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {format(firstDayCurrentMonth, "MMMM, yyyy")}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {format(firstDayCurrentMonth, "MMM d, yyyy")} -{" "}
+                      {format(endOfMonth(firstDayCurrentMonth), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-4 md:flex-row md:gap-6">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="hidden lg:flex"
+                >
+                  <SearchIcon size={16} strokeWidth={2} aria-hidden="true" />
+                </Button>
+
+                <Separator
+                  orientation="vertical"
+                  className="hidden h-6 lg:block"
+                />
+
+                <div className="inline-flex w-full -space-x-px rounded-lg shadow-sm shadow-black/5 md:w-auto rtl:space-x-reverse">
+                  <Button
+                    onClick={previousMonth}
+                    className="rounded-none shadow-none first:rounded-s-lg last:rounded-e-lg focus-visible:z-10"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Mois précédent"
+                  >
+                    <ChevronLeftIcon
+                      size={16}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                  <Button
+                    onClick={goToToday}
+                    className="w-full rounded-none shadow-none first:rounded-s-lg last:rounded-e-lg focus-visible:z-10 md:w-auto"
+                    variant="outline"
+                  >
+                    Aujourd'hui
+                  </Button>
+                  <Button
+                    onClick={nextMonth}
+                    className="rounded-none shadow-none first:rounded-s-lg last:rounded-e-lg focus-visible:z-10"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Mois suivant"
+                  >
+                    <ChevronRightIcon
+                      size={16}
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </div>
+
+                <Separator
+                  orientation="vertical"
+                  className="hidden h-6 md:block"
+                />
+                <Separator
+                  orientation="horizontal"
+                  className="block w-full md:hidden"
+                />
+
+                <Button
+                  className="w-full gap-2 md:w-auto"
+                  onClick={() => {
+                    setStartDate(new Date());
+                    setEndDate(new Date());
+                    setStartTime("09:00");
+                    setEndTime("10:00");
+                    setSelectedEvent({
+                      id: "",
+                      title: "",
+                      start: new Date().toISOString(),
+                      end: new Date().toISOString(),
+                      allDay: false,
+                      location: "",
+                      description: "",
+                      isPublic: true,
+                      color: "blue",
+                    });
+                    setIsEditMode(false);
+                    setIsDialogOpen(true);
+                  }}
+                >
+                  <PlusCircleIcon
+                    size={16}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  />
+                  <span>Nouvel événement</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* FullCalendar Integration */}
+            <div className="mt-4">
+              <FullCalendar
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                headerToolbar={false}
+                locale={frLocale}
+                events={events.map((event) => ({
+                  ...event,
+                  className: `fc-event-${event.color || "blue"}`,
+                  backgroundColor: "transparent",
+                  borderColor: "transparent",
+                  textColor: "inherit",
+                }))}
+                selectable={true}
+                selectMirror={true}
+                dayMaxEvents={true}
+                weekends={true}
+                select={handleDateSelect}
+                eventClick={handleEventClick}
+                height="auto"
+                themeSystem="standard"
+                buttonText={{
+                  today: "Aujourd'hui",
+                  month: "Mois",
+                  week: "Semaine",
+                  day: "Jour",
+                }}
+                slotLabelFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
