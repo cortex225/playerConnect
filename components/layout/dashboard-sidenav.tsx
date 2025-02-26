@@ -4,9 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
+
+
 import { SidebarNavItem } from "types";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/shared/icons";
+
+
+
+
 
 interface DashboardNavProps {
   items: SidebarNavItem[];
@@ -28,7 +34,7 @@ export function DashboardNav({ items }: DashboardNavProps) {
   }
 
   return (
-    <nav className="sticky top-20 grid items-start gap-2 space-y-4 rounded-2xl border px-1 py-4">
+    <nav className="sticky top-20 grid h-[64vh] items-start space-y-0 rounded-2xl border px-3 py-4">
       {items
         .filter((item) => !item.roles || item.roles.includes(userRole)) // Filtrage par rôle
         .map((item, index) => {
