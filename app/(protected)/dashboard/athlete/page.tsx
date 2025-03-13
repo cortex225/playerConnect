@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Bell,
@@ -51,6 +52,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { KPIChart } from "@/components/dashboard/dashboard-athlete/kpi-chart";
+import MatchInvitations from "@/components/dashboard/dashboard-athlete/match-invitations";
 import MediaCarousel from "@/components/dashboard/dashboard-athlete/media-carousel";
 import { PerformanceStats } from "@/components/dashboard/dashboard-athlete/performance-stats";
 import { DashboardShell } from "@/components/dashboard/shell";
@@ -58,6 +60,7 @@ import { PerformanceForm } from "@/components/forms/performance-form";
 import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
 
 import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
+import { CreateMatchModal } from "../../../../components/modals/athlete/create-match";
 
 export const metadata = constructMetadata({
   title: "Profil Athlète – Player Connect",
@@ -132,7 +135,7 @@ export default async function DashboardPage() {
 
             {/* Icônes de notification et messagerie */}
             <div className="flex items-center space-x-2">
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon">
                     <Bell className="size-5" />
@@ -160,7 +163,10 @@ export default async function DashboardPage() {
                     Discussion avec l&apos;équipe
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
+
+              {/* Calendar pour ajouter un match aux eventements  */}
+              <CreateMatchModal />
             </div>
           </div>
         </header>
@@ -184,30 +190,11 @@ export default async function DashboardPage() {
             </div>
             {/* Performance Form - 4 colonnes sur desktop */}
             <div className="col-span-7">
-              {positions.length > 0 ? (
-                <PerformanceForm
-                  positions={positions}
-                  sportType={sportName}
-                  athleteId={athleteId}
-                />
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Ajouter une performance</CardTitle>
-                    <CardDescription>
-                      Veuillez compléter votre profil avec des positions pour
-                      pouvoir ajouter des performances.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={() => (window.location.href = "/onboarding")}
-                    >
-                      Compléter mon profil
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
+            
+            </div>
+            {/* Invitations aux matchs */}
+            <div className="col-span-7">
+              <MatchInvitations />
             </div>
           </div>
         </div>
@@ -231,15 +218,14 @@ export default async function DashboardPage() {
               problème persiste.
             </p>
             <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-              >
-                Réessayer
-              </Button>
-              <Button onClick={() => (window.location.href = "/onboarding")}>
-                Compléter mon profil
-              </Button>
+              <form action="/dashboard/athlete">
+                <Button variant="outline" type="submit">
+                  Réessayer
+                </Button>
+              </form>
+              <Link href="/onboarding">
+                <Button>Compléter mon profil</Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

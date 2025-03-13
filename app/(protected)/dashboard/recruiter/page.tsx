@@ -1,6 +1,7 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bell, MessageCircle, PieChart, Search } from "lucide-react";
+import { Bell, Calendar, MessageCircle, PieChart, Search } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
@@ -10,6 +11,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -109,7 +111,7 @@ export default async function DashboardPage() {
               {/* Icônes de notification et messagerie */}
               <div className="mx-9 flex items-center justify-end space-x-2">
                 {/* Notification */}
-                <DropdownMenu>
+                {/* <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon">
                       <Bell className="size-5" />
@@ -121,10 +123,10 @@ export default async function DashboardPage() {
                     </DropdownMenuItem>
                     <DropdownMenuItem>Upcoming match reminder</DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
 
                 {/* Messages */}
-                <DropdownMenu>
+                {/* <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon">
                       <MessageCircle className="size-5" />
@@ -136,7 +138,7 @@ export default async function DashboardPage() {
                       Chat with coaching staff
                     </DropdownMenuItem>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
               </div>
             </div>
 
@@ -182,6 +184,29 @@ export default async function DashboardPage() {
               <MediaAthlete />
             </Suspense>
           </aside>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="col-span-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Calendrier des matchs
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Voir vos matchs</div>
+              <p className="text-xs text-muted-foreground">
+                Consultez les matchs auxquels vous êtes invité
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Button asChild className="w-full">
+                <Link href="/dashboard/recruiter/calendar">
+                  Accéder au calendrier
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </DashboardShell>
     );

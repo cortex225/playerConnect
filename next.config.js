@@ -10,7 +10,6 @@ const nextConfig = {
     "@fullcalendar/daygrid",
     "@fullcalendar/timegrid",
     "@fullcalendar/interaction",
-    // Ajoutez tous les autres modules FullCalendar que vous utilisez
   ],
   images: {
     remotePatterns: [
