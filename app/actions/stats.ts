@@ -2,15 +2,14 @@
 
 import { OpenAI } from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf";
 import { z } from "zod";
 
 import { StatsResult } from "@/types/stats";
 
-// Configuration du worker PDF.js pour Next.js
-if (typeof window === "undefined") {
-  GlobalWorkerOptions.workerSrc = require("pdfjs-dist/legacy/build/pdf.worker.entry");
-}
+// Configuration minimale de PDF.js sans worker
+const PDFJS = require("pdfjs-dist/legacy/build/pdf");
+PDFJS.GlobalWorkerOptions.workerSrc = false;
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -21,23 +20,32 @@ const FileSchema = z.object({
   name: z.string(),
 });
 
-// Configuration minimale
+// Fonction optimisée d'extraction de texte PDF
 export const extractTextFromPdf = async (buffer: ArrayBuffer) => {
-  const pdf = await getDocument({
-    data: new Uint8Array(buffer),
-    disableFontFace: true, // Désactive le chargement des polices
-    disableAutoFetch: true, // Désactive le chargement asynchrone
-  }).promise;
+  try {
+    const pdf = await getDocument({
+      data: new Uint8Array(buffer),
+      useWorkerFetch: false,
+      isEvalSupported: false,
+      disableFontFace: true,
+      disableRange: true,
+      disableStream: true,
+      disableAutoFetch: true,
+    }).promise;
 
-  let textContent = "";
+    let textContent = "";
 
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const text = await page.getTextContent();
-    textContent += text.items.map((item: any) => item.str).join(" ");
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const text = await page.getTextContent();
+      textContent += text.items.map((item: any) => item.str).join(" ");
+    }
+
+    return textContent;
+  } catch (error) {
+    console.error("Erreur lors de l'extraction du texte PDF:", error);
+    throw new Error("Impossible d'extraire le texte du PDF");
   }
-
-  return textContent;
 };
 
 // Fonction pour convertir un fichier en base64
@@ -114,66 +122,32 @@ export async function parseStats(formData: FormData): Promise<StatsResult> {
       ];
     }
 
-    messages.push({
-      role: "system",
-      content: `Les statistiques possibles sont :
-      - Pour le football : goals, assists, shots, passes, minutes
-      - Pour le basketball : points, rebounds, assists, steals, blocks
-      
-      Retourne uniquement un tableau JSON avec la structure suivante:
-      [{ "key": "string", "value": number }]
-      
-      Exemple de réponse valide:
-      [{"key": "goals", "value": 2}, {"key": "assists", "value": 1}]`,
-    });
-
     const completion = await openai.chat.completions.create({
-      model: validatedFile.type.startsWith("image/")
-        ? "gpt-4o-mini"
-        : "gpt-4o-mini",
-      messages,
+      model: "gpt-4-vision-preview",
+      messages: messages,
       max_tokens: 10000,
-      temperature: 0.5,
     });
 
-    const result = completion.choices[0].message.content;
-    if (!result) {
-      throw new Error("Pas de résultat de l'API OpenAI");
+    const responseContent = completion.choices[0].message.content;
+    if (!responseContent) {
+      throw new Error("Pas de contenu retourné par l'API");
     }
-    console.log(result);
-    try {
-      const parsedResult = JSON.parse(result);
-      if (!Array.isArray(parsedResult)) {
-        throw new Error("Le résultat n'est pas un tableau valide");
-      }
 
-      const isValidStats = parsedResult.every(
-        (stat) =>
-          typeof stat === "object" &&
-          stat !== null &&
-          "key" in stat &&
-          "value" in stat &&
-          typeof stat.key === "string" &&
-          typeof stat.value === "number",
-      );
-
-      if (!isValidStats) {
-        throw new Error("Format des statistiques invalide");
-      }
-
-      return { success: true, data: parsedResult };
-    } catch (jsonError) {
-      console.error("Erreur lors du parsing JSON:", jsonError);
-      throw new Error("Le format des données extraites est invalide");
+    const jsonMatch = responseContent.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      throw new Error("Pas de JSON trouvé dans la réponse");
     }
+
+    const extractedStats = JSON.parse(jsonMatch[0]);
+    return {
+      success: true,
+      data: extractedStats,
+    };
   } catch (error) {
-    console.error("Error in parseStats:", error);
+    console.error("Erreur lors du traitement:", error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Une erreur inconnue est survenue",
+      error: error instanceof Error ? error.message : "Erreur inconnue",
     };
   }
 }
