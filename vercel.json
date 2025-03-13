@@ -1,11 +1,3 @@
 {
-  "buildCommand": "pnpm run build",
-  "installCommand": "pnpm install --no-frozen-lockfile --ignore-scripts",
-  "framework": "nextjs",
-  "env": {
-    "ENABLE_EXPERIMENTAL_COREPACK": "1",
-    "NODEJS_VERSION": "20.x",
-    "PNPM_VERSION": "10.x",
-    "NEXT_TELEMETRY_DISABLED": "1"
-  }
+  "framework": "nextjs"
 }
