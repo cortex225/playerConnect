@@ -32,9 +32,9 @@ const nextConfig = {
     serverComponentsExternalPackages: ["@prisma/client"],
     serverActions: true,
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Désactive les dépendances problématiques côté client
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      // Désactive les dépendances problématiques côté client en production
       config.resolve.alias = {
         ...config.resolve.alias,
         canvas: false,
@@ -53,6 +53,8 @@ const nextConfig = {
 
     return config;
   },
+  poweredByHeader: false,
+  compress: true,
 };
 
 module.exports = nextConfig;
