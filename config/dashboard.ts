@@ -1,10 +1,14 @@
 import { DashboardConfig } from "types";
 
+
+
+
+
 export const dashboardConfig: DashboardConfig = {
   mainNav: [
     {
-      title: "Documentation",
-      href: "/docs",
+      title: "Landing",
+      href: "/",
     },
     {
       title: "Support",
@@ -50,6 +54,12 @@ export const dashboardConfig: DashboardConfig = {
       roles: ["ATHLETE"],
     },
     {
+      title: "Médias",
+      href: "/dashboard/athlete/media",
+      icon: "media",
+      roles: ["ATHLETE"],
+    },
+    {
       title: "Recruiter Applications",
       href: "/dashboard/recruiter/applications",
       icon: "file_text",
@@ -63,9 +73,15 @@ export const dashboardConfig: DashboardConfig = {
     },
     {
       title: "Calendar",
-      href: "/dashboard/calendar",
+      href: "/dashboard/athlete/calendar",
       icon: "calendar_days",
-      roles: ["ATHLETE", "RECRUITER"],
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Calendar",
+      href: "/dashboard/recruiter/calendar",
+      icon: "calendar_days",
+      roles: ["RECRUITER"],
     },
     {
       title: "Analytics",

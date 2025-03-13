@@ -3,11 +3,278 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// --- Enums ---
+model User {
+  id                     String         @id @default(cuid())
+  name                   String?
+  email                  String?        @unique
+  emailVerified          DateTime?
+  image                  String?
+  role                   UserRole       @default(USER)
+  isOnline               Boolean        @default(false)
+  lastActivity           DateTime?
+  stripeCustomerId       String?        @unique
+  stripeSubscriptionId   String?        @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @default(now())
+  password               String?
+  accounts               Account[]
+  athlete                Athlete?
+  messagesReceived       Message[]      @relation("MessagesReceived")
+  messagesSent           Message[]      @relation("MessagesSent")
+  notifications          Notification[]
+  recruiter              Recruiter?
+  sessions               Session[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  senderId    String
+  recipientId String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Sport {
+  id        String     @id @default(cuid())
+  name      SportType  @unique
+  athletes  Athlete[]
+  levels    Level[]
+  positions Position[]
+
+  @@map("sports")
+}
+
+model Position {
+  id           String            @id @default(cuid())
+  name         String
+  sportId      String
+  athletes     AthletePosition[]
+  kpis         KPI[]
+  performances Performance[]
+  sport        Sport             @relation(fields: [sportId], references: [id], onDelete: Cascade)
+
+  @@unique([name, sportId])
+  @@map("positions")
+}
+
+model Level {
+  id         String     @id @default(cuid())
+  name       String
+  sportId    String
+  categories Category[]
+  sport      Sport      @relation(fields: [sportId], references: [id], onDelete: Cascade)
+
+  @@unique([name, sportId])
+  @@map("levels")
+}
+
+model Category {
+  id       String        @id @default(cuid())
+  name     CategoryLevel
+  levelId  String
+  athletes Athlete[]
+  level    Level         @relation(fields: [levelId], references: [id], onDelete: Cascade)
+
+  @@unique([name, levelId])
+  @@map("categories")
+}
+
+model Athlete {
+  id            Int               @id @default(autoincrement())
+  userId        String            @unique
+  gender        Gender?
+  age           Int?
+  city          String?
+  height        Float?
+  weight        Float?
+  dominantHand  DominantHand?
+  dominantFoot  DominantFoot?
+  programType   ProgramType?
+  categoryId    String?
+  sportId       String?
+  positions     AthletePosition[]
+  category      Category?         @relation(fields: [categoryId], references: [id])
+  sport         Sport?            @relation(fields: [sportId], references: [id])
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events        Event[]
+  media         Media[]
+  notifications Notification[]
+  performances  Performance[]
+
+  @@map("athletes")
+}
+
+model AthletePosition {
+  id         String   @id @default(cuid())
+  athleteId  Int
+  positionId String
+  athlete    Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+}
+
+model Performance {
+  id         Int      @id @default(autoincrement())
+  athleteId  Int
+  positionId String
+  date       DateTime
+  score      Float
+  KPI        KPI[]
+  athlete    Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  stats      Stat[]
+
+  @@map("performances")
+}
+
+model Stat {
+  id            Int         @id @default(autoincrement())
+  performanceId Int
+  key           String
+  value         Float
+  performance   Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
+
+  @@map("stats")
+}
+
+model KPI {
+  id            Int         @id @default(autoincrement())
+  name          String
+  weight        Float
+  positionId    String
+  performanceId Int
+  value         Float
+  performance   Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
+  position      Position    @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@map("kpis")
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  athleteId   Int
+  url         String
+  description String?
+  createdAt   DateTime @default(now())
+  title       String
+  type        String
+  updatedAt   DateTime @updatedAt
+  athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@map("media")
+}
+
+model Event {
+  id                       Int          @id @default(autoincrement())
+  athleteId                Int
+  title                    String
+  location                 String
+  eventDate                DateTime
+  isPublic                 Boolean
+  requiresParentalApproval Boolean
+  color                    String?
+  description              String?
+  endDate                  DateTime?
+  athlete                  Athlete      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  invitations              Invitation[]
+
+  @@map("events")
+}
+
+model Invitation {
+  id          Int       @id @default(autoincrement())
+  eventId     Int
+  recruiterId Int
+  isIncognito Boolean
+  status      String
+  sentAt      DateTime  @default(now())
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  recruiter   Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
+
+model Recruiter {
+  id            Int            @id @default(autoincrement())
+  userId        String         @unique
+  organization  String?
+  position      String?
+  region        String?
+  experience    Int?
+  invitations   Invitation[]
+  notifications Notification[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recruiters")
+}
+
+model Notification {
+  id          Int        @id @default(autoincrement())
+  userId      String
+  message     String
+  isRead      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  athleteId   Int?
+  athlete     Athlete?   @relation(fields: [athleteId], references: [id])
+  userRef     User       @relation(fields: [userId], references: [id])
+  Recruiter   Recruiter? @relation(fields: [recruiterId], references: [id])
+  recruiterId Int?
+
+  @@map("notifications")
+}
 
 enum UserRole {
   ADMIN
@@ -49,310 +316,4 @@ enum CategoryLevel {
   CADET
   JUVENILE
   SENIOR
-}
-
-// --- Modèles ---
-
-// Modèle User : utilisateur de base, qui peut être Athlète ou Recruteur
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?   // Ajout du champ password optionnel
-  role          UserRole  @default(USER) // Définit si l'utilisateur est Admin, Athlete ou Recruiter
-  isOnline      Boolean   @default(false)
-  lastActivity  DateTime?
-
-  // Relations
-  accounts         Account[]
-  sessions         Session[]
-  athlete          Athlete?
-  recruiter        Recruiter?
-  notifications    Notification[]
-  messagesSent     Message[]      @relation("MessagesSent")
-  messagesReceived Message[]      @relation("MessagesReceived")
-
-  stripeCustomerId       String?   @unique
-  stripeSubscriptionId   String?   @unique
-  stripePriceId          String?
-  stripeCurrentPeriodEnd DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  @@map(name: "users")
-}
-
-// Compte pour gérer les connexions OAuth ou autres systèmes de connexion externe
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  // Relation
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  @@unique([provider, providerAccountId])
-  @@map(name: "accounts")
-}
-
-// Sessions pour gérer les connexions utilisateur
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  // Relation
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map(name: "sessions")
-}
-
-// Token pour la vérification des emails
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-  @@map(name: "verification_tokens")
-}
-
-// Messages entre utilisateurs
-model Message {
-  id        String   @id @default(cuid())
-  content   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  
-  // Relations avec l'expéditeur et le destinataire
-  sender     User   @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
-  senderId   String
-  recipient  User   @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
-  recipientId String
-
-  @@map(name: "messages")
-}
-
-// --- Modèles Sportifs ---
-
-// Sport : contient les sports disponibles
-model Sport {
-  id        String     @id @default(cuid())
-  name      SportType  @unique
-  positions Position[] // Un sport peut avoir plusieurs positions
-  levels    Level[] // Un sport peut avoir plusieurs niveaux (scolaire, universitaire, etc.)
-  athletes  Athlete[] // Les athlètes qui pratiquent ce sport
-
-  @@map(name: "sports")
-}
-
-// Position : définie pour un sport spécifique
-model Position {
-  id      String @id @default(cuid())
-  name    String
-  sportId String
-  sport   Sport  @relation(fields: [sportId], references: [id], onDelete: Cascade)
-
-  athletes     AthletePosition[]
-  kpis         KPI[]
-  performances Performance[]
-
-  @@unique([name, sportId]) // Contrainte unique : nom et sport doivent être uniques ensemble
-  @@map(name: "positions")
-}
-
-// Niveau (ex: Scolaire, Collégial) pour un sport
-model Level {
-  id         String     @id @default(cuid())
-  name       String
-  sportId    String
-  sport      Sport      @relation(fields: [sportId], references: [id], onDelete: Cascade)
-  categories Category[] // Relation avec les catégories
-
-  @@unique([name, sportId]) // Contrainte unique : un niveau est unique pour un sport
-  @@map(name: "levels")
-}
-
-// Catégorie (ex: Benjamin, Cadet) pour un niveau spécifique
-model Category {
-  id      String        @id @default(cuid())
-  name    CategoryLevel
-  levelId String
-  level   Level         @relation(fields: [levelId], references: [id], onDelete: Cascade)
-
-  athletes Athlete[] // Relation avec les athlètes
-
-  @@unique([name, levelId]) // Contrainte unique : une catégorie est unique pour un niveau donné
-  @@map(name: "categories")
-}
-
-// Athlète : informations personnelles et relation avec ses sports
-model Athlete {
-  id            Int               @id @default(autoincrement())
-  userId        String            @unique
-  gender        Gender?
-  age           Int?
-  city          String?
-  height        Float?
-  weight        Float?
-  dominantHand  DominantHand?
-  dominantFoot  DominantFoot?
-  programType   ProgramType?
-  categoryId    String? // Lié à une catégorie
-  category      Category?         @relation(fields: [categoryId], references: [id])
-  sportId       String? // Lié à un sport
-  sport         Sport?            @relation(fields: [sportId], references: [id])
-  positions     AthletePosition[] // Relation plusieurs-à-plusieurs avec les positions
-  performances  Performance[] // Les performances de l'athlète
-  media         Media[] // Les vidéos et photos de l'athlète
-  events        Event[] // Les événements auxquels il participe
-  notifications Notification[] // Notifications associées à l'athlète
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map(name: "athletes")
-}
-
-// Table de jointure pour gérer plusieurs positions pour un athlète
-model AthletePosition {
-  id         String   @id @default(cuid())
-  athlete    Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  athleteId  Int
-  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  positionId String
-}
-
-// Performance : performances liées à une position et un athlète
-model Performance {
-  id         Int      @id @default(autoincrement())
-  athleteId  Int
-  positionId String
-  date       DateTime
-  score      Float // Assure-toi que ce champ est bien présent
-  stats      Stat[] // Les statistiques dynamiques liées à cette performance
-
-  athlete  Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  KPI      KPI[]
-
-  @@map(name: "performances")
-}
-
-// Statistique dynamique pour une performance
-model Stat {
-  id            Int    @id @default(autoincrement())
-  performanceId Int
-  key           String // Nom de la statistique (ex: points, passes décisives)
-  value         Float // Valeur de la statistique
-
-  performance Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
-
-  @@map(name: "stats")
-}
-
-// KPI : défini les indicateurs clés pour une position
-model KPI {
-  id            Int         @id @default(autoincrement())
-  name          String // Nom de l'indicateur de performance
-  weight        Float // Poids de l'indicateur dans le calcul des performances
-  value         Float // Valeur réelle de l'indicateur pour une performance
-  positionId    String
-  position      Position    @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  performanceId Int
-  performance   Performance @relation(fields: [performanceId], references: [id], onDelete: Cascade)
-
-  @@map(name: "kpis")
-}
-
-// Médias : vidéos ou images pour un athlète
-model Media {
-  id          Int      @id @default(autoincrement())
-  athleteId   Int
-  url         String
-  mediaType   String
-  description String?
-  uploadedAt  DateTime @default(now())
-
-  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-
-  @@map(name: "media")
-}
-
-// Événements auxquels participent les athlètes
-model Event {
-  id                       Int      @id @default(autoincrement())
-  athleteId                Int
-  title                    String
-  location                 String
-  eventDate                DateTime
-  isPublic                 Boolean
-  requiresParentalApproval Boolean
-
-  athlete     Athlete      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  invitations Invitation[]
-
-  @@map(name: "events")
-}
-
-// Invitations envoyées par des recruteurs pour des événements
-model Invitation {
-  id          Int      @id @default(autoincrement())
-  eventId     Int
-  recruiterId Int
-  isIncognito Boolean
-  status      String
-  sentAt      DateTime @default(now())
-
-  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  recruiter Recruiter @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
-
-  @@map(name: "invitations")
-}
-
-// Recruteur
-model Recruiter {
-  id           Int     @id @default(autoincrement())
-  userId       String  @unique
-  organization String?
-  position     String?
-  region       String?
-  experience   Int?
-
-  invitations   Invitation[]
-  notifications Notification[]
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map(name: "recruiters")
-}
-
-// Notifications liées aux utilisateurs
-model Notification {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  message   String
-  createdAt DateTime @default(now())
-  isRead    Boolean  @default(false)
-
-  athlete   Athlete?   @relation(fields: [userId], references: [userId], map: "athlete_userId_fkey")
-  recruiter Recruiter? @relation(fields: [userId], references: [userId], map: "recruiter_userId_fkey")
-  User      User       @relation(fields: [userId], references: [id])
-
-  @@map(name: "notifications")
 }

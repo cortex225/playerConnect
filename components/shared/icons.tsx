@@ -57,6 +57,18 @@ export const Icons = {
   file_text: FileText,
   mail: Mail,
   bar_chart_2: BarChart2,
+  media: Image,
+  settings: Settings,
+  help: HelpCircle,
+  laptop: Laptop,
+  logo: Puzzle,
+  moon: Moon,
+  page: File,
+  post: FileText,
+  search: Search,
+  spinner: Loader2,
+  sun: SunMedium,
+  trash: Trash,
 
   gitHub: ({ ...props }: LucideProps) => (
     <svg
@@ -92,18 +104,6 @@ export const Icons = {
       />
     </svg>
   ),
-  help: HelpCircle,
-  laptop: Laptop,
-  logo: Puzzle,
-  media: Image,
-  moon: Moon,
-  page: File,
-  post: FileText,
-  search: Search,
-  settings: Settings,
-  spinner: Loader2,
-  sun: SunMedium,
-  trash: Trash,
   twitter: ({ ...props }: LucideProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"

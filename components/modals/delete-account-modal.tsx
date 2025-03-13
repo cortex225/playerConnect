@@ -36,7 +36,7 @@ function DeleteAccountModal({
         await new Promise((resolve) =>
           setTimeout(() => {
             signOut({
-              callbackUrl: `${window.location.origin}/`,
+              callbackUrl: `${window.location.origin}/landing`,
             });
             resolve(null);
           }, 500),

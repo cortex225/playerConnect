@@ -1,14 +1,14 @@
-import { auth } from '@/lib/auth';
+import { url } from "inspector";
+import { UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
-import { UserRole } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 import { env } from "@/env.mjs";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { url } from 'inspector';
 
 interface Credentials {
   email: string;
@@ -27,25 +27,36 @@ export default {
       },
       async authorize(credentials: Credentials) {
         try {
-          if (!credentials?.email || !credentials?.password || !credentials?.role) {
-            console.log("Missing credentials:", { email: !!credentials?.email, password: !!credentials?.password, role: !!credentials?.role });
+          if (
+            !credentials?.email ||
+            !credentials?.password ||
+            !credentials?.role
+          ) {
+            console.log("Missing credentials:", {
+              email: !!credentials?.email,
+              password: !!credentials?.password,
+              role: !!credentials?.role,
+            });
             return null;
           }
 
           const user = await prisma.user.findUnique({
-            where: { 
-              email: credentials.email.toLowerCase()
+            where: {
+              email: credentials.email.toLowerCase(),
             },
             select: {
               id: true,
               email: true,
               name: true,
               password: true,
-              role: true
-            }
+              role: true,
+            },
           });
 
-          console.log("Found user:", { ...user, password: user?.password ? '[REDACTED]' : null });
+          console.log("Found user:", {
+            ...user,
+            password: user?.password ? "[REDACTED]" : null,
+          });
 
           if (!user?.password) {
             console.log("User not found or no password set");
@@ -54,7 +65,7 @@ export default {
 
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
-            user.password
+            user.password,
           );
 
           console.log("Password validation result:", isPasswordValid);
@@ -89,9 +100,9 @@ export default {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          url:"https://player-connect.vercel.app/api/auth/callback/google",
-        }
-      }
+          url: "https://player-connect.vercel.app/api/auth/callback/google",
+        },
+      },
     }),
     Resend({
       apiKey: env.RESEND_API_KEY,

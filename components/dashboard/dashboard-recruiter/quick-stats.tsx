@@ -5,15 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export const QuickStats = () => {
   // Fake data for recruiter stats
   const recruiterStats = [
-    { name: "Athletes Scouted", value: 150 },
-    { name: "Successful Recruits", value: 45 },
-    { name: "Ongoing Negotiations", value: 20 },
-    { name: "Potential Prospects", value: 85 },
+    { name: "Athletes Contacted", value: 150 },
+    { name: "Potential Prospects", value: 45 },
+    { name: "Successful Recruits", value: 20 },
   ];
   return (
     <>
       {recruiterStats.map((stat, index) => (
-        <Card key={index}>
+        <Card key={index} className="w-full">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{stat.name}</CardTitle>
             <svg
