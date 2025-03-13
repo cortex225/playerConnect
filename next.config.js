@@ -32,23 +32,24 @@ const nextConfig = {
     serverComponentsExternalPackages: ["@prisma/client"],
     serverActions: true,
   },
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Désactive les dépendances problématiques côté client en production
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Désactive canvas et ses dépendances côté client
       config.resolve.alias = {
         ...config.resolve.alias,
         canvas: false,
-        encoding: false,
+        "@vercel/og": false,
       };
     }
 
-    // Désactive les dépendances inutiles globalement
+    // Désactive les dépendances problématiques globalement
     config.resolve.alias = {
       ...config.resolve.alias,
       "utf-8-validate": false,
       bufferutil: false,
       "canvas-prebuilt": false,
       "canvas-node": false,
+      encoding: false,
     };
 
     return config;
