@@ -34,22 +34,11 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Désactive les dépendances problématiques côté client
       config.resolve.fallback = {
         ...config.resolve.fallback,
         canvas: false,
-        encoding: false,
       };
     }
-
-    // Désactive les dépendances inutiles globalement
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "utf-8-validate": false,
-      bufferutil: false,
-      "canvas-prebuilt": false,
-      "canvas-node": false,
-    };
 
     return config;
   },
