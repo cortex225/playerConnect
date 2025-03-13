@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  canvas: 2.9.0
-
 importers:
 
   .:
@@ -3757,8 +3754,8 @@ packages:
   caniuse-lite@1.0.30001704:
     resolution: {integrity: sha512-+L2IgBbV6gXB4ETf0keSvLr7JUrRVbIaB/lrQ1+z8mRcQiisG5k+lG6O4n6Y5q6f5EuNfaYXKgymucphlEXQew==}
 
-  canvas@2.9.0:
-    resolution: {integrity: sha512-0l93g7uxp7rMyr7H+XRQ28A3ud0dKIUTIEkUe1Dxh4rjUYN7B93+SjC3r1PDKA18xcQN87OFGgUnyw7LSgNLSQ==}
+  canvas@2.11.2:
+    resolution: {integrity: sha512-ItanGBMrmRV7Py2Z+Xhs7cT+FNt5K0vPL4p9EZ/UX/Mu7hFbkxSjKF2KVtPwX7UYWp7dRKnrTvReflgrItJbdw==}
     engines: {node: '>=6'}
 
   ccount@2.0.1:
@@ -11155,7 +11152,7 @@ snapshots:
 
   caniuse-lite@1.0.30001704: {}
 
-  canvas@2.9.0:
+  canvas@2.11.2:
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
       nan: 2.22.2
@@ -14315,7 +14312,7 @@ snapshots:
 
   pdfjs-dist@3.11.174:
     optionalDependencies:
-      canvas: 2.9.0
+      canvas: 2.11.2
       path2d-polyfill: 2.0.1
     transitivePeerDependencies:
       - encoding
