@@ -32,11 +32,11 @@ const nextConfig = {
     serverComponentsExternalPackages: ["@prisma/client"],
     serverActions: true,
   },
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Désactive les dépendances problématiques côté client en production
-      config.resolve.alias = {
-        ...config.resolve.alias,
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Désactive les dépendances problématiques côté client
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
         canvas: false,
         encoding: false,
       };
@@ -55,6 +55,10 @@ const nextConfig = {
   },
   poweredByHeader: false,
   compress: true,
+  env: {
+    // Ajout de la variable d'environnement pour canvas
+    CANVAS_PREBUILT_LOCATION: "/vercel/path0/node_modules/canvas/prebuilds",
+  },
 };
 
 module.exports = nextConfig;
