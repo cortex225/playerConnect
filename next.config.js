@@ -29,8 +29,7 @@ const nextConfig = {
     domains: ["image.mux.com"],
   },
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"],
-    serverActions: true,
+    serverComponentsExternalPackages: ["@prisma/client"]
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -39,7 +38,6 @@ const nextConfig = {
         canvas: false,
       };
     }
-
     return config;
   },
   poweredByHeader: false,
