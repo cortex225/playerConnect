@@ -6,6 +6,10 @@
     "name": "player connect",
     "url": "https://twitter.com/mickasmt"
   },
+  "engines": {
+    "node": ">=18.12.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

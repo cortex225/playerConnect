@@ -225,7 +225,7 @@ function UpcomingMatches() {
               {matches.map((match) => (
                 <CarouselItem
                   key={match.id}
-                  className="md:basis-1/2 lg:basis-1/3"
+                  className="md:basis-1/2 lg:basis-1/3 w-32"
                 >
                   <Card>
                     <CardContent className="p-4">
