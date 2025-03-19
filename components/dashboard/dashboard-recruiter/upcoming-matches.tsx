@@ -199,7 +199,7 @@ function UpcomingMatches() {
             disabled={isRefreshing}
           >
             <RefreshCw
-              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`mr-2 size-4 ${isRefreshing ? "animate-spin" : ""}`}
             />
             {isRefreshing ? "Actualisation..." : "Actualiser"}
           </Button>
@@ -225,7 +225,7 @@ function UpcomingMatches() {
               {matches.map((match) => (
                 <CarouselItem
                   key={match.id}
-                  className="md:basis-1/2 lg:basis-1/3 w-32"
+                  className="w-32 md:basis-1/2 lg:basis-1/3"
                 >
                   <Card>
                     <CardContent className="p-4">
@@ -239,7 +239,7 @@ function UpcomingMatches() {
                       </h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center">
-                          <Timer className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <Timer className="mr-2 size-4 text-muted-foreground" />
                           <span>
                             {format(new Date(match.eventDate), "HH:mm", {
                               locale: fr,
@@ -249,11 +249,11 @@ function UpcomingMatches() {
                           </span>
                         </div>
                         <div className="flex items-center">
-                          <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <MapPin className="mr-2 size-4 text-muted-foreground" />
                           <span>{extractVenue(match.location)}</span>
                         </div>
                         <div className="flex items-center">
-                          <CalendarCheck className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <CalendarCheck className="mr-2 size-4 text-muted-foreground" />
                           <span>{extractCity(match.location)}</span>
                         </div>
                       </div>
@@ -267,7 +267,7 @@ function UpcomingMatches() {
                         }
                         disabled={requestingAttendance[match.id]}
                       >
-                        <UserPlus className="mr-2 h-4 w-4" />
+                        <UserPlus className="mr-2 size-4" />
                         {requestingAttendance[match.id]
                           ? "Envoi en cours..."
                           : "Demander à assister"}

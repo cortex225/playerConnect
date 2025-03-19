@@ -72,6 +72,7 @@
     "@vercel/og": "^0.6.5",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "better-auth": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",

@@ -11,6 +11,8 @@ export const Post = defineDocumentType(() => ({
     published: { type: 'boolean', default: true },
     image: { type: 'string', required: false },
     authors: { type: 'list', of: { type: 'string' }, required: false },
+    categories: { type: 'list', of: { type: 'string' }, required: false },
+    related: { type: 'list', of: { type: 'string' }, required: false },
     category: { type: 'string', required: false }
   },
   computedFields: {
@@ -57,7 +59,27 @@ export const Doc = defineDocumentType(() => ({
   },
 }))
 
+export const Page = defineDocumentType(() => ({
+  name: 'Page',
+  filePathPattern: 'pages/**/*.mdx',
+  contentType: 'mdx',
+  fields: {
+    title: { type: 'string', required: true },
+    description: { type: 'string', required: true },
+  },
+  computedFields: {
+    slug: {
+      type: 'string',
+      resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, ''),
+    },
+  },
+}))
+
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Post, Guide, Doc],
+  documentTypes: [Post, Guide, Doc, Page],
+  mdx: {
+    remarkPlugins: [],
+    rehypePlugins: [],
+  },
 }) 

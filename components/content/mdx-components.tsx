@@ -1,7 +1,8 @@
 import * as React from "react";
 import NextImage, { ImageProps } from "next/image";
 import Link from "next/link";
-import { useMDXComponent } from "next-contentlayer2/hooks";
+import { useMDXComponent } from "next-contentlayer/hooks";
+import Image from 'next/image'
 
 import { cn } from "@/lib/utils";
 import { MdxCard } from "@/components/content/mdx-card";
@@ -63,12 +64,12 @@ const components = {
       {...props}
     />
   ),
-  a: ({ className, ...props }) => (
-    <a
-      className={cn("font-medium underline underline-offset-4", className)}
-      {...props}
-    />
-  ),
+  a: ({ href = '', ...props }) => {
+    if (href.startsWith('http')) {
+      return <a href={href} target="_blank" rel="noopener noreferrer" {...props} />
+    }
+    return <Link href={href} {...props} />
+  },
   p: ({ className, ...props }) => (
     <p
       className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
@@ -164,7 +165,7 @@ const components = {
       {...props}
     />
   ),
-  Image: (props: ImageProps) => <NextImage {...props} />,
+  Image,
   Callout,
   Card: MdxCard,
   Step: ({ className, ...props }: React.ComponentProps<"h3">) => (
@@ -179,12 +180,6 @@ const components = {
   Steps: ({ ...props }) => (
     <div
       className="[&>h3]:step steps mb-12 ml-4 border-l pl-8 [counter-reset:step]"
-      {...props}
-    />
-  ),
-  Link: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
-    <Link
-      className={cn("font-medium underline underline-offset-4", className)}
       {...props}
     />
   ),
