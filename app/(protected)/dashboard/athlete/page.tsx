@@ -75,7 +75,7 @@ export default async function DashboardPage() {
     // Utiliser une seule requête pour récupérer toutes les données nécessaires
     const athlete = await prisma.athlete.findUnique({
       where: {
-        userId: user.id,
+        userId: user.user.id,
       },
       include: {
         media: true,

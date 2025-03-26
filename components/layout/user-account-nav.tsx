@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CreditCard,
   LayoutDashboard,
@@ -6,9 +9,11 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 
-import { ExtendedUser } from "@/types/next-auth";
+import { signOut } from "@/lib/auth-client";
+import { ROLES } from "@/lib/constants";
+import { useSession } from "@/lib/hooks/use-session";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,22 +23,39 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-export function UserAccountNav({ user }: { user: ExtendedUser }) {
+export function UserAccountNav() {
+  const router = useRouter();
+  const { session, loading } = useSession();
+
+  if (!session || loading) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion:", error);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <UserAvatar
-          user={{ name: user.name || null, image: user.image || null }}
-          className="size-9 border"
+          user={{ name: session.name || null, image: null }}
+          className="size-8"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            {user.name && <p className="font-medium">{user.name}</p>}
-            {user.email && (
+            {session.name && <p className="font-medium">{session.name}</p>}
+            {session.email && (
               <p className="w-[200px] truncate text-sm text-muted-foreground">
-                {user?.email}
+                {session.email}
               </p>
             )}
           </div>
@@ -41,7 +63,7 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         <DropdownMenuSeparator />
 
         {/* Menu items basés sur le rôle */}
-        {user.role === "ADMIN" ? (
+        {session.role === ROLES.ADMIN ? (
           <>
             <DropdownMenuItem asChild>
               <Link href="/admin" className="flex items-center space-x-2.5">
@@ -59,7 +81,7 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
               </Link>
             </DropdownMenuItem>
           </>
-        ) : user.role === "ATHLETE" ? (
+        ) : session.role === ROLES.ATHLETE ? (
           <>
             <DropdownMenuItem asChild>
               <Link
@@ -89,7 +111,7 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
               </Link>
             </DropdownMenuItem>
           </>
-        ) : user.role === "RECRUITER" ? (
+        ) : session.role === ROLES.RECRUITER ? (
           <>
             <DropdownMenuItem asChild>
               <Link
@@ -122,18 +144,10 @@ export function UserAccountNav({ user }: { user: ExtendedUser }) {
         ) : null}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onSelect={(event) => {
-            event.preventDefault();
-            signOut({
-              callbackUrl: `${window.location.origin}/landing`,
-            });
-          }}
-        >
+        <DropdownMenuItem className="cursor-pointer" onSelect={handleSignOut}>
           <div className="flex items-center space-x-2.5">
             <LogOut className="size-4" />
-            <p className="text-sm">Log out</p>
+            <p className="text-sm">Se déconnecter</p>
           </div>
         </DropdownMenuItem>
       </DropdownMenuContent>

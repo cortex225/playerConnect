@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "accounts" ALTER COLUMN "type" SET DEFAULT 'oauth',
+ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;

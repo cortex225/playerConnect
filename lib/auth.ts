@@ -1,70 +1,93 @@
-import authConfig from "@/auth.config";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { UserRole } from "@prisma/client";
-import NextAuth, { type DefaultSession } from "next-auth";
+import { PrismaClient } from "@prisma/client";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 
-import { prisma } from "@/lib/db";
-import { getUserById } from "@/lib/user";
+const prisma = new PrismaClient();
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      role: UserRole;
-    } & DefaultSession["user"];
-  }
-}
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
 
-export const {
-  handlers: { GET, POST },
-  auth,
-} = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/",
-    // error: "/auth/error",
-  },
-  callbacks: {
-    async session({ token, session }) {
-      if (session.user) {
-        if (token.sub) {
-          session.user.id = token.sub;
-        }
+  secret: process.env.BETTER_AUTH_SECRET,
+  emailAndPassword: {
+    enabled: true,
 
-        if (token.email) {
-          session.user.email = token.email;
-        }
-
-        if (token.role) {
-          session.user.role = token.role as UserRole;
-        }
-
-        session.user.name = token.name;
-        session.user.image = token.picture;
-      }
-
-      return session;
-    },
-
-    async jwt({ token, account }) {
-      if (account && account.provider === "google") {
-        // Set a default role for new Google users
-        token.role = UserRole.USER; // You can adjust this default role as needed
-      }
-
-      if (token.sub) {
-        const dbUser = await getUserById(token.sub);
-        if (dbUser) {
-          token.name = dbUser.name;
-          token.email = dbUser.email;
-          token.picture = dbUser.image;
-          token.role = dbUser.role; // S'assure que le rôle en BD est pris en compte
-        }
-      }
-
-      return token;
+    async sendResetPassword(data, request) {
+      // Send an email to the user with a link to reset their password
+      console.log("Reset password email:", data);
     },
   },
-  ...authConfig,
-  // debug: process.env.NODE_ENV !== "production"
+  hooks: {
+    async afterUserCreated(user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: user.user_metadata?.role?.toUpperCase() || "USER" },
+      });
+    },
+    async afterUserUpdated(user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: user.user_metadata?.role?.toUpperCase() || "USER" },
+      });
+    },
+  },
+  roles: {
+    enabled: true,
+    defaultRole: "user",
+    roles: {
+      admin: {
+        permissions: [
+          "create:user",
+          "delete:user",
+          "read:user",
+          "update:user",
+          "manage:roles",
+          "view:analytics",
+          "manage:system",
+        ],
+      },
+      athlete: {
+        permissions: [
+          "view:profile",
+          "update:profile",
+          "create:media",
+          "delete:media",
+          "manage:events",
+          "view:recruiters",
+          "respond:invitations",
+          "update:performance",
+        ],
+      },
+      recruiter: {
+        permissions: [
+          "view:profile",
+          "update:profile",
+          "view:athletes",
+          "send:invitations",
+          "manage:invitations",
+          "view:events",
+          "create:notes",
+        ],
+      },
+      user: {
+        permissions: ["view:profile", "update:profile"],
+      },
+    },
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          emailVerified: profile.email_verified,
+        };
+      },
+    },
+  },
 });

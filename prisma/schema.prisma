@@ -12,67 +12,72 @@ model User {
   id                     String         @id @default(cuid())
   name                   String?
   email                  String?        @unique
-  emailVerified          DateTime?
+  emailVerified          Boolean        @default(false)
   image                  String?
-  role                   UserRole       @default(USER)
-  isOnline               Boolean        @default(false)
+  password               String? // Ajout pour better-auth
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  role                   String         @default("USER")
   lastActivity           DateTime?
   stripeCustomerId       String?        @unique
   stripeSubscriptionId   String?        @unique
   stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @default(now())
-  password               String?
+  sessions               Session[]
   accounts               Account[]
-  athlete                Athlete?
+  athletes               Athlete[]
+  recruiters             Recruiter[]
+  notifications          Notification[]
+  messages               Message[]
   messagesReceived       Message[]      @relation("MessagesReceived")
   messagesSent           Message[]      @relation("MessagesSent")
-  notifications          Notification[]
-  recruiter              Recruiter?
-  sessions               Session[]
 
   @@map("users")
 }
 
-model Account {
-  id                String   @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
-}
-
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique
   userId       String
-  expires      DateTime
+  token        String   @map("sessionToken") @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  ipAddress    String?
+  userAgent    String?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String  @default("oauth")
+  accountId         String  // Champ attendu par Better Auth
+  providerId        String  // Champ attendu par Better Auth
+  accessToken       String? @db.Text
+  refreshToken      String? @db.Text
+  accessTokenExpiresAt DateTime?
+  tokenType         String?
+  scope             String?
+  idToken           String? @db.Text
+  sessionState      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
 model VerificationToken {
   identifier String
-  token      String   @unique
+  token      String   @db.Text
   expires    DateTime
 
   @@unique([identifier, token])
-  @@map("verification_tokens")
+  @@map("verificationtokens")
 }
 
 model Message {
@@ -84,6 +89,8 @@ model Message {
   createdAt   DateTime @default(now())
   recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
   sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+
+  User User[]
 
   @@map("messages")
 }
@@ -316,4 +323,15 @@ enum CategoryLevel {
   CADET
   JUVENILE
   SENIOR
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }

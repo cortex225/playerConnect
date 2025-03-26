@@ -1,351 +1,155 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Send } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
-import { pusherClient } from "@/lib/pusher";
-import { sendMessage } from "@/hooks/use-send-messages";
-import { useUserConnection } from "@/hooks/use-user-connection";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
-interface User {
-  id: string;
-  name: string;
-  image: string;
-  role: string;
-}
+const messageSchema = z.object({
+  content: z.string().min(1).max(1000),
+});
+
+type FormData = z.infer<typeof messageSchema>;
 
 interface Message {
   id: string;
   content: string;
-  sender: string;
-  timestamp: string;
-  isRead: boolean;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
 }
 
-export function MessagingInterface() {
-  const { data: session, status } = useSession();
-  const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newMessage, setNewMessage] = useState("");
+export function Messagerie() {
+  const router = useRouter();
+  const { session } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "connecting" | "connected" | "error"
-  >("connecting");
-  const { connectUser } = useUserConnection();
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const {
+    handleSubmit,
+    register,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(messageSchema),
+  });
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    if (status === "loading") return;
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch("/api/messages");
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des messages");
+        }
+        const data = await response.json();
+        setMessages(data);
+        scrollToBottom();
+      } catch (error) {
+        toast.error("Erreur lors de la récupération des messages");
+      }
+    };
+
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const onSubmit = async (data: FormData) => {
     if (!session?.user) {
-      setError("Vous devez être connecté pour accéder à la messagerie");
-      setIsLoading(false);
+      toast.error("Vous devez être connecté pour envoyer un message");
       return;
     }
 
-    // Connecter l'utilisateur authentifié
-    if (!session?.user?.id) return;
-    
-    connectUser({
-      id: session.user.id,
-      name: session.user.name || "Utilisateur",
-      image: session.user.image || "",
-      role: session.user.role || "USER",
-    });
-
-    // Configuration de Pusher
-    if (!pusherClient) return;
-
-    pusherClient.connection.bind("connected", () => {
-      setConnectionStatus("connected");
-      setIsLoading(false);
-    });
-
-    pusherClient.connection.bind("error", (err: any) => {
-      console.error("Erreur de connexion Pusher:", err);
-      setConnectionStatus("error");
-      setError("Erreur de connexion au service de messagerie");
-      setIsLoading(false);
-    });
-
-    // Abonnement aux canaux avec l'ID de l'utilisateur
-    const messageChannel = pusherClient.subscribe(
-      `private-messages-${session.user.id}`,
-    );
-    const userChannel = pusherClient.subscribe("connected-users");
-
-    messageChannel.bind("new-message", (newMessage: Message) => {
-      if (selectedUser && newMessage.sender === selectedUser.id) {
-        setMessages((prev) => [...prev, newMessage]);
-      }
-    });
-
-    userChannel.bind("update", (user: User) => {
-      if (user.id !== session.user.id) {
-        // Ne pas s'ajouter soi-même à la liste
-        setConnectedUsers((prev) => {
-          const exists = prev.some((u) => u.id === user.id);
-          if (!exists) {
-            return [...prev, user];
-          }
-          return prev;
-        });
-      }
-    });
-
-    return () => {
-      if (!pusherClient) return;
-      pusherClient.unsubscribe(`private-messages-${session.user.id}`);
-      pusherClient.unsubscribe("connected-users");
-      pusherClient.connection.unbind_all();
-    };
-  }, [session, status, selectedUser, connectUser]);
-
-  useEffect(() => {
-    if (!pusherClient) return;
-
-    // Subscribe to the channel
-    const channel = pusherClient.subscribe(`private-user-${session?.user?.id}`);
-
-    // Bind to the event
-    channel.bind("new-message", (message: Message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    // Cleanup on unmount
-    return () => {
-      if (!pusherClient) return;
-      pusherClient.unsubscribe(`private-user-${session?.user?.id}`);
-    };
-  }, [session?.user?.id]);
-
-  useEffect(() => {
-    if (!pusherClient) return;
-
-    // Authenticate with Pusher
-    pusherClient.connection.bind("connected", () => {
-      console.log("Connected to Pusher");
-    });
-
-    return () => {
-      if (!pusherClient) return;
-      pusherClient.connection.unbind_all();
-      pusherClient.disconnect();
-    };
-  }, []);
-
-  const handleSendMessage = async () => {
-    if (!session?.user) return;
-    if (!session.user.id) return;
-    if (!selectedUser) return;
-
+    setIsLoading(true);
     try {
-      const message = await sendMessage({
-        content: newMessage,
-        receiverId: selectedUser.id,
-        senderId: session.user.id,
-        senderRole: session.user.role,
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
 
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
-      setIsTyping(false);
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'envoi du message");
+      }
+
+      const newMessage = await response.json();
+      setMessages((prev) => [...prev, newMessage]);
+      reset();
+      scrollToBottom();
     } catch (error) {
-      setError("Erreur lors de l'envoi du message");
-      console.error("Erreur d'envoi:", error);
+      toast.error("Erreur lors de l'envoi du message");
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewMessage(e.target.value);
-    setIsTyping(!!e.target.value.trim());
-  };
-
-  const handleUserSelect = async (user: User) => {
-    if (!session?.user) return;
-
-    setSelectedUser(user);
-    setMessages([]);
-    setError(null);
-
-    try {
-      const response = await fetch(
-        `/api/messages/conversation?userId=${user.id}`,
-      );
-      if (!response.ok)
-        throw new Error("Erreur lors du chargement des messages");
-      const historicMessages = await response.json();
-      setMessages(historicMessages);
-    } catch (error) {
-      console.error("Erreur de chargement des messages:", error);
-      setError("Impossible de charger l'historique des messages");
-    }
-  };
-
-  if (status === "loading") {
-    return <div>Chargement...</div>;
-  }
-
-  if (!session) {
-    return <div>Vous devez être connecté pour accéder à la messagerie.</div>;
-  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Messages</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex h-[600px]">
-          {/* Liste des utilisateurs connectés */}
-          <div className="w-1/3 border-r">
-            <ScrollArea className="h-[550px]">
-              {isLoading ? (
-                <p className="p-4 text-sm text-gray-500">Chargement...</p>
-              ) : error ? (
-                <p className="p-4 text-sm text-red-500">{error}</p>
-              ) : connectedUsers.length === 0 ? (
-                <p className="p-4 text-sm text-gray-500">
-                  Aucun utilisateur connecté.
-                </p>
-              ) : (
-                connectedUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className={`flex cursor-pointer items-center space-x-4 p-4 hover:bg-muted ${
-                      selectedUser?.id === user.id ? "bg-muted" : ""
-                    }`}
-                    onClick={() => handleUserSelect(user)}
-                  >
-                    <Avatar>
-                      <AvatarImage
-                        src={user.image || ""}
-                        alt={user.name || "Utilisateur"}
-                      />
-                      <AvatarFallback>
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.role}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </ScrollArea>
-          </div>
-
-          {/* Zone de chat */}
-          <div className="flex w-2/3 flex-col">
-            {connectionStatus === "error" ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-red-500">
-                  Erreur de connexion au service de messagerie
-                </p>
-              </div>
-            ) : selectedUser ? (
-              <>
-                <div className="border-b p-4">
-                  <div className="flex items-center space-x-2">
-                    <Avatar>
-                      <AvatarImage
-                        src={selectedUser.image}
-                        alt={selectedUser.name}
-                      />
-                      <AvatarFallback>
-                        {selectedUser.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{selectedUser.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {selectedUser.role}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <ScrollArea className="grow p-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`mb-4 ${
-                        message.sender === session?.user.id
-                          ? "text-right"
-                          : "text-left"
-                      }`}
-                    >
-                      <div
-                        className={`inline-block rounded-lg p-2 ${
-                          message.sender === session?.user.id
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                        {message.isRead && "✓"}
-                      </p>
-                    </div>
-                  ))}
-                  {isTyping && (
-                    <p className="text-xs text-gray-500">
-                      L'utilisateur est en train d'écrire...
-                    </p>
-                  )}
-                </ScrollArea>
-
-                <div className="border-t p-4">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }}
-                    className="flex space-x-2"
-                  >
-                    <Input
-                      type="text"
-                      placeholder="Écrivez un message..."
-                      value={newMessage}
-                      onChange={handleInputChange}
-                      className="grow"
-                    />
-                    <Button
-                      type="submit"
-                      disabled={!selectedUser || !newMessage.trim()}
-                    >
-                      <Send className="size-4" />
-                      <span className="sr-only">Envoyer un message</span>
-                    </Button>
-                  </form>
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <p>
-                  Sélectionnez un utilisateur pour démarrer une conversation.
-                </p>
-              </div>
+    <div className="flex h-[calc(100vh-4rem)] flex-col gap-4 p-4">
+      <div className="flex-1 space-y-4 overflow-y-auto">
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={cn(
+              "flex items-start gap-2",
+              message.user.id === session?.user?.id && "flex-row-reverse",
             )}
+          >
+            <UserAvatar
+              user={{
+                name: message.user.name,
+                image: message.user.image,
+              }}
+              className="size-8"
+            />
+            <div
+              className={cn(
+                "rounded-lg px-4 py-2",
+                message.user.id === session?.user?.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted",
+              )}
+            >
+              <p className="text-sm font-medium">{message.user.name}</p>
+              <p className="text-sm">{message.content}</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(message.createdAt).toLocaleString()}
+              </p>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2">
+        <Input
+          placeholder="Tapez votre message..."
+          {...register("content")}
+          disabled={isLoading || !session?.user}
+        />
+        <Button type="submit" disabled={isLoading || !session?.user}>
+          {isLoading ? "Envoi..." : "Envoyer"}
+        </Button>
+      </form>
+      {errors?.content && (
+        <p className="text-xs text-red-600">{errors.content.message}</p>
+      )}
+    </div>
   );
 }

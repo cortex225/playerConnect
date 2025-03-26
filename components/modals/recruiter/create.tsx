@@ -1,10 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -13,20 +10,8 @@ import {
 import { RecruiterForm } from "@/components/forms/recruiter-form";
 
 export function RecruiterDialogCreate() {
-  const [showDialog, setShowDialog] = useState(false);
-
-  useEffect(() => {
-    // Vérifiez si l'utilisateur doit voir le formulaire
-    const userRole = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("user_role="));
-    if (userRole && userRole.split("=")[1] === "RECRUITER") {
-      setShowDialog(true);
-    }
-  }, []);
-
   return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+    <Dialog defaultOpen={true}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Complétez votre profil Recruiter</DialogTitle>

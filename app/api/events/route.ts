@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { authClient } from "@/lib/auth-client";
 import { prisma } from "@/lib/db";
 
 // Interface pour typer correctement les événements
@@ -20,7 +21,7 @@ interface EventWithAllFields {
 // GET /api/events - Récupérer tous les événements de l'athlète connecté
 export async function GET() {
   try {
-    const session = await auth();
+    const { data: session } = await authClient.getSession();
 
     if (!session || !session.user || !session.user.id) {
       return new NextResponse("Non autorisé", { status: 401 });
