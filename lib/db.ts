@@ -1,37 +1,23 @@
 import { PrismaClient } from "@prisma/client";
 
-import "server-only";
-
-const prismaClientSingleton = () => {
-  const prisma = new PrismaClient();
-
-  // Middleware pour synchroniser les rôles
-  prisma.$use(async (params, next) => {
-    const result = await next(params);
-
-    // Synchroniser le rôle lors de la création ou mise à jour d'un utilisateur
-    if (
-      params.model === "User" &&
-      (params.action === "create" || params.action === "update")
-    ) {
-      if (result?.user_metadata?.role) {
-        await prisma.user.update({
-          where: { id: result.id },
-          data: { role: result.user_metadata.role.toUpperCase() },
-        });
-      }
-    }
-
-    return result;
-  });
-
-  return prisma;
-};
-
+// Déclaration pour le singleton Prisma
 declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
+  var cachedPrisma: PrismaClient;
 }
 
-export const prisma = globalThis.prisma ?? prismaClientSingleton();
+// PrismaClient est attaché à une variable globale lorsqu'il est utilisé en développement
+// pour prévenir l'instanciation de plusieurs instances pendant le hot-reloading
+export const prisma = global.cachedPrisma || new PrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  global.cachedPrisma = prisma;
+}
+
+// Protection pour éviter l'exécution côté client
+if (typeof window !== "undefined") {
+  console.warn(
+    "Attention: Prisma ne devrait pas être importé côté client. Utilisez des API routes ou des server components.",
+  );
+}
+
+export default prisma;

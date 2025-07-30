@@ -2,12 +2,12 @@ import { User } from "@prisma/client";
 
 import { Role } from "@/lib/constants";
 
-interface BetterAuthUserMetadata {
+export interface BetterAuthUserMetadata {
   role?: Role;
   permissions?: string[];
 }
 
-interface BetterAuthUser {
+export interface BetterAuthUser {
   id: string;
   name: string | null;
   email: string | null;
@@ -15,10 +15,11 @@ interface BetterAuthUser {
   createdAt: Date;
   updatedAt: Date;
   image?: string | null;
+  role?: string;
   user_metadata?: BetterAuthUserMetadata;
 }
 
-interface BetterAuthSession {
+export interface BetterAuthSession {
   id: string;
   userId: string;
   expiresAt: string;
