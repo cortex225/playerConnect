@@ -6,7 +6,8 @@ import { Drawer } from "vaul";
 
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 
 interface ModalProps {
   children: React.ReactNode;
@@ -92,6 +93,9 @@ export function Modal({
           className,
         )}
       >
+        <VisuallyHidden>
+          <DialogTitle>Modal</DialogTitle>
+        </VisuallyHidden>
         {children}
       </DialogContent>
     </Dialog>

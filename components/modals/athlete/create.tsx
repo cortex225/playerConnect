@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { AthleteForm } from "@/components/forms/athlete-form";
 
 export function AthleteDialogCreate() {
@@ -56,6 +57,9 @@ export function AthleteDialogCreate() {
     return (
       <Dialog open={isOpen}>
         <DialogContent>
+          <VisuallyHidden>
+            <DialogTitle>Vérification en cours</DialogTitle>
+          </VisuallyHidden>
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="mb-4 size-8 animate-spin" />
             <p>Vérification de votre profil...</p>

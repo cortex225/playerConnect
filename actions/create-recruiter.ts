@@ -23,7 +23,10 @@ export async function createRecruiter(data: RecruiterFormValues) {
     });
 
     if (existingRecruiter) {
-      throw new Error("Un profil recruteur existe déjà pour cet utilisateur");
+      // Revalider et rediriger vers le dashboard si le profil existe déjà
+      revalidatePath("/dashboard");
+      redirect("/dashboard");
+      return { success: true, data: existingRecruiter };
     }
 
     // Créer un nouveau recruteur

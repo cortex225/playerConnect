@@ -26,7 +26,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { PerformanceForm } from "@/components/forms/performance-form";
 
 export const PerformanceStats = ({ positions, sportType }) => {
@@ -63,6 +64,9 @@ export const PerformanceStats = ({ positions, sportType }) => {
                 <Button>Add Stats</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
+                <VisuallyHidden>
+                  <DialogTitle>Ajouter des statistiques de performance</DialogTitle>
+                </VisuallyHidden>
                 <PerformanceForm
                   positions={positions}
                   sportType={sportType}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { auth } from "@/lib/auth";
+// Pas d'import auth avec Prisma pour éviter les erreurs Edge Runtime
 
 // Pages qui nécessitent une authentification
 const PROTECTED_ROUTES = ["/dashboard", "/admin", "/onboarding"];
@@ -15,10 +15,14 @@ const ROLE_SELECTION_PATH = "/select-role";
 // Pages à exclure de la vérification d'authentification (comme les API routes)
 const EXCLUDED_ROUTES = [
   "/api/auth",
+  "/api/_next",
   "/_next",
   "/favicon.ico",
+  "/site.webmanifest",
   "/images",
   "/fonts",
+  "/icons",
+  "/static",
 ];
 
 // Fonction pour vérifier si une route doit être exclue
@@ -37,33 +41,29 @@ export async function middleware(request: NextRequest) {
   console.log("[Middleware] URL:", pathname);
 
   try {
-    // Obtenir la session via l'API de BetterAuth
-    console.log("[Middleware] Vérification de session avec headers");
-
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    const isAuthenticated = !!session?.user;
-    console.log("[Middleware] Authentifié:", isAuthenticated);
-
-    if (session?.user) {
-      // Log sécurisé pour éviter d'afficher trop d'informations sensibles
-      console.log("[Middleware] User ID:", session.user.id);
-      // Log des métadonnées disponibles
-      if ((session.user as any).user_metadata) {
-        console.log(
-          "[Middleware] User Role from metadata:",
-          (session.user as any).user_metadata.role,
-        );
-      }
-      if ((session.user as any).role) {
-        console.log(
-          "[Middleware] User Role from DB:",
-          (session.user as any).role,
-        );
+    // Vérifier la présence de cookies de session BetterAuth
+    // BetterAuth peut utiliser différents noms de cookies
+    const possibleCookieNames = [
+      'better-auth.session_token',
+      'session_token', 
+      'session',
+      'auth-token'
+    ];
+    
+    let sessionCookie = null;
+    for (const cookieName of possibleCookieNames) {
+      const cookie = request.cookies.get(cookieName);
+      if (cookie?.value) {
+        sessionCookie = cookie;
+        break;
       }
     }
+    
+    const isAuthenticated = !!sessionCookie?.value;
+    console.log("[Middleware] Authentifié:", isAuthenticated, sessionCookie ? `(cookie: ${sessionCookie.name})` : '');
+
+    // Pour le moment, on ne peut pas accéder aux détails de l'utilisateur dans le middleware
+    // Les informations détaillées seront récupérées côté serveur
 
     // Vérifier si l'utilisateur essaie d'accéder à une route protégée
     const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
@@ -108,17 +108,8 @@ export async function middleware(request: NextRequest) {
     // Ajouter l'état d'authentification comme header pour les layouts
     response.headers.set("x-authenticated", isAuthenticated ? "true" : "false");
 
-    // Si l'utilisateur est authentifié, ajouter son ID pour référence
-    if (isAuthenticated && session?.user) {
-      response.headers.set("x-user-id", session.user.id);
-
-      // Ajouter le rôle si disponible
-      const role =
-        (session.user as any).user_metadata?.role || (session.user as any).role;
-      if (role) {
-        response.headers.set("x-user-role", role);
-      }
-    }
+    // Les détails de l'utilisateur seront ajoutés côté serveur
+    // car nous ne pouvons pas accéder à la base de données dans le middleware
 
     return response;
   } catch (error) {
