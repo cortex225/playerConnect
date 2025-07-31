@@ -37,7 +37,7 @@ export default async function ProtectedLayout({
   children,
 }: ProtectedLayoutProps) {
   const user = await getServerSession();
-  const headersList = headers();
+  const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
 
   console.log("[Layout] Vérification utilisateur:", user?.id, user?.role);

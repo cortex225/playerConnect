@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
             role: role.toUpperCase(),
           },
         },
-        headers: headers(),
+        headers: await headers(),
       });
 
       console.log("[UpdateRole] Métadonnées mises à jour pour", user.id);

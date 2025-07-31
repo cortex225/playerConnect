@@ -109,7 +109,7 @@ export default function MediaCarousel() {
   }, [medias]);
 
   // Fonction de scroll du carousel
-  const scroll = (direction: number, ref: React.RefObject<HTMLDivElement>) => {
+  const scroll = (direction: number, ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollBy({ left: direction * 300, behavior: "smooth" });
     }

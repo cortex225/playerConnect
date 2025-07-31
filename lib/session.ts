@@ -23,7 +23,7 @@ export type UserSession = {
 export async function getCurrentUser(): Promise<UserSession | null> {
   try {
     // Récupérer la session via BetterAuth
-    const headersList = headers();
+    const headersList = await headers();
 
     console.log("[Session] Récupération de session avec les headers");
 
@@ -132,7 +132,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
  */
 export async function getSessionUser() {
   try {
-    const headersList = headers();
+    const headersList = await headers();
     const session = await auth.api.getSession({
       headers: headersList,
     });

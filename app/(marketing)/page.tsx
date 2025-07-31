@@ -11,7 +11,7 @@ import PreviewLanding from "@/components/sections/preview-landing";
 import Testimonials from "@/components/sections/testimonials";
 
 export default async function HomePage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const roleCookie = cookieStore.get("selectedRole")?.value;
 
   return (

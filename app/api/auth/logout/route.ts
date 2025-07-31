@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth";
  */
 export async function POST(request: NextRequest) {
   try {
-    const headersList = headers();
+    const headersList = await headers();
 
     console.log("[Logout] Tentative de déconnexion...");
 

@@ -18,10 +18,8 @@ interface EventWithAllFields {
 }
 
 // GET /api/events/[eventId] - Récupérer un événement spécifique
-export async function GET(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function GET(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth();
 
@@ -78,10 +76,8 @@ export async function GET(
 }
 
 // PUT /api/events/[eventId] - Mettre à jour un événement
-export async function PUT(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function PUT(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth();
 
@@ -161,10 +157,8 @@ export async function PUT(
 }
 
 // DELETE /api/events/[eventId] - Supprimer un événement
-export async function DELETE(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
     const session = await auth();
 

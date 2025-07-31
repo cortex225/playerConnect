@@ -22,7 +22,7 @@ export type ServerUserSession = {
  */
 export async function getServerSession(): Promise<ServerUserSession | null> {
   try {
-    const headersList = headers();
+    const headersList = await headers();
     const session = await auth.api.getSession({
       headers: headersList,
     });

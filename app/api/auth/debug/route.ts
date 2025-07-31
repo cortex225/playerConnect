@@ -10,7 +10,7 @@ import { getServerSession } from "@/lib/server/session";
  */
 export async function GET(request: NextRequest) {
   try {
-    const headersList = headers();
+    const headersList = await headers();
     console.log("[Auth Debug] Récupération des headers");
 
     // Récupérer la session via l'API server-side
