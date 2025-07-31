@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
 import { constructMetadata } from "@/lib/utils";
 import { DataTable } from "@/components/dashboard/datatable/data-table";
@@ -15,7 +15,7 @@ export const metadata = constructMetadata({
 });
 
 export default async function MediaPage() {
-  const session = await auth();
+  const session = await getServerSession();
   if (!session?.user) redirect("/login");
 
   const athlete = await prisma.athlete.findUnique({

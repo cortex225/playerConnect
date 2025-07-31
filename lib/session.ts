@@ -24,8 +24,13 @@ export async function getCurrentUser(): Promise<UserSession | null> {
   try {
     // Récupérer la session via BetterAuth
     const headersList = await headers();
+    const cookieStore = await cookies();
 
     console.log("[Session] Récupération de session avec les headers");
+    console.log(
+      "[Session] Cookies disponibles:",
+      cookieStore.getAll().map((c) => `${c.name}=${c.value.slice(0, 20)}...`),
+    );
 
     const session = await auth.api.getSession({
       headers: headersList,
@@ -52,13 +57,21 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       hasMetadata: !!(user as any).user_metadata,
     });
 
+    // ⚡ NOUVELLE APPROCHE: Récupérer le rôle directement depuis la base de données
+    const { prisma } = await import("@/lib/db");
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true },
+    });
+
     // Accéder aux métadonnées de façon plus sûre
     const metadata = (user as any).user_metadata || {};
-    const dbRole = (user as any).role;
+    const dbRole = dbUser?.role || (user as any).role;
 
     console.log("[Session] Métadonnées et rôle:", {
       metadataRole: metadata.role,
       dbRole: dbRole,
+      userFromDB: !!dbUser,
     });
 
     // Déterminer le rôle (utiliser celui de la métadonnée ou celui de la base de données)

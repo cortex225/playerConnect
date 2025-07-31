@@ -31,6 +31,29 @@ export const auth = betterAuth({
         data: { role: user.user_metadata?.role?.toUpperCase() || "USER" },
       });
     },
+    async afterSignIn(user, session, req) {
+      // Vérifier s'il y a un cookie selectedRole (pour Google OAuth)
+      const cookies = req?.headers?.cookie;
+      if (cookies) {
+        const selectedRoleMatch = cookies.match(/selectedRole=([^;]+)/);
+        if (selectedRoleMatch) {
+          const selectedRole = selectedRoleMatch[1];
+          console.log(
+            `[Auth Hook] Rôle détecté dans le cookie: ${selectedRole}`,
+          );
+
+          // Mettre à jour le rôle dans la base de données
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { role: selectedRole.toUpperCase() },
+          });
+
+          console.log(
+            `[Auth Hook] Rôle mis à jour pour l'utilisateur ${user.id}: ${selectedRole}`,
+          );
+        }
+      }
+    },
   },
   roles: {
     enabled: true,

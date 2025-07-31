@@ -32,7 +32,7 @@ interface Message {
 
 export function Messagerie() {
   const router = useRouter();
-  const { session } = useAuth();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { adminConfig } from "@/config/admin";
 import { dashboardConfig } from "@/config/dashboard";
 import { ROLES } from "@/lib/constants";
 import { getServerSession } from "@/lib/server/session";
@@ -9,9 +10,6 @@ import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
-import { SessionTest } from "@/components/shared/session-test";
-
-import { adminConfig } from "../../config/admin";
 
 interface ProtectedLayoutProps {
   children?: React.ReactNode;
@@ -19,19 +17,11 @@ interface ProtectedLayoutProps {
 
 // Configuration des redirections par rôle
 const ROLE_DASHBOARDS = {
-  [ROLES.ADMIN]: "/dashboard/admin",
+  [ROLES.ADMIN]: "/dashboard",
   [ROLES.ATHLETE]: "/dashboard/athlete",
   [ROLES.RECRUITER]: "/dashboard/recruiter",
-  [ROLES.USER]: "/select-role",
-};
-
-// Permissions requises par rôle
-const ROLE_REQUIRED_PERMISSIONS = {
-  [ROLES.ADMIN]: ["manage:system"],
-  [ROLES.ATHLETE]: ["view:profile"],
-  [ROLES.RECRUITER]: ["view:profile"],
-  [ROLES.USER]: [],
-};
+  [ROLES.USER]: "/auth/login", // Rediriger les utilisateurs sans rôle vers la connexion
+} as const;
 
 export default async function ProtectedLayout({
   children,
@@ -40,41 +30,32 @@ export default async function ProtectedLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
 
-  console.log("[Layout] Vérification utilisateur:", user?.id, user?.role);
-
-  // Rediriger vers la page d'accueil si l'utilisateur n'est pas connecté
+  // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
   if (!user || !user.isLoggedIn) {
-    console.log("[Layout] Redirection vers /landing (non authentifié)");
-    redirect("/landing");
+    redirect("/auth/login");
   }
 
-  // Vérifier les permissions requises pour le rôle de l'utilisateur
-  const requiredPermissions = ROLE_REQUIRED_PERMISSIONS[user.role] || [];
+  // Gestion simplifiée des redirections par rôle
+  const expectedPath = ROLE_DASHBOARDS[user.role];
 
-  if (requiredPermissions.length > 0) {
-    const hasRequiredPermissions = requiredPermissions.every((permission) =>
-      user.permissions.includes(permission),
+  // Si l'utilisateur a le rôle USER (pas de rôle défini), ne rien faire pour l'instant
+  // TODO: Nous devons permettre à l'utilisateur de choisir son rôle quelque part
+  if (user.role === ROLES.USER) {
+    console.log(
+      "[Layout] Utilisateur avec rôle USER détecté, pas de redirection pour éviter la boucle",
     );
-
-    if (!hasRequiredPermissions) {
-      console.log(
-        "[Layout] Permissions insuffisantes pour le rôle:",
-        user.role,
-      );
-      redirect("/unauthorized");
-    }
+    // Pour l'instant, on laisse l'utilisateur accéder au dashboard général
   }
 
-  // Rediriger vers le dashboard correspondant au rôle si l'utilisateur n'y est pas déjà
-  const roleDashboardPath = ROLE_DASHBOARDS[user.role];
+  // Pour les autres rôles, rediriger uniquement si nécessaire et si pas sur une page autorisée
+  if (expectedPath && user.role !== ROLES.USER) {
+    const isOnCorrectDashboard =
+      pathname.startsWith(expectedPath) ||
+      pathname.startsWith("/dashboard/settings") ||
+      pathname.startsWith("/onboarding");
 
-  if (roleDashboardPath && !pathname.startsWith(roleDashboardPath)) {
-    // Si l'utilisateur est sur la page de sélection de rôle et n'a pas choisi de rôle, ne pas rediriger
-    if (user.role === ROLES.USER && pathname === "/select-role") {
-      // Ne rien faire, laisser l'utilisateur choisir son rôle
-    } else {
-      console.log(`[Layout] Redirection vers ${roleDashboardPath}`);
-      redirect(roleDashboardPath);
+    if (!isOnCorrectDashboard) {
+      redirect(expectedPath);
     }
   }
 
@@ -105,7 +86,6 @@ export default async function ProtectedLayout({
         </div>
       </MaxWidthWrapper>
       <SiteFooter className="border-t" />
-      <SessionTest />
     </div>
   );
 }

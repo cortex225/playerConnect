@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { UserRole } from "@prisma/client";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
 import { userRoleSchema } from "@/lib/validations/user";
 
@@ -13,7 +13,7 @@ export type FormData = {
 
 export async function updateUserRole(userId: string, data: FormData) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
     if (!session?.user || session?.user.id !== userId) {
       throw new Error("Unauthorized");

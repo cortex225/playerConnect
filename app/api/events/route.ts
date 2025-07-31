@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { authClient } from "@/lib/auth-client";
 import { prisma } from "@/lib/db";
 
@@ -70,7 +70,7 @@ export async function GET() {
 // POST /api/events - Créer un nouvel événement
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
     if (!session || !session.user || !session.user.id) {
       return new NextResponse("Non autorisé", { status: 401 });

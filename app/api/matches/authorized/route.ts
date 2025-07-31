@@ -1,18 +1,26 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUserAPI } from "@/lib/session-api";
 
 /**
  * GET /api/matches/authorized
  * Récupère les matchs publics pour les recruteurs
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const user = await getCurrentUser();
+    // 🚀 SOLUTION: Utiliser getCurrentUserAPI() spécialement conçue pour les API routes
+    const user = await getCurrentUserAPI();
 
-    if (!user || user.role !== "RECRUITER") {
-      console.log("Utilisateur non autorisé ou non recruteur");
+    if (!user) {
+      console.log("Aucune session utilisateur trouvée");
+      return NextResponse.json([]);
+    }
+
+    if (user.role !== "RECRUITER") {
+      console.log(
+        `Utilisateur non autorisé ou non recruteur (rôle: ${user.role})`,
+      );
       return NextResponse.json([]);
     }
 

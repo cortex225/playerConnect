@@ -1,12 +1,12 @@
 // app/api/pusher/auth/route.ts
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { pusherServer } from "@/lib/pusher";
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });

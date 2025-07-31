@@ -1,13 +1,13 @@
 // app/api/messages/route.ts
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { pusherServer } from "@/lib/pusher";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });

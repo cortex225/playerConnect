@@ -12,7 +12,6 @@ import {
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { AthleteDialogCreate } from "@/components/modals/athlete/create";
-import { SessionTest } from "@/components/shared/session-test";
 
 export default async function OnboardingPage() {
   console.log("Page onboarding - Vérification de l'utilisateur");
@@ -58,8 +57,6 @@ export default async function OnboardingPage() {
         </Card>
 
         <AthleteDialogCreate />
-
-        <SessionTest />
       </div>
     </DashboardShell>
   );

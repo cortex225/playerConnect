@@ -9,8 +9,7 @@ const PROTECTED_ROUTES = ["/dashboard", "/admin", "/onboarding"];
 // Pages accessibles uniquement si non authentifié
 const AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-password"];
 
-// Page d'atterrissage après la sélection de rôle
-const ROLE_SELECTION_PATH = "/select-role";
+// Les utilisateurs sont maintenant redirigés directement vers leur dashboard
 
 // Pages à exclure de la vérification d'authentification (comme les API routes)
 const EXCLUDED_ROUTES = [
@@ -41,26 +40,12 @@ export async function middleware(request: NextRequest) {
   console.log("[Middleware] URL:", pathname);
 
   try {
-    // Vérifier la présence de cookies de session BetterAuth
-    // BetterAuth peut utiliser différents noms de cookies
-    const possibleCookieNames = [
-      'better-auth.session_token',
-      'session_token', 
-      'session',
-      'auth-token'
-    ];
-    
-    let sessionCookie = null;
-    for (const cookieName of possibleCookieNames) {
-      const cookie = request.cookies.get(cookieName);
-      if (cookie?.value) {
-        sessionCookie = cookie;
-        break;
-      }
-    }
-    
+    // Vérifier la présence du cookie de session BetterAuth
+    // BetterAuth utilise le nom 'better-auth.session_token' par défaut
+    const sessionCookie = request.cookies.get("better-auth.session_token");
     const isAuthenticated = !!sessionCookie?.value;
-    console.log("[Middleware] Authentifié:", isAuthenticated, sessionCookie ? `(cookie: ${sessionCookie.name})` : '');
+
+    console.log("[Middleware] Authentifié:", isAuthenticated);
 
     // Pour le moment, on ne peut pas accéder aux détails de l'utilisateur dans le middleware
     // Les informations détaillées seront récupérées côté serveur

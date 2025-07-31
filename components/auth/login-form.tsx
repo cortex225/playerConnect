@@ -21,65 +21,26 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { signIn, loading, error } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
-    try {
-      const response = await signIn.email({
-        email,
-        password,
-        callbackURL: callbackUrl,
-      });
+    const success = await signIn(email, password);
 
-      if (response.error) {
-        // Gérer les erreurs spécifiques
-        if (response.error.message?.includes("credentials")) {
-          setError("Identifiants incorrects. Veuillez réessayer.");
-        } else {
-          setError("Une erreur s'est produite. Veuillez réessayer.");
-        }
-        setLoading(false);
-      } else {
-        // Connexion réussie
-        router.refresh();
-
-        if (onSuccess) {
-          onSuccess();
-        }
-
-        // Rediriger vers la page demandée ou le tableau de bord par défaut
-        setTimeout(() => {
-          router.push(callbackUrl);
-        }, 300);
+    if (success) {
+      if (onSuccess) {
+        onSuccess();
       }
-    } catch (err) {
-      console.error("Erreur lors de la connexion:", err);
-      setError(
-        "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
-      );
-      setLoading(false);
+
+      // Rediriger vers la page demandée ou le tableau de bord par défaut
+      router.push(callbackUrl);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: callbackUrl,
-      });
-    } catch (error) {
-      console.error("Erreur lors de la connexion avec Google:", error);
-      setError("Une erreur s'est produite lors de la connexion avec Google.");
-      setLoading(false);
-    }
+    // TODO: Implémenter la connexion Google avec le nouveau hook
+    console.log("Connexion Google à implémenter");
   };
 
   return (
@@ -124,7 +85,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connexion en
+            <Loader2 className="mr-2 size-4 animate-spin" /> Connexion en
             cours...
           </>
         ) : (
@@ -149,7 +110,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         disabled={loading}
       >
         {loading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 size-4 animate-spin" />
         ) : (
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path

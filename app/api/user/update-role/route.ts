@@ -1,9 +1,7 @@
-import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUserAPI } from "@/lib/session-api";
 
 /**
  * API pour mettre à jour le rôle d'un utilisateur
@@ -11,7 +9,7 @@ import { getCurrentUser } from "@/lib/session";
 export async function POST(request: NextRequest) {
   try {
     // Vérifier si l'utilisateur est authentifié
-    const user = await getCurrentUser();
+    const user = await getCurrentUserAPI();
 
     if (!user) {
       console.log("[UpdateRole] Non authentifié");
@@ -37,24 +35,12 @@ export async function POST(request: NextRequest) {
       data: { role: role.toUpperCase() },
     });
 
-    // Mettre à jour les métadonnées dans BetterAuth
-    try {
-      // On utilise l'API de BetterAuth pour mettre à jour les métadonnées
-      const result = await auth.api.updateUserMetadata({
-        body: {
-          userId: user.id,
-          metadata: {
-            role: role.toUpperCase(),
-          },
-        },
-        headers: await headers(),
-      });
-
-      console.log("[UpdateRole] Métadonnées mises à jour pour", user.id);
-    } catch (error) {
-      console.error("[UpdateRole] Erreur mise à jour métadonnées:", error);
-      // On continue même en cas d'erreur car la DB est mise à jour
-    }
+    // Note: La mise à jour des métadonnées BetterAuth se fera automatiquement
+    // via les hooks dans la configuration auth lors du prochain login
+    console.log(
+      "[UpdateRole] Rôle mis à jour dans la base de données pour",
+      user.id,
+    );
 
     return NextResponse.json({
       success: true,

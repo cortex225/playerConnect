@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { stripe } from "@/lib/stripe";
 import { getUserSubscriptionPlan } from "@/lib/subscription";
 import { absoluteUrl } from "@/lib/utils";
@@ -21,7 +21,7 @@ export async function generateUserStripe(
   let redirectUrl: string = "";
 
   try {
-    const session = await auth();
+    const session = await getServerSession();
     const user = session?.user;
 
     if (!user || !user.email || !user.id) {

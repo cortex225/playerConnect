@@ -32,8 +32,16 @@ export async function getServerSession(): Promise<ServerUserSession | null> {
     }
 
     const user = session.user;
+
+    // ⚡ NOUVELLE APPROCHE: Récupérer le rôle directement depuis la base de données
+    const { prisma } = await import("@/lib/db");
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true },
+    });
+
     const metadata = (user as any).user_metadata || {};
-    const dbRole = (user as any).role || "";
+    const dbRole = dbUser?.role || (user as any).role || "";
 
     // Déterminer le rôle à partir des métadonnées ou de la base de données
     const metadataRole = metadata.role?.toUpperCase();

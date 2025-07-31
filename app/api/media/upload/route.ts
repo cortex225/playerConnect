@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
     
     if (!session?.user) {
       return NextResponse.json(
