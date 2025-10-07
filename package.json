@@ -88,6 +88,7 @@
     "embla-carousel-react": "^8.6.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.5.0",
+    "framer-motion": "^12.23.22",
     "lucide-react": "^0.381.0",
     "mdast-util-toc": "^7.1.0",
     "ms": "^2.1.3",
