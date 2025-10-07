@@ -44,12 +44,12 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
           <p className="text-left text-sm text-muted-foreground">
             Built by{" "}
             <Link
-              href={siteConfig.links.twitter}
+              href={siteConfig.links.github}
               target="_blank"
               rel="noreferrer"
               className="font-medium underline underline-offset-4"
             >
-              mickasmt
+              jlgouaho
             </Link>
             . Hosted on{" "}
             <Link
@@ -60,26 +60,10 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
             >
               Vercel
             </Link>
-            . Illustrations by{" "}
-            <Link
-              href="https://popsy.co"
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline underline-offset-4"
-            >
-              Popsy
-            </Link>
+          
           </p>
 
           <div className="flex items-center gap-3">
-            <Link
-              href={siteConfig.links.github}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium underline underline-offset-4"
-            >
-              <Icons.gitHub className="size-5" />
-            </Link>
             <ModeToggle />
           </div>
         </div>
