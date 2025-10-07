@@ -26,7 +26,6 @@ const ROLE_LABELS = {
 const ROLE_DASHBOARDS = {
   [ROLES.ATHLETE]: "/dashboard/athlete",
   [ROLES.RECRUITER]: "/dashboard/recruiter",
-  [ROLES.ADMIN]: "/dashboard",
 } as const;
 
 export function RoleSwitcher() {

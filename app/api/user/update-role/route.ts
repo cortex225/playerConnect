@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
-import { getCurrentUserAPI } from "@/lib/session-api";
+import { getCurrentUser } from "@/lib/session";
 
 /**
  * API pour mettre à jour le rôle d'un utilisateur
@@ -9,7 +9,7 @@ import { getCurrentUserAPI } from "@/lib/session-api";
 export async function POST(request: NextRequest) {
   try {
     // Vérifier si l'utilisateur est authentifié
-    const user = await getCurrentUserAPI();
+    const user = await getCurrentUser();
 
     if (!user) {
       console.log("[UpdateRole] Non authentifié");

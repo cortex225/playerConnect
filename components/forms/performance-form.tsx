@@ -98,7 +98,6 @@ const steps: Step[] = [
 export function PerformanceForm({
   positions,
   sportType,
-  athleteId,
 }: PerformanceFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isPending, setIsPending] = useState(false);
@@ -141,11 +140,12 @@ export function PerformanceForm({
   async function onSubmitForm(values: PerformanceFormValues) {
     setIsPending(true);
     try {
-      const result = await createPerformance(athleteId, values);
+      const result = await createPerformance(values);
       if (result.error) throw new Error(result.error);
       toast.success("Statistiques ajoutées avec succès");
       form.reset();
       setCurrentStep(1);
+      setExtractedStats([]);
     } catch (error) {
       toast.error("Une erreur est survenue lors de l'ajout des statistiques");
     } finally {

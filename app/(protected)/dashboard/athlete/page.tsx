@@ -69,7 +69,7 @@ export const metadata = constructMetadata({
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ATHLETE") redirect("/landing");
+  if (!user || user.role !== "ATHLETE") redirect("/");
 
   try {
     // Utiliser une seule requête pour récupérer toutes les données nécessaires
@@ -79,7 +79,15 @@ export default async function DashboardPage() {
       },
       include: {
         media: true,
-        performances: true,
+        performances: {
+          include: {
+            KPI: true,
+            position: true,
+          },
+          orderBy: {
+            date: 'desc',
+          },
+        },
         user: true,
         sport: {
           include: {
@@ -178,11 +186,15 @@ export default async function DashboardPage() {
             </div>
             {/* KPI Chart - 3 colonnes sur desktop */}
             <div className="col-span-2">
-              <KPIChart />
+              <KPIChart performances={athlete.performances} />
             </div>
             {/* Performance Stats - 4 colonnes sur desktop */}
             <div className="col-span-7">
-              <PerformanceStats positions={positions} sportType={sportName} />
+              <PerformanceStats
+                positions={positions}
+                sportType={sportName}
+                performances={athlete.performances}
+              />
             </div>
             {/* Top Recruiters - 3 colonnes sur desktop */}
             <div className="col-span-7">

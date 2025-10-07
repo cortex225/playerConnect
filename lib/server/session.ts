@@ -43,19 +43,16 @@ export async function getServerSession(): Promise<ServerUserSession | null> {
     const metadata = (user as any).user_metadata || {};
     const dbRole = dbUser?.role || (user as any).role || "";
 
-    // Déterminer le rôle à partir des métadonnées ou de la base de données
-    const metadataRole = metadata.role?.toUpperCase();
+    // Déterminer le rôle - TOUJOURS prioriser la base de données comme source de vérité
     const userDbRole = dbRole?.toUpperCase();
+    const metadataRole = metadata.role?.toUpperCase();
 
-    // Choisir le rôle
+    // Choisir le rôle selon la priorité : DB > métadonnées > USER
     let roleToUse: Role = ROLES.USER;
-    if (metadataRole && Object.values(ROLES).includes(metadataRole as Role)) {
-      roleToUse = metadataRole as Role;
-    } else if (
-      userDbRole &&
-      Object.values(ROLES).includes(userDbRole as Role)
-    ) {
+    if (userDbRole && Object.values(ROLES).includes(userDbRole as Role)) {
       roleToUse = userDbRole as Role;
+    } else if (metadataRole && Object.values(ROLES).includes(metadataRole as Role)) {
+      roleToUse = metadataRole as Role;
     }
 
     // Déterminer les permissions

@@ -22,7 +22,7 @@ export const metadata = constructMetadata({
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
-  if (!user?.id) redirect("/landing");
+  if (!user?.id) redirect("/");
 
   let athleteData: Athlete | null = null;
   let recruiterData: Recruiter | null = null;

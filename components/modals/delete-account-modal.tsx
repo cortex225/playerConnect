@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { signOut } from "@/lib/auth-client";
@@ -20,7 +21,7 @@ interface DeleteAccountModalProps {
   setShowDeleteAccountModal: (show: boolean) => void;
 }
 
-export function DeleteAccountModal({
+function DeleteAccountModalComponent({
   showDeleteAccountModal,
   setShowDeleteAccountModal,
 }: DeleteAccountModalProps) {
@@ -86,4 +87,20 @@ export function DeleteAccountModal({
       </DialogContent>
     </Dialog>
   );
+}
+
+export function useDeleteAccountModal() {
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+
+  const DeleteAccountModal = () => (
+    <DeleteAccountModalComponent
+      showDeleteAccountModal={showDeleteAccountModal}
+      setShowDeleteAccountModal={setShowDeleteAccountModal}
+    />
+  );
+
+  return {
+    setShowDeleteAccountModal,
+    DeleteAccountModal,
+  };
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
-import { getCurrentUserAPI } from "@/lib/session-api";
+import { getCurrentUser } from "@/lib/session";
 
 /**
  * GET /api/matches/authorized
@@ -9,8 +9,8 @@ import { getCurrentUserAPI } from "@/lib/session-api";
  */
 export async function GET(req: Request) {
   try {
-    // 🚀 SOLUTION: Utiliser getCurrentUserAPI() spécialement conçue pour les API routes
-    const user = await getCurrentUserAPI();
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
+    const user = await getCurrentUser();
 
     if (!user) {
       console.log("Aucune session utilisateur trouvée");

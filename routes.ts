@@ -4,7 +4,6 @@
  * @type {string[]}
  */
 export const publicRoutes = [
-  "/landing",
   "/blog",
   "/docs",
   "/guides",

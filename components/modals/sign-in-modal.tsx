@@ -54,26 +54,24 @@ function SignInModal({
     }
     setLoading(true);
     try {
+      // Stocker le rôle sélectionné dans un cookie pour l'onboarding
+      document.cookie = `selectedRole=${selectedRole}; path=/; max-age=3600`;
+
       await signIn.email({
         email,
         password,
-        callbackURL:
-          selectedRole === "ATHLETE"
-            ? "/dashboard/athlete"
-            : "/dashboard/recruiter",
+        callbackURL: "/dashboard", // Rediriger vers dashboard général
       });
       toast.success("Connexion réussie");
     } catch (error) {
       // Si l'erreur indique que l'utilisateur n'existe pas, on tente de créer un compte
       try {
+        // Le cookie selectedRole est déjà défini ci-dessus
         await signUp.email({
           email,
           password,
           name: email.split("@")[0], // Utilise la partie locale de l'email comme nom par défaut
-          callbackURL:
-            selectedRole === "ATHLETE"
-              ? "/dashboard/athlete"
-              : "/dashboard/recruiter",
+          callbackURL: "/dashboard", // Rediriger vers dashboard général
         });
         toast.success("Compte créé et connecté avec succès");
       } catch (signUpError) {
@@ -92,13 +90,11 @@ function SignInModal({
     }
     setLoading(true);
     try {
+      // Stocker le rôle sélectionné dans un cookie pour l'onboarding
       document.cookie = `selectedRole=${selectedRole}; path=/; max-age=3600`;
       await signIn.social({
         provider: "google",
-        callbackURL:
-          selectedRole === "ATHLETE"
-            ? "/dashboard/athlete"
-            : "/dashboard/recruiter",
+        callbackURL: "/dashboard", // Rediriger vers dashboard général
       });
     } catch (error) {
       console.error("Erreur de connexion Google:", error);

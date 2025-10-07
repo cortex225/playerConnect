@@ -1,7 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -81,15 +81,22 @@ export async function createAthlete(data: AthleteFormValues) {
 
     console.log("Rôle utilisateur mis à jour: ATHLETE");
 
-    // Mise à jour du cache et redirection
+    // Supprimer le cookie selectedRole car l'onboarding est terminé
+    const cookieStore = await cookies();
+    cookieStore.delete("selectedRole");
+    console.log("Cookie selectedRole supprimé");
+
+    // Mise à jour du cache
+    // Revalider toutes les pages qui dépendent de la session/rôle
+    revalidatePath("/", "layout"); // Revalide tout depuis la racine
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/athlete");
     revalidatePath("/onboarding");
 
-    console.log("Redirection vers le dashboard");
-    redirect("/dashboard/athlete");
+    console.log("Profil athlète créé avec succès, le client va rediriger");
 
-    return { success: true, data: athlete };
+    // Retourner le succès et laisser le client gérer la redirection
+    return { success: true, data: athlete, redirectTo: "/dashboard/athlete" };
   } catch (error) {
     console.error("Erreur création athlète:", error);
     return { success: false, error: "Erreur lors de la création de l'athlète" };

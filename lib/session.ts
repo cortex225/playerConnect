@@ -74,19 +74,16 @@ export async function getCurrentUser(): Promise<UserSession | null> {
       userFromDB: !!dbUser,
     });
 
-    // Déterminer le rôle (utiliser celui de la métadonnée ou celui de la base de données)
-    const metadataRole = metadata.role?.toUpperCase();
+    // Déterminer le rôle - TOUJOURS prioriser la base de données comme source de vérité
     const userDbRole = dbRole?.toUpperCase();
+    const metadataRole = metadata.role?.toUpperCase();
 
-    // Choisir le rôle selon la priorité
-    let roleToUse;
-    if (metadataRole && Object.values(ROLES).includes(metadataRole as Role)) {
-      roleToUse = metadataRole as Role;
-    } else if (
-      userDbRole &&
-      Object.values(ROLES).includes(userDbRole as Role)
-    ) {
+    // Choisir le rôle selon la priorité : DB > métadonnées > USER
+    let roleToUse: Role;
+    if (userDbRole && Object.values(ROLES).includes(userDbRole as Role)) {
       roleToUse = userDbRole as Role;
+    } else if (metadataRole && Object.values(ROLES).includes(metadataRole as Role)) {
+      roleToUse = metadataRole as Role;
     } else {
       roleToUse = ROLES.USER;
     }

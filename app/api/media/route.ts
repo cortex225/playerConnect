@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
-import { getCurrentUserAPI } from "@/lib/session-api";
+import { getCurrentUser } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 export async function GET(req: Request) {
   try {
     console.log("Début de la requête GET /api/media");
 
-    // 🚀 SOLUTION: Utiliser getCurrentUserAPI() spécialement conçue pour les API routes
-    const user = await getCurrentUserAPI();
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
+    const user = await getCurrentUser();
 
     if (!user) {
       console.log(
@@ -76,7 +76,7 @@ export async function GET(req: Request) {
     try {
       const athlete = await prisma.athlete.findFirst({
         where: {
-          userId: session.user.id,
+          userId: user.id,
         },
       });
 
@@ -125,8 +125,8 @@ export async function POST(req: Request) {
   try {
     console.log("Début de la requête POST /api/media");
 
-    // 🚀 SOLUTION: Utiliser getCurrentUserAPI() spécialement conçue pour les API routes
-    const user = await getCurrentUserAPI();
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
+    const user = await getCurrentUser();
 
     if (!user) {
       console.log(
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
     try {
       const athlete = await prisma.athlete.findFirst({
         where: {
-          userId: session.user.id,
+          userId: user.id,
         },
       });
 
@@ -166,9 +166,22 @@ export async function POST(req: Request) {
       console.log(
         `Athlète trouvé avec ID: ${athlete.id}, préparation de l'upload`,
       );
+
       // Utiliser l'ID de l'utilisateur pour le dossier
       const buffer = await file.arrayBuffer();
-      const fileName = `${user.id}/${Date.now()}-${file.name}`;
+
+      // Nettoyer le nom du fichier :
+      // - Remplacer les espaces par des tirets
+      // - Supprimer les caractères spéciaux
+      // - Garder seulement les lettres, chiffres, tirets et points
+      const cleanFileName = file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Supprimer les accents
+        .replace(/[^\w\s.-]/g, "") // Garder seulement alphanumérique, espaces, tirets et points
+        .replace(/\s+/g, "-") // Remplacer espaces par tirets
+        .toLowerCase();
+
+      const fileName = `${user.id}/${Date.now()}-${cleanFileName}`;
 
       console.log(`Tentative d'upload vers Supabase Storage: ${fileName}`);
       // Upload vers Supabase Storage avec le bon bucket
