@@ -12,9 +12,7 @@ model User {
   id                     String         @id @default(cuid())
   name                   String?
   email                  String?        @unique
-  emailVerified          Boolean        @default(false)
   image                  String?
-  password               String? // Ajout pour better-auth
   createdAt              DateTime       @default(now())
   updatedAt              DateTime       @updatedAt
   role                   String         @default("USER")
@@ -23,49 +21,50 @@ model User {
   stripeSubscriptionId   String?        @unique
   stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
-  sessions               Session[]
+  emailVerified          Boolean        @default(false)
+  password               String?
   accounts               Account[]
-  athletes               Athlete[]
-  recruiters             Recruiter[]
-  notifications          Notification[]
-  messages               Message[]
+  athletes               Athlete?
   messagesReceived       Message[]      @relation("MessagesReceived")
   messagesSent           Message[]      @relation("MessagesSent")
+  notifications          Notification[]
+  recruiters             Recruiter?
+  sessions               Session[]
+  messages               Message[]      @relation("MessageToUser")
 
   @@map("users")
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  token        String   @map("sessionToken") @unique
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  ipAddress    String?
-  userAgent    String?
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  token     String   @unique @map("sessionToken")
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  ipAddress String?
+  updatedAt DateTime @updatedAt
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String  @default("oauth")
-  accountId         String  // Champ attendu par Better Auth
-  providerId        String  // Champ attendu par Better Auth
-  accessToken       String? @db.Text
-  refreshToken      String? @db.Text
+  id                   String    @id @default(cuid())
+  userId               String
+  type                 String    @default("oauth")
+  scope                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  accessToken          String?
+  accountId            String
+  idToken              String?
+  providerId           String
+  refreshToken         String?
+  sessionState         String?
+  tokenType            String?
   accessTokenExpiresAt DateTime?
-  tokenType         String?
-  scope             String?
-  idToken           String? @db.Text
-  sessionState      String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
   @@map("accounts")
@@ -73,7 +72,7 @@ model Account {
 
 model VerificationToken {
   identifier String
-  token      String   @db.Text
+  token      String
   expires    DateTime
 
   @@unique([identifier, token])
@@ -89,8 +88,7 @@ model Message {
   createdAt   DateTime @default(now())
   recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
   sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
-
-  User User[]
+  User        User[]   @relation("MessageToUser")
 
   @@map("messages")
 }
@@ -146,6 +144,8 @@ model Athlete {
   gender        Gender?
   age           Int?
   city          String?
+  country       String?           // Pour le ranking national
+  region        String?           // Pour le ranking régional
   height        Float?
   weight        Float?
   dominantHand  DominantHand?
@@ -153,6 +153,12 @@ model Athlete {
   programType   ProgramType?
   categoryId    String?
   sportId       String?
+
+  // Gamification & Ranking
+  totalScore    Float             @default(0) // Score total calculé
+  level         Int               @default(1) // Niveau de gamification
+  xp            Int               @default(0) // Points d'expérience
+
   positions     AthletePosition[]
   category      Category?         @relation(fields: [categoryId], references: [id])
   sport         Sport?            @relation(fields: [sportId], references: [id])
@@ -161,6 +167,8 @@ model Athlete {
   media         Media[]
   notifications Notification[]
   performances  Performance[]
+  rankings      Ranking[]
+  badges        AthleteBadge[]
 
   @@map("athletes")
 }
@@ -275,12 +283,23 @@ model Notification {
   isRead      Boolean    @default(false)
   createdAt   DateTime   @default(now())
   athleteId   Int?
-  athlete     Athlete?   @relation(fields: [athleteId], references: [id])
-  userRef     User       @relation(fields: [userId], references: [id])
-  Recruiter   Recruiter? @relation(fields: [recruiterId], references: [id])
   recruiterId Int?
+  athlete     Athlete?   @relation(fields: [athleteId], references: [id])
+  Recruiter   Recruiter? @relation(fields: [recruiterId], references: [id])
+  userRef     User       @relation(fields: [userId], references: [id])
 
   @@map("notifications")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
 }
 
 enum UserRole {
@@ -325,13 +344,77 @@ enum CategoryLevel {
   SENIOR
 }
 
-model Verification {
-  id         String    @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+// Système de Ranking
+model Ranking {
+  id          Int      @id @default(autoincrement())
+  athleteId   Int
+  sportId     String
+  positionId  String?  // Optionnel : ranking par position
+  scope       RankingScope // GLOBAL, NATIONAL, REGIONAL, LOCAL
+  region      String?  // Région pour les rankings régionaux
+  country     String?  // Pays pour les rankings nationaux
+  rank        Int      // Position dans le classement
+  score       Float    // Score calculé
+  period      String   // Ex: "2025-Q1", "2025", "all-time"
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 
-  @@map("verification")
+  athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([athleteId, sportId, scope, period, region, country])
+  @@index([sportId, scope, period, rank])
+  @@index([athleteId, sportId])
+  @@map("rankings")
+}
+
+// Badges et Achievements
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String   // Nom de l'icône ou URL
+  type        BadgeType
+  condition   String   // Description de la condition pour obtenir le badge
+  xpReward    Int      @default(0)
+  rarity      BadgeRarity @default(COMMON)
+  createdAt   DateTime @default(now())
+
+  athletes    AthleteBadge[]
+
+  @@map("badges")
+}
+
+model AthleteBadge {
+  id          String   @id @default(cuid())
+  athleteId   Int
+  badgeId     String
+  earnedAt    DateTime @default(now())
+
+  athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([athleteId, badgeId])
+  @@map("athlete_badges")
+}
+
+enum RankingScope {
+  GLOBAL      // Mondial
+  NATIONAL    // National (par pays)
+  REGIONAL    // Régional (par région dans un pays)
+  LOCAL       // Local (par ville)
+}
+
+enum BadgeType {
+  PERFORMANCE   // Badges liés aux performances
+  MILESTONE     // Badges liés aux jalons (100 matchs, etc.)
+  CONSISTENCY   // Badges liés à la régularité
+  ACHIEVEMENT   // Badges liés aux accomplissements
+  SPECIAL       // Badges spéciaux/événementiels
+}
+
+enum BadgeRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
 }

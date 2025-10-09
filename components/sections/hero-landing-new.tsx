@@ -79,7 +79,7 @@ export default function HeroLandingNew() {
                 rencontre l'opportunité
               </span>
               <motion.span
-                className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-600"
+                className="absolute inset-x-0 -bottom-2 h-1 bg-gradient-to-r from-primary to-purple-600"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 0.8, delay: 0.5 }}

@@ -58,6 +58,8 @@ import { PerformanceStats } from "@/components/dashboard/dashboard-athlete/perfo
 import { DashboardShell } from "@/components/dashboard/shell";
 import { PerformanceForm } from "@/components/forms/performance-form";
 import { UpdatePositionsForm } from "@/components/forms/update-positions-form";
+import { RankingWidget } from "@/components/dashboard/dashboard-athlete/ranking-widget";
+import { GamificationWidget } from "@/components/dashboard/dashboard-athlete/gamification-widget";
 
 import { TopRecruiters } from "../../../../components/dashboard/dashboard-athlete/top-recruiters";
 import { CreateMatchModal } from "../../../../components/modals/athlete/create-match";
@@ -188,7 +190,25 @@ export default async function DashboardPage() {
             <div className="col-span-2">
               <KPIChart performances={athlete.performances} />
             </div>
-            {/* Performance Stats - 4 colonnes sur desktop */}
+
+            {/* Ranking Widget - 3 colonnes */}
+            <div className="col-span-3">
+              <RankingWidget
+                athleteId={athleteId}
+                sportId={athlete.sportId || ""}
+              />
+            </div>
+
+            {/* Gamification Widget - 4 colonnes */}
+            <div className="col-span-4">
+              <GamificationWidget
+                athleteId={athleteId}
+                level={athlete.level || 1}
+                xp={athlete.xp || 0}
+              />
+            </div>
+
+            {/* Performance Stats - 7 colonnes sur desktop */}
             <div className="col-span-7">
               <PerformanceStats
                 positions={positions}
@@ -196,12 +216,10 @@ export default async function DashboardPage() {
                 performances={athlete.performances}
               />
             </div>
-            {/* Top Recruiters - 3 colonnes sur desktop */}
+            {/* Top Recruiters - 7 colonnes sur desktop */}
             <div className="col-span-7">
               <TopRecruiters />
             </div>
-            {/* Performance Form - 4 colonnes sur desktop */}
-            <div className="col-span-7"></div>
             {/* Invitations aux matchs */}
             <div className="col-span-7">
               <MatchInvitations />

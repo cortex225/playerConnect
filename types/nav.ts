@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "ATHLETE" | "RECRUITER";
+export type UserRole = "ADMIN" | "ATHLETE" | "RECRUITER" | "USER";
 
 export interface SidebarNavItem {
   title: string;

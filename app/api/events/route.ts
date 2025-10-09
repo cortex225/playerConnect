@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/server/session";
-import { authClient } from "@/lib/auth-client";
 import { prisma } from "@/lib/db";
 
 // Interface pour typer correctement les événements
@@ -21,21 +20,21 @@ interface EventWithAllFields {
 // GET /api/events - Récupérer tous les événements de l'athlète connecté
 export async function GET() {
   try {
-    const { data: session } = await authClient.getSession();
+    const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
     if (!athlete) {
-      console.log(`Athlète non trouvé pour l'utilisateur ${session.user.id}`);
+      console.log(`Athlète non trouvé pour l'utilisateur ${session.id}`);
       // Retourner un tableau vide au lieu d'une erreur 404
       return NextResponse.json([]);
     }
@@ -72,7 +71,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -86,7 +85,7 @@ export async function POST(req: Request) {
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 

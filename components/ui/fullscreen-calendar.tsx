@@ -539,7 +539,7 @@ export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
                         !startDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 size-4" />
                       {startDate ? (
                         format(startDate, "PPP", { locale: fr })
                       ) : (
@@ -587,7 +587,7 @@ export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
                         !endDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 size-4" />
                       {endDate ? (
                         format(endDate, "PPP", { locale: fr })
                       ) : (
@@ -625,7 +625,7 @@ export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
 
             <div className="space-y-2">
               <Label htmlFor="location" className="font-medium">
-                <MapPin className="mr-1 inline h-4 w-4" /> Lieu
+                <MapPin className="mr-1 inline size-4" /> Lieu
               </Label>
               <Input
                 id="location"
@@ -660,7 +660,7 @@ export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
 
             <div className="space-y-2">
               <Label className="font-medium">
-                <Palette className="mr-1 inline h-4 w-4" /> Couleur de
+                <Palette className="mr-1 inline size-4" /> Couleur de
                 l'événement
               </Label>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -669,7 +669,7 @@ export function FullScreenCalendar({ data = [] }: FullScreenCalendarProps) {
                     key={color.value}
                     type="button"
                     className={cn(
-                      "h-8 w-8 rounded-full transition-all",
+                      "size-8 rounded-full transition-all",
                       color.class,
                       selectedEvent?.color === color.value
                         ? "ring-2 ring-primary ring-offset-2"

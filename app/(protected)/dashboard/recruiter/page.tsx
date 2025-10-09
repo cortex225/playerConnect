@@ -46,7 +46,7 @@ const TopAthletesFallback = () => (
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="size-10 rounded-full" />
             <div>
               <Skeleton className="h-4 w-32" />
               <Skeleton className="mt-1 h-3 w-24" />
@@ -60,7 +60,7 @@ const TopAthletesFallback = () => (
 );
 
 const MediaAthleteFallback = () => (
-  <div className="h-full w-full rounded-lg border bg-card p-6">
+  <div className="size-full rounded-lg border bg-card p-6">
     <div className="space-y-2">
       <Skeleton className="h-7 w-40" />
       <Skeleton className="h-4 w-60" />
@@ -72,7 +72,7 @@ const MediaAthleteFallback = () => (
           className="overflow-hidden rounded-lg border bg-card shadow-sm"
         >
           <div className="flex items-center gap-3 border-b p-3">
-            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="size-8 rounded-full" />
             <div className="flex-1">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="mt-1 h-3 w-16" />
@@ -191,7 +191,7 @@ export default async function DashboardPage() {
               <CardTitle className="text-sm font-medium">
                 Calendrier des matchs
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Calendar className="size-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">Voir vos matchs</div>

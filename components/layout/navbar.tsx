@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 
-import { NavItem, SidebarNavItem } from "@/types/nav";
+import { SidebarNavItem } from "@/types/nav";
 import { adminConfig } from "@/config/admin";
 import { dashboardConfig } from "@/config/dashboard";
 import { docsConfig } from "@/config/docs";
@@ -69,10 +69,10 @@ export function MainNav({ items, children }: MainNavProps) {
           ))}
         </nav>
       ) : null}
-      <NavMobile items={items} />
+      <NavMobile items={items || []} />
       <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
         <nav className="flex items-center space-x-2">
-          {session?.user ? (
+          {session?.isLoggedIn ? (
             <UserAccountNav />
           ) : (
             <Link

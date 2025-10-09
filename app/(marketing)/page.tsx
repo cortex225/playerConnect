@@ -8,6 +8,7 @@ import FeaturesNew from "@/components/sections/features-new";
 import HeroLandingNew from "@/components/sections/hero-landing-new";
 import HowItWorks from "@/components/sections/how-it-works";
 import TestimonialsNew from "@/components/sections/testimonials-new";
+import TopPlayers from "@/components/sections/top-players";
 
 export const metadata: Metadata = {
   title: "PlayerConnect - Connectez le Talent aux Opportunités Sportives",
@@ -84,6 +85,7 @@ export default async function HomePage() {
       <RoleDialogs roleCookie={roleCookie} />
       <HeroLandingNew />
       <FeaturesNew />
+      <TopPlayers />
       <HowItWorks />
       <TestimonialsNew />
       <CTASection />

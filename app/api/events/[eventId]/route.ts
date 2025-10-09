@@ -23,7 +23,7 @@ export async function GET(req: Request, props: { params: Promise<{ eventId: stri
   try {
     const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -36,7 +36,7 @@ export async function GET(req: Request, props: { params: Promise<{ eventId: stri
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
@@ -81,7 +81,7 @@ export async function PUT(req: Request, props: { params: Promise<{ eventId: stri
   try {
     const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -101,7 +101,7 @@ export async function PUT(req: Request, props: { params: Promise<{ eventId: stri
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
@@ -162,7 +162,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ eventId: s
   try {
     const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -175,7 +175,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ eventId: s
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 

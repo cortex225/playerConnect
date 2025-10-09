@@ -176,7 +176,7 @@ export default function MediaAthlete() {
                     className="overflow-hidden rounded-lg border bg-card shadow-sm"
                   >
                     <div className="flex items-center gap-3 border-b p-3">
-                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="size-8 rounded-full" />
                       <div className="flex-1">
                         <Skeleton className="h-4 w-24" />
                         <Skeleton className="mt-1 h-3 w-16" />
@@ -216,7 +216,7 @@ export default function MediaAthlete() {
                     {/* En-tête avec info de l'athlète */}
                     {media.athlete && (
                       <div className="flex items-center gap-3 border-b p-3">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="size-8">
                           <AvatarImage src={media.athlete.user.image || ""} />
                           <AvatarFallback>
                             {media.athlete.user.name?.charAt(0) || "A"}
@@ -250,7 +250,7 @@ export default function MediaAthlete() {
                           variant="secondary"
                           className="items-center rounded-full"
                         >
-                          <Play className="h-5 w-5" />
+                          <Play className="size-5" />
                         </Button>
                       </div>
                     </div>
@@ -279,7 +279,7 @@ export default function MediaAthlete() {
               {selectedMedia?.title}
               {selectedMedia?.athlete && (
                 <div className="mt-2 flex items-center text-sm font-normal">
-                  <Avatar className="mr-2 h-6 w-6">
+                  <Avatar className="mr-2 size-6">
                     <AvatarImage src={selectedMedia.athlete.user.image || ""} />
                     <AvatarFallback>
                       {selectedMedia.athlete.user.name?.charAt(0) || "A"}
@@ -295,7 +295,7 @@ export default function MediaAthlete() {
               <video
                 src={selectedMedia.url}
                 controls
-                className="h-full w-full rounded-lg"
+                className="size-full rounded-lg"
                 autoPlay
               >
                 Votre navigateur ne supporte pas la lecture vidéo.

@@ -196,7 +196,7 @@ export function PerformanceForm({
             {currentStep === 1 ? (
               <div className="flex flex-col items-center space-y-4">
                 <div className="text-center">
-                  <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <FileUp className="mx-auto size-12 text-muted-foreground" />
                   <h3 className="mt-2 text-lg font-semibold">
                     Importez vos statistiques
                   </h3>

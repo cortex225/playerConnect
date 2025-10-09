@@ -53,7 +53,7 @@ export function DashboardNav({ items, userRole }: DashboardNavProps) {
             className={cn(
               buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
               isActive
-                ? "bg-muted hover:bg-muted font-medium"
+                ? "bg-muted font-medium hover:bg-muted"
                 : "hover:bg-muted/50",
               "justify-start transition-colors",
             )}

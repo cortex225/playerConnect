@@ -56,17 +56,27 @@ export function RecruiterCalendar() {
       try {
         const response = await fetch("/api/recruiter/events");
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Erreur API:", errorText);
           throw new Error("Erreur lors du chargement des événements");
         }
         const data = await response.json();
+
+        // Vérifier que les données sont bien un tableau
+        if (!Array.isArray(data)) {
+          console.error("Format de données invalide:", data);
+          throw new Error("Format de données invalide");
+        }
+
         setEvents(data);
       } catch (error) {
         console.error("Erreur:", error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les événements",
+          description: error instanceof Error ? error.message : "Impossible de charger les événements",
           variant: "destructive",
         });
+        setEvents([]); // Définir un tableau vide en cas d'erreur
       } finally {
         setIsLoading(false);
       }
@@ -94,24 +104,49 @@ export function RecruiterCalendar() {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardContent className="p-6">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
-            locale={frLocale}
-            events={events}
-            eventClick={handleEventClick}
-            height="auto"
-            editable={false}
-            selectable={false}
-            dayMaxEvents={true}
-          />
+      <Card className="border-0 shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-2xl font-bold">
+            Mes événements
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex h-96 items-center justify-center">
+              <p className="text-muted-foreground">Chargement des événements...</p>
+            </div>
+          ) : (
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay",
+              }}
+              locale={frLocale}
+              events={events.map((event) => ({
+                ...event,
+                className: "fc-event-blue",
+              }))}
+              eventClick={handleEventClick}
+              height="auto"
+              editable={false}
+              selectable={false}
+              dayMaxEvents={true}
+              buttonText={{
+                today: "Aujourd'hui",
+                month: "Mois",
+                week: "Semaine",
+                day: "Jour",
+              }}
+              slotLabelFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -130,7 +165,7 @@ export function RecruiterCalendar() {
                 <h3 className="text-lg font-medium">{selectedEvent.title}</h3>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="size-4 text-muted-foreground" />
                 <span>
                   {format(new Date(selectedEvent.start), "EEEE d MMMM yyyy", {
                     locale: fr,
@@ -138,7 +173,7 @@ export function RecruiterCalendar() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Clock className="size-4 text-muted-foreground" />
                 <span>
                   {format(new Date(selectedEvent.start), "HH:mm", {
                     locale: fr,
@@ -151,7 +186,7 @@ export function RecruiterCalendar() {
               </div>
               {selectedEvent.location && (
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <MapPin className="size-4 text-muted-foreground" />
                   <span>{selectedEvent.location}</span>
                 </div>
               )}
