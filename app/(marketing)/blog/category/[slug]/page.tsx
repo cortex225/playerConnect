@@ -50,7 +50,7 @@ export default async function BlogCategory(
   }
 
   const articles = allPosts
-    .filter((post) => post.categories.includes(data.slug))
+    .filter((post) => post.categories?.includes(data.slug))
     .sort((a, b) => b.date.localeCompare(a.date));
 
   return (

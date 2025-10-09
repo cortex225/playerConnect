@@ -16,11 +16,11 @@ export const metadata = constructMetadata({
 
 export default async function MediaPage() {
   const session = await getServerSession();
-  if (!session?.user) redirect("/login");
+  if (!session) redirect("/login");
 
   const athlete = await prisma.athlete.findUnique({
     where: {
-      userId: session.user.id,
+      userId: session.id,
     },
     include: {
       media: {

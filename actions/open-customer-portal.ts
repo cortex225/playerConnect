@@ -21,7 +21,7 @@ export async function openCustomerPortal(
   try {
     const session = await getServerSession();
 
-    if (!session?.user || !session?.user.email) {
+    if (!session || !session.email) {
       throw new Error("Unauthorized");
     }
 

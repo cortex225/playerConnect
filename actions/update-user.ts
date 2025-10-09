@@ -16,7 +16,7 @@ export async function updateUserName(userId: string, { name }: { name: string })
 export async function updateUserEmail(userId: string, { email }: { email: string }) {
   await prisma.user.update({
     where: { id: userId },
-    data: { email, emailVerified: null }
+    data: { email, emailVerified: false }
   })
   revalidatePath("/dashboard/settings")
 }

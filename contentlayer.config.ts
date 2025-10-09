@@ -20,6 +20,10 @@ export const Post = defineDocumentType(() => ({
       type: 'string',
       resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, '')
     },
+    slugAsParams: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.replace(/^blog\//, '')
+    },
   },
 }))
 
@@ -39,6 +43,10 @@ export const Guide = defineDocumentType(() => ({
       type: 'string',
       resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, '')
     },
+    slugAsParams: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.replace(/^guides\//, '')
+    },
   },
 }))
 
@@ -55,6 +63,10 @@ export const Doc = defineDocumentType(() => ({
     slug: {
       type: 'string',
       resolve: (doc) => doc._raw.sourceFileName.replace(/\.mdx$/, '')
+    },
+    slugAsParams: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.replace(/^docs\//, '')
     },
   },
 }))

@@ -25,8 +25,8 @@ export default async function SettingsPage() {
         text="Manage account and website settings."
       />
       <div className="grid gap-6">
-        <UserNameForm user={{ id: user.id, name: user.name || "" }} />
-        <UserRoleForm user={{ id: user.id, role: user.role }} />
+        <UserNameForm />
+        <UserRoleForm />
         <DeleteAccountSection />
       </div>
     </DashboardShell>

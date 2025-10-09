@@ -62,7 +62,7 @@ export default async function SettingsPage() {
       <div className="grid gap-6">
         <div className="space-y-6">
           <div className="text-xl font-semibold">Informations de base</div>
-          <UserNameForm user={{ id: user.id, name: user.name || "" }} />
+          <UserNameForm />
           <UserEmailForm user={{ id: user.id, email: user.email || "" }} />
           <UserPasswordForm userId={user.id} />
         </div>

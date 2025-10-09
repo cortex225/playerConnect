@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import { MessagingInterface } from "@/components/chat/messagerie";
+import { Messagerie } from "@/components/chat/messagerie";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardShell } from "@/components/dashboard/shell";
 
@@ -25,7 +25,7 @@ export default async function AthletesPage() {
     <DashboardShell>
       <DashboardHeader heading="Messages" text="Manage your messages." />
       <div className="grid gap-8">
-        <MessagingInterface />
+        <Messagerie />
       </div>
     </DashboardShell>
   );

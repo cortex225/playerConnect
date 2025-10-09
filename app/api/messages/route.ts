@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession();
 
-    if (!session?.user?.id) {
+    if (!session?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const dbMessage = await prisma.message.create({
       data: {
         content,
-        senderId: session.user.id,
+        senderId: session.id,
         recipientId: receiverId,
         isRead: false,
       },
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const pusherMessage = {
       id: dbMessage.id,
       content: dbMessage.content,
-      sender: session.user.id,
+      sender: session.id,
       recipient: receiverId,
       timestamp: dbMessage.createdAt,
       isRead: false,

@@ -22,13 +22,12 @@ export async function generateUserStripe(
 
   try {
     const session = await getServerSession();
-    const user = session?.user;
 
-    if (!user || !user.email || !user.id) {
+    if (!session || !session.email || !session.id) {
       throw new Error("Unauthorized");
     }
 
-    const subscriptionPlan = await getUserSubscriptionPlan(user.id);
+    const subscriptionPlan = await getUserSubscriptionPlan(session.id);
 
     if (subscriptionPlan.isPaid && subscriptionPlan.stripeCustomerId) {
       // User on Paid Plan - Create a portal session to manage subscription.
@@ -46,7 +45,7 @@ export async function generateUserStripe(
         payment_method_types: ["card"],
         mode: "subscription",
         billing_address_collection: "auto",
-        customer_email: user.email,
+        customer_email: session.email,
         line_items: [
           {
             price: priceId,
@@ -54,7 +53,7 @@ export async function generateUserStripe(
           },
         ],
         metadata: {
-          userId: user.id,
+          userId: session.id,
         },
       });
 
