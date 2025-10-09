@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
 
 // Interface pour typer correctement les événements
@@ -18,14 +18,12 @@ interface EventWithAllFields {
 }
 
 // GET /api/events/[eventId] - Récupérer un événement spécifique
-export async function GET(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function GET(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -38,7 +36,7 @@ export async function GET(
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
@@ -78,14 +76,12 @@ export async function GET(
 }
 
 // PUT /api/events/[eventId] - Mettre à jour un événement
-export async function PUT(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function PUT(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -105,7 +101,7 @@ export async function PUT(
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
@@ -161,14 +157,12 @@ export async function PUT(
 }
 
 // DELETE /api/events/[eventId] - Supprimer un événement
-export async function DELETE(
-  req: Request,
-  { params }: { params: { eventId: string } },
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ eventId: string }> }) {
+  const params = await props.params;
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session || !session.id) {
       return new NextResponse("Non autorisé", { status: 401 });
     }
 
@@ -181,7 +175,7 @@ export async function DELETE(
     // Récupérer l'ID de l'athlète à partir de l'ID utilisateur
     const athlete = await prisma.athlete.findFirst({
       where: {
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 

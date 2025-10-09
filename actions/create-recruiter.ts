@@ -1,7 +1,7 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -23,7 +23,10 @@ export async function createRecruiter(data: RecruiterFormValues) {
     });
 
     if (existingRecruiter) {
-      throw new Error("Un profil recruteur existe déjà pour cet utilisateur");
+      console.log("Profil recruteur existant trouvé, redirection");
+      // Revalider et rediriger vers le dashboard si le profil existe déjà
+      revalidatePath("/dashboard");
+      return { success: true, data: existingRecruiter, redirectTo: "/dashboard/recruiter" };
     }
 
     // Créer un nouveau recruteur
@@ -43,10 +46,19 @@ export async function createRecruiter(data: RecruiterFormValues) {
       data: { role: "RECRUITER" },
     });
 
+    console.log("Rôle utilisateur mis à jour: RECRUITER");
+
+    // Supprimer le cookie selectedRole car l'onboarding est terminé
+    const cookieStore = await cookies();
+    cookieStore.delete("selectedRole");
+    console.log("Cookie selectedRole supprimé");
+
     // Revalider le cache pour /dashboard
+    revalidatePath("/", "layout");
     revalidatePath("/dashboard");
-    redirect("/dashboard");
-    return { success: true, data: recruiter };
+    revalidatePath("/dashboard/recruiter");
+
+    return { success: true, data: recruiter, redirectTo: "/dashboard/recruiter" };
   } catch (error) {
     console.error("Erreur création recruteur:", error);
     return { success: false, error: "Erreur lors de la création du recruteur" };

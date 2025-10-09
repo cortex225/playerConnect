@@ -19,12 +19,6 @@ export const dashboardConfig: DashboardConfig = {
   sidebarNav: [
     {
       title: "Dashboard",
-      href: "/dashboard/admin",
-      icon: "layout_dashboard",
-      roles: ["ADMIN"],
-    },
-    {
-      title: "Dashboard",
       href: "/dashboard/athlete",
       icon: "layout_dashboard",
       roles: ["ATHLETE"],
@@ -37,21 +31,15 @@ export const dashboardConfig: DashboardConfig = {
     },
     {
       title: "Athletes",
+      href: "/dashboard/athlete/athletes",
+      icon: "users",
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Athletes",
       href: "/dashboard/recruiter/athletes",
       icon: "users",
-      roles: ["ADMIN", "RECRUITER"],
-    },
-    {
-      title: "Prospects",
-      href: "/dashboard/recruiter/prospects",
-      icon: "star",
-      roles: ["ADMIN", "RECRUITER"],
-    },
-    {
-      title: "Applications",
-      href: "/dashboard/athlete/applications",
-      icon: "file_text",
-      roles: ["ATHLETE"],
+      roles: ["RECRUITER"],
     },
     {
       title: "Médias",
@@ -60,16 +48,16 @@ export const dashboardConfig: DashboardConfig = {
       roles: ["ATHLETE"],
     },
     {
-      title: "Recruiter Applications",
-      href: "/dashboard/recruiter/applications",
-      icon: "file_text",
-      roles: ["RECRUITER"],
+      title: "Messages",
+      href: "/dashboard/athlete/messages",
+      icon: "messages_square",
+      roles: ["ATHLETE"],
     },
     {
       title: "Messages",
-      href: "/dashboard/messages",
+      href: "/dashboard/recruiter/messages",
       icon: "messages_square",
-      roles: ["ATHLETE", "RECRUITER"],
+      roles: ["RECRUITER"],
     },
     {
       title: "Calendar",
@@ -84,28 +72,28 @@ export const dashboardConfig: DashboardConfig = {
       roles: ["RECRUITER"],
     },
     {
-      title: "Analytics",
-      href: "/dashboard/analytics",
-      icon: "bar_chart_2",
-      roles: ["ATHLETE", "RECRUITER"],
+      title: "Billing",
+      href: "/dashboard/athlete/billing",
+      icon: "billing",
+      roles: ["ATHLETE"],
     },
     {
       title: "Billing",
-      href: "/dashboard/billing",
+      href: "/dashboard/recruiter/billing",
       icon: "billing",
-      roles: ["ADMIN", "RECRUITER"],
-    },
-    {
-      title: "Help Center",
-      href: "/dashboard/help",
-      icon: "circle_help",
-      roles: ["ADMIN", "ATHLETE", "RECRUITER"],
+      roles: ["RECRUITER"],
     },
     {
       title: "Settings",
-      href: "/dashboard/settings",
+      href: "/dashboard/athlete/settings",
       icon: "settings",
-      roles: ["ADMIN", "ATHLETE", "RECRUITER"],
+      roles: ["ATHLETE"],
+    },
+    {
+      title: "Settings",
+      href: "/dashboard/recruiter/settings",
+      icon: "settings",
+      roles: ["RECRUITER"],
     },
   ],
 };

@@ -29,29 +29,22 @@ const nextConfig = {
     domains: ["image.mux.com"],
   },
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"],
-    serverActions: true,
+    serverComponentsExternalPackages: ["@prisma/client"]
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Désactive les dépendances problématiques côté client
-      config.resolve.alias = {
-        ...config.resolve.alias,
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
         canvas: false,
-        encoding: false,
       };
     }
-
-    // Désactive les dépendances inutiles globalement
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "utf-8-validate": false,
-      bufferutil: false,
-      "canvas-prebuilt": false,
-      "canvas-node": false,
-    };
-
     return config;
+  },
+  poweredByHeader: false,
+  compress: true,
+  env: {
+    // Ajout de la variable d'environnement pour canvas
+    CANVAS_PREBUILT_LOCATION: "/vercel/path0/node_modules/canvas/prebuilds",
   },
 };
 

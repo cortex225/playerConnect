@@ -390,7 +390,7 @@ export function CreateMatchModal() {
                       />
                     </FormControl>
                     <div
-                      className="h-10 w-10 rounded-md border"
+                      className="size-10 rounded-md border"
                       style={{ backgroundColor: field.value }}
                     />
                   </div>

@@ -83,17 +83,27 @@ export function AthleteCalendar() {
       try {
         const response = await fetch("/api/events");
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Erreur API:", errorText);
           throw new Error("Erreur lors du chargement des événements");
         }
         const data = await response.json();
+
+        // Vérifier que les données sont bien un tableau
+        if (!Array.isArray(data)) {
+          console.error("Format de données invalide:", data);
+          throw new Error("Format de données invalide");
+        }
+
         setEvents(data);
       } catch (error) {
         console.error("Erreur:", error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les événements",
+          description: error instanceof Error ? error.message : "Impossible de charger les événements",
           variant: "destructive",
         });
+        setEvents([]); // Définir un tableau vide en cas d'erreur
       } finally {
         setIsLoading(false);
       }
@@ -202,7 +212,14 @@ export function AthleteCalendar() {
 
   // Sauvegarder un événement (création ou modification)
   const handleSaveEvent = async () => {
-    if (!selectedEvent || !selectedEvent.title || !startDate) return;
+    if (!selectedEvent || !selectedEvent.title || !startDate) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs requis",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -210,6 +227,17 @@ export function AthleteCalendar() {
       // Combiner date et heure
       const startDateTime = combineDateAndTime(startDate, startTime);
       const endDateTime = combineDateAndTime(endDate || startDate, endTime);
+
+      // Valider que la date de fin est après la date de début
+      if (endDateTime < startDateTime) {
+        toast({
+          title: "Erreur",
+          description: "La date de fin doit être après la date de début",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
       const eventToSave = {
         ...selectedEvent,
@@ -231,6 +259,8 @@ export function AthleteCalendar() {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Erreur API:", errorText);
         throw new Error(
           `Erreur lors de la ${isEditMode ? "modification" : "création"} de l'événement`,
         );
@@ -245,6 +275,7 @@ export function AthleteCalendar() {
       }
 
       setIsDialogOpen(false);
+      setSelectedEvent(null);
       toast({
         title: "Succès",
         description: `Événement ${isEditMode ? "modifié" : "créé"} avec succès`,
@@ -266,6 +297,10 @@ export function AthleteCalendar() {
   const handleDeleteEvent = async () => {
     if (!selectedEvent || !selectedEvent.id) return;
 
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await fetch(`/api/events/${selectedEvent.id}`, {
@@ -273,11 +308,14 @@ export function AthleteCalendar() {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Erreur API:", errorText);
         throw new Error("Erreur lors de la suppression de l'événement");
       }
 
       setEvents(events.filter((e) => e.id !== selectedEvent.id));
       setIsDialogOpen(false);
+      setSelectedEvent(null);
       toast({
         title: "Succès",
         description: "Événement supprimé avec succès",
@@ -319,39 +357,45 @@ export function AthleteCalendar() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
-            }}
-            locale={frLocale}
-            events={events.map((event) => ({
-              ...event,
-              className: `fc-event-${event.color || "blue"}`,
-            }))}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            height="auto"
-            themeSystem="standard"
-            buttonText={{
-              today: "Aujourd'hui",
-              month: "Mois",
-              week: "Semaine",
-              day: "Jour",
-            }}
-            slotLabelFormat={{
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }}
-          />
+          {isLoading ? (
+            <div className="flex h-96 items-center justify-center">
+              <p className="text-muted-foreground">Chargement des événements...</p>
+            </div>
+          ) : (
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,timeGridDay",
+              }}
+              locale={frLocale}
+              events={events.map((event) => ({
+                ...event,
+                className: `fc-event-${event.color || "blue"}`,
+              }))}
+              selectable={true}
+              selectMirror={true}
+              dayMaxEvents={true}
+              weekends={true}
+              select={handleDateSelect}
+              eventClick={handleEventClick}
+              height="auto"
+              themeSystem="standard"
+              buttonText={{
+                today: "Aujourd'hui",
+                month: "Mois",
+                week: "Semaine",
+                day: "Jour",
+              }}
+              slotLabelFormat={{
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -392,7 +436,7 @@ export function AthleteCalendar() {
                         !startDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 size-4" />
                       {startDate ? (
                         format(startDate, "PPP", { locale: fr })
                       ) : (
@@ -440,7 +484,7 @@ export function AthleteCalendar() {
                         !endDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 size-4" />
                       {endDate ? (
                         format(endDate, "PPP", { locale: fr })
                       ) : (
@@ -478,7 +522,7 @@ export function AthleteCalendar() {
 
             <div className="space-y-2">
               <Label htmlFor="location" className="font-medium">
-                <MapPin className="mr-1 inline h-4 w-4" /> Lieu
+                <MapPin className="mr-1 inline size-4" /> Lieu
               </Label>
               <Input
                 id="location"
@@ -513,7 +557,7 @@ export function AthleteCalendar() {
 
             <div className="space-y-2">
               <Label className="font-medium">
-                <Palette className="mr-1 inline h-4 w-4" /> Couleur de
+                <Palette className="mr-1 inline size-4" /> Couleur de
                 l'événement
               </Label>
               <div className="mt-1 flex flex-wrap gap-2">
@@ -522,7 +566,7 @@ export function AthleteCalendar() {
                     key={color.value}
                     type="button"
                     className={cn(
-                      "h-8 w-8 rounded-full transition-all",
+                      "size-8 rounded-full transition-all",
                       color.class,
                       selectedEvent?.color === color.value
                         ? "ring-2 ring-primary ring-offset-2"

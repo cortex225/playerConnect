@@ -41,7 +41,7 @@ export function RecruiterForm() {
       organization: "",
       position: "",
       region: "",
-      experience: undefined,
+      experience: 0,
     },
   });
 
@@ -49,17 +49,21 @@ export function RecruiterForm() {
     setIsPending(true);
     try {
       const result = await createRecruiter(data);
-      if (result.success) {
+
+      if (result.success && result.redirectTo) {
         toast.success("Profil créé avec succès!");
-        router.push("/dashboard");
-      } else {
-        throw new Error(result.error);
+        // Rediriger vers le dashboard recruteur
+        router.push(result.redirectTo);
+        router.refresh();
+      } else if (result.error) {
+        toast.error(result.error);
+        setIsPending(false);
       }
     } catch (error) {
+      console.error("Erreur lors de la création du profil:", error);
       toast.error(
         error instanceof Error ? error.message : "Une erreur est survenue",
       );
-    } finally {
       setIsPending(false);
     }
   }

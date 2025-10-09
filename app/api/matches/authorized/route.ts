@@ -7,12 +7,20 @@ import { getCurrentUser } from "@/lib/session";
  * GET /api/matches/authorized
  * Récupère les matchs publics pour les recruteurs
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
     const user = await getCurrentUser();
 
-    if (!user || user.role !== "RECRUITER") {
-      console.log("Utilisateur non autorisé ou non recruteur");
+    if (!user) {
+      console.log("Aucune session utilisateur trouvée");
+      return NextResponse.json([]);
+    }
+
+    if (user.role !== "RECRUITER") {
+      console.log(
+        `Utilisateur non autorisé ou non recruteur (rôle: ${user.role})`,
+      );
       return NextResponse.json([]);
     }
 

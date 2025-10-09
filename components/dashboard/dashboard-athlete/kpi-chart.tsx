@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import type { Performance } from "@/types";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -8,33 +10,67 @@ import {
   RadarChart,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-export const KPIChart = () => {
-  const kpiData = [
-    { subject: "Mon", Performance: 120, fullMark: 150 },
-    { subject: "Tue", Performance: 98, fullMark: 150 },
-    { subject: "Wed", Performance: 86, fullMark: 150 },
-    { subject: "Thu", Performance: 99, fullMark: 150 },
-    { subject: "Fri", Performance: 85, fullMark: 150 },
-    { subject: "Sat", Performance: 65, fullMark: 150 },
-    { subject: "Sun", Performance: 65, fullMark: 150 },
-  ];
+interface KPIChartProps {
+  performances: Performance[];
+}
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+export const KPIChart = ({ performances }: KPIChartProps) => {
+  // Transformer les données KPI pour le graphique radar
+  const kpiData = useMemo(() => {
+    if (!performances || performances.length === 0) {
+      return [];
+    }
+
+    // Prendre les 5 dernières performances
+    const recentPerformances = performances.slice(0, 5);
+
+    // Collecter tous les KPIs uniques
+    const allKPIs = new Map<string, { total: number; count: number }>();
+
+    recentPerformances.forEach((perf) => {
+      perf.KPI.forEach((kpi) => {
+        const existing = allKPIs.get(kpi.name) || { total: 0, count: 0 };
+        allKPIs.set(kpi.name, {
+          total: existing.total + kpi.value,
+          count: existing.count + 1,
+        });
+      });
+    });
+
+    // Calculer les moyennes et formater pour le graphique
+    return Array.from(allKPIs.entries()).map(([name, data]) => ({
+      subject: name.charAt(0).toUpperCase() + name.slice(1),
+      Performance: Math.round(data.total / data.count),
+      fullMark: 150,
+    }));
+  }, [performances]);
+
   return (
-    <>
-      {/* KPI Chart */}
-      <Card className="h-full">
-        <CardHeader className="pb-2">
-          <CardTitle>Key Performance Indicators</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center">
+    <Card className="h-full">
+      <CardHeader className="pb-2">
+        <CardTitle>Key Performance Indicators</CardTitle>
+        <CardDescription className="text-sm">
+          {kpiData.length > 0
+            ? "Average stats from recent performances"
+            : "No KPI data available"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center justify-center">
+        {kpiData.length === 0 ? (
+          <div className="flex h-[250px] items-center justify-center text-center text-muted-foreground">
+            <div>
+              <p className="mb-2">No KPI data yet</p>
+              <p className="text-sm">Add performance stats to see your KPIs!</p>
+            </div>
+          </div>
+        ) : (
           <ChartContainer
             config={{
               Performance: {
@@ -58,8 +94,8 @@ export const KPIChart = () => {
               <ChartTooltip content={<ChartTooltipContent />} />
             </RadarChart>
           </ChartContainer>
-        </CardContent>
-      </Card>
-    </>
+        )}
+      </CardContent>
+    </Card>
   );
 };

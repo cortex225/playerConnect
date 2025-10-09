@@ -1,24 +1,24 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
 
 export async function GET(req: Request) {
   try {
     console.log("Début de la requête GET /api/media");
-    const session = await auth();
 
-    if (!session?.user) {
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
+    const user = await getCurrentUser();
+
+    if (!user) {
       console.log(
         "Erreur d'authentification: Aucune session utilisateur trouvée",
       );
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    console.log(
-      `Session utilisateur trouvée: ${session.user.id}, rôle: ${session.user.role}`,
-    );
+    console.log(`Session utilisateur trouvée: ${user.id}, rôle: ${user.role}`);
 
     // Vérifier si l'URL contient le paramètre 'all'
     const url = new URL(req.url);
@@ -31,17 +31,9 @@ export async function GET(req: Request) {
 
       // Vérifier si l'utilisateur est un recruteur
       try {
-        const recruiter = await prisma.recruiter.findFirst({
-          where: {
-            userId: session.user.id,
-          },
-        });
+        console.log(`Vérification du rôle utilisateur: ${user.role}`);
 
-        console.log(
-          `Vérification du recruteur: ${recruiter ? "trouvé" : "non trouvé"}`,
-        );
-
-        if (recruiter) {
+        if (user.role === "RECRUITER") {
           // Récupérer tous les médias avec les informations de l'athlète
           console.log("Récupération de tous les médias pour le recruteur");
           const allMedias = await prisma.media.findMany({
@@ -65,7 +57,9 @@ export async function GET(req: Request) {
           console.log(`${allMedias.length} médias récupérés avec succès`);
           return NextResponse.json(allMedias);
         } else {
-          console.log("L'utilisateur n'est pas un recruteur, accès refusé");
+          console.log(
+            `L'utilisateur n'est pas un recruteur (rôle: ${user.role}), accès refusé`,
+          );
           return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
         }
       } catch (error) {
@@ -82,7 +76,7 @@ export async function GET(req: Request) {
     try {
       const athlete = await prisma.athlete.findFirst({
         where: {
-          userId: session.user.id,
+          userId: user.id,
         },
       });
 
@@ -130,16 +124,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     console.log("Début de la requête POST /api/media");
-    const session = await auth();
 
-    if (!session?.user) {
+    // Utiliser getCurrentUser() qui fonctionne avec Better Auth
+    const user = await getCurrentUser();
+
+    if (!user) {
       console.log(
         "Erreur d'authentification: Aucune session utilisateur trouvée",
       );
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    console.log(`Session utilisateur trouvée: ${session.user.id}`);
+    console.log(`Session utilisateur trouvée: ${user.id}`);
     const formData = await req.formData();
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -155,7 +151,7 @@ export async function POST(req: Request) {
     try {
       const athlete = await prisma.athlete.findFirst({
         where: {
-          userId: session.user.id,
+          userId: user.id,
         },
       });
 
@@ -170,9 +166,22 @@ export async function POST(req: Request) {
       console.log(
         `Athlète trouvé avec ID: ${athlete.id}, préparation de l'upload`,
       );
+
       // Utiliser l'ID de l'utilisateur pour le dossier
       const buffer = await file.arrayBuffer();
-      const fileName = `${session.user.id}/${Date.now()}-${file.name}`;
+
+      // Nettoyer le nom du fichier :
+      // - Remplacer les espaces par des tirets
+      // - Supprimer les caractères spéciaux
+      // - Garder seulement les lettres, chiffres, tirets et points
+      const cleanFileName = file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Supprimer les accents
+        .replace(/[^\w\s.-]/g, "") // Garder seulement alphanumérique, espaces, tirets et points
+        .replace(/\s+/g, "-") // Remplacer espaces par tirets
+        .toLowerCase();
+
+      const fileName = `${user.id}/${Date.now()}-${cleanFileName}`;
 
       console.log(`Tentative d'upload vers Supabase Storage: ${fileName}`);
       // Upload vers Supabase Storage avec le bon bucket

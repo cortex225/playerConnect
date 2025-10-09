@@ -169,13 +169,12 @@ export type PerformanceFormValues = {
 };
 
 export type PerformanceFormProps = {
-  positions: Array<{ 
-    id: string; 
+  positions: Array<{
+    id: string;
     name: string;
     sportId: string;
   }>;
   sportType: SportType;
-  athleteId: number;
 };
 
 export type SportStats = Record<string, Array<{ key: string; label: string }>>;

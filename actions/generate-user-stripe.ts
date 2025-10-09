@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { stripe } from "@/lib/stripe";
 import { getUserSubscriptionPlan } from "@/lib/subscription";
 import { absoluteUrl } from "@/lib/utils";
@@ -21,14 +21,13 @@ export async function generateUserStripe(
   let redirectUrl: string = "";
 
   try {
-    const session = await auth();
-    const user = session?.user;
+    const session = await getServerSession();
 
-    if (!user || !user.email || !user.id) {
+    if (!session || !session.email || !session.id) {
       throw new Error("Unauthorized");
     }
 
-    const subscriptionPlan = await getUserSubscriptionPlan(user.id);
+    const subscriptionPlan = await getUserSubscriptionPlan(session.id);
 
     if (subscriptionPlan.isPaid && subscriptionPlan.stripeCustomerId) {
       // User on Paid Plan - Create a portal session to manage subscription.
@@ -46,7 +45,7 @@ export async function generateUserStripe(
         payment_method_types: ["card"],
         mode: "subscription",
         billing_address_collection: "auto",
-        customer_email: user.email,
+        customer_email: session.email,
         line_items: [
           {
             price: priceId,
@@ -54,7 +53,7 @@ export async function generateUserStripe(
           },
         ],
         metadata: {
-          userId: user.id,
+          userId: session.id,
         },
       });
 

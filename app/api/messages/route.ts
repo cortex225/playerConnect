@@ -1,15 +1,15 @@
 // app/api/messages/route.ts
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { pusherServer } from "@/lib/pusher";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session?.user?.id) {
+    if (!session?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const dbMessage = await prisma.message.create({
       data: {
         content,
-        senderId: session.user.id,
+        senderId: session.id,
         recipientId: receiverId,
         isRead: false,
       },
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const pusherMessage = {
       id: dbMessage.id,
       content: dbMessage.content,
-      sender: session.user.id,
+      sender: session.id,
       recipient: receiverId,
       timestamp: dbMessage.createdAt,
       isRead: false,

@@ -109,7 +109,7 @@ export default function MediaCarousel() {
   }, [medias]);
 
   // Fonction de scroll du carousel
-  const scroll = (direction: number, ref: React.RefObject<HTMLDivElement>) => {
+  const scroll = (direction: number, ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollBy({ left: direction * 300, behavior: "smooth" });
     }
@@ -137,11 +137,11 @@ export default function MediaCarousel() {
         </CardHeader>
         <CardContent className="relative">
           {isLoading ? (
-            <div className="flex items-center justify-center h-48">
+            <div className="flex h-48 items-center justify-center">
               <p>Chargement des médias...</p>
             </div>
           ) : medias.length === 0 ? (
-            <div className="flex items-center justify-center h-48">
+            <div className="flex h-48 items-center justify-center">
               <p>
                 Aucun média disponible. Ajoutez votre premier média !
               </p>
@@ -217,7 +217,7 @@ export default function MediaCarousel() {
       </Dialog>
 
       <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
-        <DialogContent className="sm:max-w-[80vw] sm:max-h-[80vh]">
+        <DialogContent className="sm:max-h-[80vh] sm:max-w-[80vw]">
           <DialogHeader>
             <DialogTitle>{selectedMedia?.title}</DialogTitle>
           </DialogHeader>
@@ -226,7 +226,7 @@ export default function MediaCarousel() {
               <video
                 src={selectedMedia.url}
                 controls
-                className="h-full w-full rounded-lg"
+                className="size-full rounded-lg"
                 autoPlay
               >
                 Votre navigateur ne supporte pas la lecture vidéo.

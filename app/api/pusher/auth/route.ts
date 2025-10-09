@@ -1,14 +1,14 @@
 // app/api/pusher/auth/route.ts
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { pusherServer } from "@/lib/pusher";
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session?.user?.id) {
+    if (!session?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -20,10 +20,10 @@ export async function POST(request: Request) {
     const [socketId, channel] = data.split(":");
 
     const authResponse = pusherServer.authorizeChannel(socketId, channel, {
-      user_id: session.user.id,
+      user_id: session.id,
       user_info: {
-        name: session.user.name,
-        email: session.user.email,
+        name: session.name,
+        email: session.email,
       },
     });
 

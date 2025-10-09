@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    
-    if (!session?.user) {
+    const session = await getServerSession();
+
+    if (!session) {
       return NextResponse.json(
         { error: "Non autorisé" },
         { status: 401 }
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     // Récupérer l'athleteId associé à l'utilisateur
     const athlete = await prisma.athlete.findUnique({
       where: {
-        userId: session.user.id
+        userId: session.id
       }
     });
 

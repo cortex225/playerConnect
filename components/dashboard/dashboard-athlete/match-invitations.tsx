@@ -177,7 +177,7 @@ export default function MatchInvitations() {
             disabled={isRefreshing}
           >
             <RefreshCw
-              className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+              className={`mr-2 size-4 ${isRefreshing ? "animate-spin" : ""}`}
             />
             {isRefreshing ? "Actualisation..." : "Actualiser"}
           </Button>
@@ -216,7 +216,7 @@ export default function MatchInvitations() {
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
-                      <Timer className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Timer className="mr-2 size-4 text-muted-foreground" />
                       <span>
                         {format(new Date(invitation.event.eventDate), "HH:mm", {
                           locale: fr,
@@ -226,11 +226,11 @@ export default function MatchInvitations() {
                       </span>
                     </div>
                     <div className="flex items-center">
-                      <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <MapPin className="mr-2 size-4 text-muted-foreground" />
                       <span>{extractVenue(invitation.event.location)}</span>
                     </div>
                     <div className="flex items-center">
-                      <CalendarCheck className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <CalendarCheck className="mr-2 size-4 text-muted-foreground" />
                       <span>{extractCity(invitation.event.location)}</span>
                     </div>
                     <div className="mt-2 text-sm">
@@ -254,7 +254,7 @@ export default function MatchInvitations() {
                       }
                       disabled={processingInvitation[invitation.id]}
                     >
-                      <X className="mr-2 h-4 w-4" />
+                      <X className="mr-2 size-4" />
                       Refuser
                     </Button>
                     <Button
@@ -265,7 +265,7 @@ export default function MatchInvitations() {
                       }
                       disabled={processingInvitation[invitation.id]}
                     >
-                      <Check className="mr-2 h-4 w-4" />
+                      <Check className="mr-2 size-4" />
                       Accepter
                     </Button>
                   </div>

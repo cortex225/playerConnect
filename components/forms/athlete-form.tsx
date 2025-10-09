@@ -73,17 +73,17 @@ export function AthleteForm() {
   const form = useForm<AthleteFormValues>({
     resolver: zodResolver(athleteFormSchema),
     defaultValues: {
-      gender: undefined,
-      age: undefined,
+      gender: "" as any,
+      age: 0,
       city: "",
-      height: undefined,
-      weight: undefined,
-      dominantHand: undefined,
-      dominantFoot: undefined,
-      programType: undefined,
-      categoryId: undefined,
-      sportId: undefined,
-      positions: [], // On garde le tableau pour la compatibilité avec le schema
+      height: 0,
+      weight: 0,
+      dominantHand: "" as any,
+      dominantFoot: "" as any,
+      programType: "" as any,
+      categoryId: "",
+      sportId: "",
+      positions: [],
     },
   });
 
@@ -116,12 +116,20 @@ export function AthleteForm() {
     setIsPending(true);
 
     try {
-      await createAthlete(data);
-      toast.success("Profil créé avec succès");
-      router.refresh();
+      const result = await createAthlete(data);
+
+      if (result.success && result.redirectTo) {
+        toast.success("Profil créé avec succès");
+        // Rediriger vers le dashboard athlète
+        router.push(result.redirectTo);
+        router.refresh();
+      } else if (result.error) {
+        toast.error(result.error);
+        setIsPending(false);
+      }
     } catch (error) {
+      console.error("Erreur lors de la création du profil:", error);
       toast.error("Une erreur est survenue lors de la création du profil");
-    } finally {
       setIsPending(false);
     }
   };

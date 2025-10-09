@@ -9,35 +9,42 @@ import {
   useState,
 } from "react";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { siteConfig } from "@/config/site";
+import { signIn, signUp } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
-import { Separator } from "@/components/ui/separator";
 import { Icons } from "@/components/shared/icons";
 
-// Ajout de la constante pour les redirections par défaut
-const DEFAULT_LOGIN_REDIRECT = {
-  ATHLETE: "/dashboard/athlete",
-  RECRUITER: "/dashboard/recruiter",
-} as const;
+interface SignInModalProps {
+  showSignInModal: boolean;
+  setShowSignInModal: Dispatch<SetStateAction<boolean>>;
+  onSignUpClick?: () => void;
+}
 
 function SignInModal({
   showSignInModal,
   setShowSignInModal,
-}: {
-  showSignInModal: boolean;
-  setShowSignInModal: Dispatch<SetStateAction<boolean>>;
-}) {
-  const [signInClicked, setSignInClicked] = useState(false);
+  onSignUpClick,
+}: SignInModalProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<
     "ATHLETE" | "RECRUITER" | null
   >(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,30 +52,34 @@ function SignInModal({
       toast.error("Veuillez sélectionner un rôle");
       return;
     }
-    setSignInClicked(true);
+    setLoading(true);
     try {
-      const result = await signIn("credentials", {
+      // Stocker le rôle sélectionné dans un cookie pour l'onboarding
+      document.cookie = `selectedRole=${selectedRole}; path=/; max-age=3600`;
+
+      await signIn.email({
         email,
         password,
-        role: selectedRole,
-        redirect: false,
+        callbackURL: "/dashboard", // Rediriger vers dashboard général
       });
-
-      if (result?.error) {
-        console.error("Sign in error:", result.error);
-        toast.error("Email ou mot de passe incorrect");
-        setSignInClicked(false);
-      } else {
-        toast.success("Connexion réussie");
-        document.cookie = `user_role=${selectedRole}; path=/;`;
-        
-        // Utilisation du chemin de redirection basé sur le rôle
-        window.location.href = DEFAULT_LOGIN_REDIRECT[selectedRole];
-      }
+      toast.success("Connexion réussie");
     } catch (error) {
-      console.error("Sign in error:", error);
-      setSignInClicked(false);
-      toast.error("Une erreur est survenue lors de la connexion");
+      // Si l'erreur indique que l'utilisateur n'existe pas, on tente de créer un compte
+      try {
+        // Le cookie selectedRole est déjà défini ci-dessus
+        await signUp.email({
+          email,
+          password,
+          name: email.split("@")[0], // Utilise la partie locale de l'email comme nom par défaut
+          callbackURL: "/dashboard", // Rediriger vers dashboard général
+        });
+        toast.success("Compte créé et connecté avec succès");
+      } catch (signUpError) {
+        console.error("Erreur de création de compte:", signUpError);
+        toast.error("Impossible de créer le compte");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,23 +88,24 @@ function SignInModal({
       toast.error("Veuillez sélectionner un rôle");
       return;
     }
-    document.cookie = `user_role=${selectedRole}; path=/;`;
-    setSignInClicked(true);
+    setLoading(true);
     try {
-      await signIn("google", {
-        callbackUrl: DEFAULT_LOGIN_REDIRECT[selectedRole],
+      // Stocker le rôle sélectionné dans un cookie pour l'onboarding
+      document.cookie = `selectedRole=${selectedRole}; path=/; max-age=3600`;
+      await signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard", // Rediriger vers dashboard général
       });
     } catch (error) {
-      console.error("Google sign in error:", error);
-      setSignInClicked(false);
+      console.error("Erreur de connexion Google:", error);
       toast.error("Une erreur est survenue avec la connexion Google");
+      setLoading(false);
     }
   };
 
-  // Reset state when modal is closed
   useEffect(() => {
     if (!showSignInModal) {
-      setSignInClicked(false);
+      setLoading(false);
       setEmail("");
       setPassword("");
       setSelectedRole(null);
@@ -102,11 +114,11 @@ function SignInModal({
 
   return (
     <Modal showModal={showSignInModal} setShowModal={setShowSignInModal}>
-      <div className="w-full overflow-hidden md:max-w-md md:rounded-2xl md:shadow-xl">
-        <div className="flex flex-col items-center justify-center space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
+      <Card className="w-full overflow-hidden md:max-w-md">
+        <CardHeader className="space-y-3 border-b bg-background px-4 py-6 pt-8 text-center md:px-16">
           <a href={siteConfig.url}>
             <Image
-              className="aspect-[1200/630] object-cover md:rounded-t-xl"
+              className="mx-auto aspect-[1200/630] object-cover md:rounded-t-xl"
               src="/images/logo-1.png"
               width={200}
               height={200}
@@ -114,15 +126,16 @@ function SignInModal({
               priority
             />
           </a>
-          <h3 className="font-urban text-2xl font-bold">Sign In</h3>
-          <p className="text-sm text-muted-foreground">
-            Enter your email below to sign in to your account
-          </p>
-        </div>
+          <CardTitle className="font-urban text-2xl font-bold">
+            Connexion
+          </CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            Entrez vos identifiants pour vous connecter
+          </CardDescription>
+        </CardHeader>
 
-        {/* Section de sélection de rôle */}
-        <div className="flex flex-col items-center space-y-2 bg-background p-4 md:px-16">
-          <div className="flex space-x-4">
+        <CardContent className="space-y-4 p-4 md:px-16">
+          <div className="flex justify-center space-x-4">
             <Button
               variant={selectedRole === "ATHLETE" ? "default" : "outline"}
               onClick={() => setSelectedRole("ATHLETE")}
@@ -140,37 +153,54 @@ function SignInModal({
               Recruteur
             </Button>
           </div>
-        </div>
 
-        <div className="flex flex-col space-y-4 bg-background px-4 pb-8 md:px-16">
           <form onSubmit={handleEmailSignIn} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-11 rounded-xl"
-              required
-              disabled={signInClicked}
-            />
-            <Input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-11 rounded-xl"
-              required
-              disabled={signInClicked}
-            />
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 rounded-xl"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Link
+                  href="#"
+                  className="ml-auto inline-block text-sm underline"
+                  onClick={() => setShowSignInModal(false)}
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 rounded-xl"
+                required
+                disabled={loading}
+              />
+            </div>
+
             <Button
               type="submit"
-              className="h-11 w-full rounded-xl bg-blue-500 hover:bg-blue-600"
-              disabled={signInClicked || !selectedRole}
+              className="h-11 w-full rounded-xl"
+              disabled={loading || !selectedRole}
             >
-              {signInClicked ? (
+              {loading ? (
                 <Icons.spinner className="mr-2 size-4 animate-spin" />
               ) : null}
-              Sign in with Email
+              Se connecter avec Email
             </Button>
           </form>
 
@@ -180,52 +210,44 @@ function SignInModal({
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
+                Ou continuer avec
               </span>
             </div>
           </div>
 
           <Button
             variant="outline"
-            className="h-11 w-full rounded-xl"
-            disabled={signInClicked || !selectedRole}
+            className={cn("h-11 w-full gap-2 rounded-xl")}
+            disabled={loading || !selectedRole}
             onClick={handleGoogleSignIn}
           >
-            {signInClicked ? (
+            {loading ? (
               <Icons.spinner className="mr-2 size-4 animate-spin" />
             ) : (
               <Icons.google className="mr-2 size-4" />
             )}
             Google
           </Button>
-
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium hover:text-primary"
-              onClick={() => setShowSignInModal(false)}
-            >
-              Sign Up
-            </a>
-          </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </Modal>
   );
 }
-
 export function useSignInModal() {
   const [showSignInModal, setShowSignInModal] = useState(false);
 
-  const SignInModalCallback = useCallback(() => {
-    return (
-      <SignInModal
-        showSignInModal={showSignInModal}
-        setShowSignInModal={setShowSignInModal}
-      />
-    );
-  }, [showSignInModal, setShowSignInModal]);
+  const SignInModalCallback = useCallback(
+    ({ onSignUpClick }: { onSignUpClick?: () => void } = {}) => {
+      return (
+        <SignInModal
+          showSignInModal={showSignInModal}
+          setShowSignInModal={setShowSignInModal}
+          onSignUpClick={onSignUpClick}
+        />
+      );
+    },
+    [showSignInModal, setShowSignInModal],
+  );
 
   return useMemo(
     () => ({ setShowSignInModal, SignInModal: SignInModalCallback }),

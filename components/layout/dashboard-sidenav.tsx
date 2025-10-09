@@ -2,58 +2,66 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 
-
-
-import { SidebarNavItem } from "types";
+import { ROLES } from "@/lib/constants";
+import type { UserSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/shared/icons";
-
-
-
-
+import { buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardNavProps {
-  items: SidebarNavItem[];
+  items: {
+    href: string;
+    title: string;
+    roles?: string[];
+  }[];
+  userRole?: string;
 }
 
-export function DashboardNav({ items }: DashboardNavProps) {
-  const path = usePathname();
-  const { data: session } = useSession();
+export function DashboardNav({ items, userRole }: DashboardNavProps) {
+  const pathname = usePathname();
 
-  // Récupération sécurisée du rôle
-  const userRole = session?.user?.role as
-    | "ADMIN"
-    | "ATHLETE"
-    | "RECRUITER"
-    | undefined;
+  if (!items?.length) {
+    return null;
+  }
 
-  if (!items?.length || !userRole) {
-    return null; // Rien à afficher si la liste est vide ou si le rôle est indéfini
+  // Afficher un skeleton pendant le chargement
+  if (!userRole) {
+    return (
+      <nav className="grid items-start gap-2">
+        {items.map((item, index) => (
+          <Skeleton key={index} className="h-10 w-full" />
+        ))}
+      </nav>
+    );
   }
 
   return (
-    <nav className="sticky top-20 grid h-[64vh] items-start space-y-0 rounded-2xl border px-3 py-4">
-      {items
-        .filter((item) => !item.roles || item.roles.includes(userRole)) // Filtrage par rôle
-        .map((item, index) => {
-          const Icon = Icons[item.icon || "arrowRight"]; // Fallback pour l'icône
-          return (
-            <Link key={index} href={item.href || "#"}>
-              <span
-                className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-muted hover:text-accent-foreground",
-                  path === item.href ? "bg-muted" : "transparent",
-                  item.disabled && "cursor-not-allowed opacity-80",
-                )}
-              >
-                <Icon className="mr-2 size-5" />
-                <span>{item.title}</span>
-              </span>
-            </Link>
-          );
-        })}
+    <nav className="grid items-start gap-2">
+      {items.map((item) => {
+        // Vérifier si l'utilisateur a le rôle requis pour voir cet élément
+        if (item.roles && !item.roles.includes(userRole)) {
+          return null;
+        }
+
+        const isActive = pathname === item.href;
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
+              isActive
+                ? "bg-muted font-medium hover:bg-muted"
+                : "hover:bg-muted/50",
+              "justify-start transition-colors",
+            )}
+          >
+            {item.title}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

@@ -1,10 +1,10 @@
 import React from "react";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default async function ConnectedRecruiter() {
-  const session = await auth();
+  const session = await getServerSession();
 
   return (
     <>
@@ -17,9 +17,9 @@ export default async function ConnectedRecruiter() {
           <AvatarFallback>
             {session?.user?.name
               ? session.user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
               : "U"}
           </AvatarFallback>
         </Avatar>

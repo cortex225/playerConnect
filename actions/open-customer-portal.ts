@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { getServerSession } from "@/lib/server/session";
 import { stripe } from "@/lib/stripe";
 import { absoluteUrl } from "@/lib/utils";
 
@@ -19,9 +19,9 @@ export async function openCustomerPortal(
   let redirectUrl: string = "";
 
   try {
-    const session = await auth();
+    const session = await getServerSession();
 
-    if (!session?.user || !session?.user.email) {
+    if (!session || !session.email) {
       throw new Error("Unauthorized");
     }
 

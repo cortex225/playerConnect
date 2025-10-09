@@ -7,7 +7,8 @@ import { X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
@@ -34,6 +35,9 @@ export default function AthleteProfileDialog({
   return (
     <Dialog open={!!selectedAthlete} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
+        <VisuallyHidden>
+          <DialogTitle>Profil de l'athlète {athlete.user.name}</DialogTitle>
+        </VisuallyHidden>
         <Card className="w-full border-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center space-x-4">

@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateUserRole, type FormData } from "@/actions/update-user-role";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, UserRole } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+import * as z from "zod";
 
-import { userRoleSchema } from "@/lib/validations/user";
+import { ROLES } from "@/lib/constants";
+import { useSession } from "@/lib/hooks/use-session";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,121 +19,115 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { Icons } from "@/components/shared/icons";
 
-interface UserNameFormProps {
-  user: Pick<User, "id" | "role">;
-}
+const userRoleSchema = z.object({
+  role: z.enum(["ATHLETE", "RECRUITER"]),
+});
 
-export function UserRoleForm({ user }: UserNameFormProps) {
-  const { update } = useSession();
-  const [updated, setUpdated] = useState(false);
+type FormData = z.infer<typeof userRoleSchema>;
+
+export function UserRoleForm() {
+  const router = useRouter();
+  const { session } = useSession();
   const [isPending, startTransition] = useTransition();
-  const updateUserRoleWithId = updateUserRole.bind(null, user.id);
 
-  const roles = Object.values(UserRole);
-  const [role, setRole] = useState(user.role);
-
-  const form = useForm<FormData>({
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(userRoleSchema),
-    values: {
-      role: role,
+    defaultValues: {
+      role: session?.role || "USER",
     },
   });
 
-  const onSubmit = (data: z.infer<typeof userRoleSchema>) => {
+  const onSubmit = async (data: FormData) => {
     startTransition(async () => {
-      const { status } = await updateUserRoleWithId(data);
-
-      if (status !== "success") {
-        toast.error("Something went wrong.", {
-          description: "Your role was not updated. Please try again.",
+      try {
+        const response = await fetch("/api/user/role", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            role: data.role,
+          }),
         });
-      } else {
-        await update();
-        setUpdated(false);
-        toast.success("Your role has been updated.");
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la mise à jour du rôle");
+        }
+
+        toast({
+          title: "Rôle mis à jour",
+          description: "Votre rôle a été mis à jour avec succès.",
+        });
+
+        router.refresh();
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description:
+            "Une erreur est survenue lors de la mise à jour du rôle.",
+          variant: "destructive",
+        });
       }
     });
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
-          <CardHeader className="space-y-2">
-            <CardTitle>Your Role</CardTitle>
-            <CardDescription className="text-[15px]">
-              Select the role what you want for test the app.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="sr-only">Role</FormLabel>
-                  <Select
-                    // TODO:(FIX) Option value not update. Use useState for the moment
-                    onValueChange={(value: UserRole) => {
-                      setUpdated(user.role !== value);
-                      setRole(value);
-                      // field.onChange;
-                    }}
-                    name={field.name}
-                    defaultValue={user.role}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role} value={role.toString()}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          <CardFooter className="flex justify-between gap-x-4 border-t bg-accent py-2">
-            <p className="text-balance text-sm font-medium text-muted-foreground">
-              Remove this card on real production.
-            </p>
-            <Button
-              type="submit"
-              className="shrink-0"
-              disabled={isPending || !updated}
-              variant={updated ? "default" : "disable"}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Votre rôle</CardTitle>
+          <CardDescription>
+            Sélectionnez votre rôle sur la plateforme.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-1">
+            <Select
+              {...register("role")}
+              defaultValue={session?.role || "USER"}
             >
-              {isPending && (
-                <Icons.spinner className="mr-2 size-4 animate-spin" />
-              )}
-              <span>Save Changes</span>
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
-    </Form>
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez un rôle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ROLES.ATHLETE}>Athlète</SelectItem>
+                <SelectItem value={ROLES.RECRUITER}>Recruteur</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors?.role && (
+              <p className="px-1 text-xs text-red-600">{errors.role.message}</p>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            type="submit"
+            className={cn(
+              "w-full",
+              isPending && "cursor-not-allowed opacity-60",
+            )}
+            disabled={isPending}
+          >
+            {isPending && (
+              <Icons.spinner className="mr-2 size-4 animate-spin" />
+            )}
+            <span>Mettre à jour le rôle</span>
+          </Button>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

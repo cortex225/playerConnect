@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { updateUserName, type FormData } from "@/actions/update-user-name";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import * as z from "zod";
 
-import { userNameSchema } from "@/lib/validations/user";
+import { useSession } from "@/lib/hooks/use-session";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,21 +19,19 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 import { Icons } from "@/components/shared/icons";
 
-interface UserNameFormProps {
-  user: Pick<User, "id" | "name">;
-}
+const userNameSchema = z.object({
+  name: z.string().min(3).max(32),
+});
 
-export function UserNameForm({ user }: UserNameFormProps) {
-  const { update } = useSession();
-  const [updated, setUpdated] = useState(false);
+type FormData = z.infer<typeof userNameSchema>;
+
+export function UserNameForm() {
+  const router = useRouter();
+  const { session } = useSession();
   const [isPending, startTransition] = useTransition();
-  const updateUserNameWithId = updateUserName.bind(null, user.id);
-
-  const checkUpdate = (value) => {
-    setUpdated(user.name !== value);
-  };
 
   const {
     handleSubmit,
@@ -43,66 +40,81 @@ export function UserNameForm({ user }: UserNameFormProps) {
   } = useForm<FormData>({
     resolver: zodResolver(userNameSchema),
     defaultValues: {
-      name: user?.name || "",
+      name: session?.name || "",
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = async (data: FormData) => {
     startTransition(async () => {
-      const { status } = await updateUserNameWithId(data);
-
-      if (status !== "success") {
-        toast.error("Something went wrong.", {
-          description: "Your name was not updated. Please try again.",
+      try {
+        const response = await fetch("/api/user/name", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: data.name,
+          }),
         });
-      } else {
-        await update();
-        setUpdated(false);
-        toast.success("Your name has been updated.");
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de la mise à jour du nom");
+        }
+
+        toast({
+          title: "Nom mis à jour",
+          description: "Votre nom a été mis à jour avec succès.",
+        });
+
+        router.refresh();
+      } catch (error) {
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la mise à jour du nom.",
+          variant: "destructive",
+        });
       }
     });
-  });
+  };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
-        <CardHeader className="space-y-2">
-          <CardTitle>Your Name</CardTitle>
-          <CardDescription className="text-[15px]">
-            Please enter your full name or a display name you are comfortable
-            with.
+        <CardHeader>
+          <CardTitle>Votre nom</CardTitle>
+          <CardDescription>
+            Entrez votre nom complet ou un nom d'affichage.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-1">
             <Label className="sr-only" htmlFor="name">
-              Name
+              Nom
             </Label>
             <Input
               id="name"
-              className="w-full sm:w-[400px]"
+              className="w-full"
               size={32}
               {...register("name")}
-              onChange={(e) => checkUpdate(e.target.value)}
             />
             {errors?.name && (
               <p className="px-1 text-xs text-red-600">{errors.name.message}</p>
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between border-t bg-accent py-2">
-          <p className="text-sm font-medium text-muted-foreground">
-            Max 32 characters
-          </p>
+        <CardFooter>
           <Button
             type="submit"
-            variant={updated ? "default" : "disable"}
-            disabled={isPending || !updated}
+            className={cn(
+              "w-full",
+              isPending && "cursor-not-allowed opacity-60",
+            )}
+            disabled={isPending}
           >
             {isPending && (
               <Icons.spinner className="mr-2 size-4 animate-spin" />
             )}
-            <span>Save Changes</span>
+            <span>Mettre à jour le nom</span>
           </Button>
         </CardFooter>
       </Card>
