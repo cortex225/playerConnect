@@ -148,6 +148,14 @@
     "overrides": {
       "@types/react": "19.1.9",
       "@types/react-dom": "19.1.7"
+    },
+    "patchedDependencies": {},
+    "peerDependencyRules": {
+      "allowedVersions": {},
+      "ignoreMissing": ["canvas"]
     }
+  },
+  "optionalDependencies": {
+    "canvas": "^2.11.2"
   }
 }
