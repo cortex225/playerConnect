@@ -57,7 +57,7 @@ export function BlogCard({
           {/* <Author username={data.authors[0]} imageOnly /> */}
 
           <div className="flex items-center -space-x-2">
-            {data.authors.map((author) => (
+            {data.authors?.map((author) => (
               <Author username={author} key={data._id + author} imageOnly />
             ))}
           </div>

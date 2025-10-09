@@ -103,7 +103,7 @@ export default function CTASection() {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    buttonVariants({ size: "lg", rounded: "full" }),
+                    buttonVariants({ size: "lg" }),
                     "group gap-2 px-8 shadow-lg transition-all hover:shadow-xl hover:shadow-primary/20",
                   )}
                 >
@@ -117,9 +117,8 @@ export default function CTASection() {
                     buttonVariants({
                       variant: "outline",
                       size: "lg",
-                      rounded: "full",
                     }),
-                    "gap-2 px-8",
+                    "gap-2 rounded-full px-8",
                   )}
                 >
                   Voir les tarifs

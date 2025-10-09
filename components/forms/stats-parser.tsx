@@ -55,7 +55,8 @@ export function StatsParser({ onStatsExtracted }: StatsParserProps) {
 
   const handleFileUpload = async (file: File) => {
     const buffer = await file.arrayBuffer();
-    const text = await extractTextFromPdf(buffer); 
+    // TODO: Implémenter extractTextFromPdf
+    // const text = await extractTextFromPdf(buffer);
 
     // Envoyer le texte à OpenAI
     // const result = await openai.chat.completions.create({
@@ -64,6 +65,7 @@ export function StatsParser({ onStatsExtracted }: StatsParserProps) {
     //     { role: "user", content: text }
     //   ]
     // });
+    console.log("File upload not yet implemented", file.name);
   };
 
   return (

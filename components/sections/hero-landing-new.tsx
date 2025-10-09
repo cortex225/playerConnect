@@ -54,7 +54,7 @@ export default function HeroLandingNew() {
             <Link
               href="#"
               className={cn(
-                buttonVariants({ variant: "outline", size: "sm", rounded: "full" }),
+                buttonVariants({ variant: "outline", size: "sm" }),
                 "group gap-2 px-4 py-2",
               )}
             >
@@ -109,7 +109,7 @@ export default function HeroLandingNew() {
             <Link
               href="/auth/login"
               className={cn(
-                buttonVariants({ size: "lg", rounded: "full" }),
+                buttonVariants({ size: "lg" }),
                 "group gap-2 px-8 text-base shadow-lg transition-all hover:shadow-xl hover:shadow-primary/20",
               )}
             >
@@ -123,9 +123,8 @@ export default function HeroLandingNew() {
                 buttonVariants({
                   variant: "ghost",
                   size: "lg",
-                  rounded: "full",
                 }),
-                "group gap-2 px-8 text-base",
+                "group gap-2 rounded-full px-8 text-base",
               )}
             >
               <Play className="size-4 transition-transform group-hover:scale-110" />

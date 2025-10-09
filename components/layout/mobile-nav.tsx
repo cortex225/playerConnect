@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import { SidebarNavItem } from "@/types/nav";
+import { UserRole } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface NavMobileProps {
   items: SidebarNavItem[];
-  userRole?: string;
+  userRole?: UserRole | string;
 }
 
 export function NavMobile({ items, userRole }: NavMobileProps) {
@@ -28,7 +29,7 @@ export function NavMobile({ items, userRole }: NavMobileProps) {
           : false;
 
         // Vérifier si l'utilisateur a le rôle requis pour voir cet élément
-        if (item.roles && userRole && !item.roles.includes(userRole)) {
+        if (item.roles && userRole && !item.roles.includes(userRole as UserRole)) {
           return null;
         }
 

@@ -46,7 +46,7 @@ export function UserRoleForm() {
   } = useForm<FormData>({
     resolver: zodResolver(userRoleSchema),
     defaultValues: {
-      role: session?.role || "USER",
+      role: (session?.role === "ATHLETE" || session?.role === "RECRUITER") ? session.role : undefined,
     },
   });
 

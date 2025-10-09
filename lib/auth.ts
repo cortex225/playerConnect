@@ -18,7 +18,8 @@ export const auth = betterAuth({
       console.log("Reset password email:", data);
     },
   },
-  hooks: {
+  // TODO: Migrer vers la nouvelle API de hooks de better-auth
+  /* hooks: {
     async afterUserCreated(user) {
       await prisma.user.update({
         where: { id: user.id },
@@ -54,7 +55,7 @@ export const auth = betterAuth({
         }
       }
     },
-  },
+  }, */
   roles: {
     enabled: true,
     defaultRole: "user",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronDown, User } from "lucide-react";
+import { UserRole as Role } from "@prisma/client";
 
 import { ROLES } from "@/lib/constants";
 import { useAuth } from "@/lib/hooks/use-auth";
@@ -42,7 +43,7 @@ export function RoleSwitcher() {
 
     setIsUpdating(true);
     try {
-      const success = await updateRole(newRole);
+      const success = await updateRole(newRole as Role);
       if (success) {
         // Rediriger vers le dashboard correspondant
         const dashboard =

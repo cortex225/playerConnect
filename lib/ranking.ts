@@ -282,8 +282,8 @@ export async function updateRankings(
           sportId,
           scope,
           period,
-          region: region || null,
-          country: country || null,
+          region: region || "",
+          country: country || "",
         },
       },
       update: {

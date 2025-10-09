@@ -15,8 +15,8 @@ export default async function ConnectedRecruiter() {
             alt="Sarah Thompson"
           />
           <AvatarFallback>
-            {session?.user?.name
-              ? session.user.name
+            {session?.name
+              ? session.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
@@ -25,7 +25,7 @@ export default async function ConnectedRecruiter() {
         </Avatar>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-lg font-bold dark:text-white">
-            {session?.user?.name}
+            {session?.name}
           </h1>
           <p className="truncate text-sm text-gray-500 dark:text-gray-400">
             NCAA Division I Scout

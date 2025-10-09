@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Performance } from "@/types";
+import type { Performance, SportType } from "@/types";
 import { format } from "date-fns";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import {
@@ -37,7 +37,7 @@ interface PerformanceStatsProps {
     name: string;
     sportId: string;
   }>;
-  sportType: string;
+  sportType: SportType;
   performances: Performance[];
 }
 

@@ -11,7 +11,7 @@ import {
   loginSchema,
   RegisterFormData,
   registerSchema,
-} from "@/lib/auth-config";
+} from "@/lib/validations/auth";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,22 +45,20 @@ export function UserAuthForm({
     try {
       if (type === "login") {
         const { email, password, role } = data as LoginFormData;
-        await authClient.login({
+        await authClient.signIn.email({
           email,
           password,
-          role,
-          redirectTo:
+          callbackURL:
             searchParams?.get("from") || `/dashboard/${role.toLowerCase()}`,
         });
         toast.success("Connexion réussie");
       } else {
         const { email, password, name, role } = data as RegisterFormData;
-        await authClient.register({
+        await authClient.signUp.email({
           email,
           password,
           name,
-          role,
-          redirectTo: `/dashboard/${role.toLowerCase()}`,
+          callbackURL: `/dashboard/${role.toLowerCase()}`,
         });
         toast.success("Compte créé avec succès");
       }
@@ -91,7 +89,7 @@ export function UserAuthForm({
                 disabled={isLoading}
                 {...register("name")}
               />
-              {errors?.name && (
+              {"name" in errors && errors.name && (
                 <p className="px-1 text-xs text-red-600">
                   {errors.name.message}
                 </p>
@@ -180,8 +178,9 @@ export function UserAuthForm({
         onClick={async () => {
           setIsGoogleLoading(true);
           try {
-            await authClient.loginWithGoogle({
-              redirectTo: searchParams?.get("from") || "/dashboard",
+            await authClient.signIn.social({
+              provider: "google",
+              callbackURL: searchParams?.get("from") || "/dashboard",
             });
           } catch (error) {
             console.error("Erreur Google:", error);

@@ -71,7 +71,7 @@ export function Messagerie() {
   }, []);
 
   const onSubmit = async (data: FormData) => {
-    if (!session?.user) {
+    if (!user) {
       toast.error("Vous devez être connecté pour envoyer un message");
       return;
     }
@@ -109,7 +109,7 @@ export function Messagerie() {
             key={message.id}
             className={cn(
               "flex items-start gap-2",
-              message.user.id === session?.user?.id && "flex-row-reverse",
+              message.user.id === user?.id && "flex-row-reverse",
             )}
           >
             <UserAvatar
@@ -122,7 +122,7 @@ export function Messagerie() {
             <div
               className={cn(
                 "rounded-lg px-4 py-2",
-                message.user.id === session?.user?.id
+                message.user.id === user?.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted",
               )}
@@ -141,9 +141,9 @@ export function Messagerie() {
         <Input
           placeholder="Tapez votre message..."
           {...register("content")}
-          disabled={isLoading || !session?.user}
+          disabled={isLoading || !user}
         />
-        <Button type="submit" disabled={isLoading || !session?.user}>
+        <Button type="submit" disabled={isLoading || !user}>
           {isLoading ? "Envoi..." : "Envoyer"}
         </Button>
       </form>
