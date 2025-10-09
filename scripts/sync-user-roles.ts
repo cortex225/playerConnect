@@ -33,9 +33,9 @@ async function syncUserRoles() {
       let newRole = "USER";
 
       // Déterminer le rôle en fonction des profils
-      if (user.athletes && user.athletes.length > 0) {
+      if (user.athletes) {
         newRole = "ATHLETE";
-      } else if (user.recruiters && user.recruiters.length > 0) {
+      } else if (user.recruiters) {
         newRole = "RECRUITER";
       }
 

@@ -69,6 +69,8 @@ export const metadata = constructMetadata({
   description: "Gérez votre profil et vos performances.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ATHLETE") redirect("/");

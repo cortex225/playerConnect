@@ -10,6 +10,8 @@ export const metadata = constructMetadata({
   description: "Explore our subscription plans.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function PricingPage() {
   const user = await getCurrentUser();
   let subscriptionPlan;

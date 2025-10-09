@@ -3,7 +3,8 @@ import("./env.mjs");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  // Disable static optimization to avoid build errors with dynamic routes
+  output: 'standalone',
   transpilePackages: [
     "@fullcalendar/core",
     "@fullcalendar/react",
@@ -28,9 +29,7 @@ const nextConfig = {
     ],
     domains: ["image.mux.com"],
   },
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client"]
-  },
+  serverExternalPackages: ["@prisma/client"],
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

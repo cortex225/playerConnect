@@ -16,6 +16,9 @@ import { cn, constructMetadata } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
+// Disable static generation for MDX pages to avoid build errors
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   return allGuides.map((guide) => ({
     slug: guide.slugAsParams,

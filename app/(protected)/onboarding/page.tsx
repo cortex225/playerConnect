@@ -13,6 +13,8 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardShell } from "@/components/dashboard/shell";
 import { AthleteDialogCreate } from "@/components/modals/athlete/create";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
   console.log("Page onboarding - Vérification de l'utilisateur");
   const user = await getCurrentUser();

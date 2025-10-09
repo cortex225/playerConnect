@@ -48,6 +48,8 @@ export async function generateStaticParams() {
   }));
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
   const doc = await getDocFromParams(params);

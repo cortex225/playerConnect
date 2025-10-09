@@ -9,6 +9,8 @@ export const metadata = constructMetadata({
   description: "Latest news and updates from Next SaaS Starter.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function BlogPage() {
   const posts = allPosts
     .filter((post) => post.published)

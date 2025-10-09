@@ -17,6 +17,9 @@ import Author from "@/components/content/author";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 import { DashboardTableOfContents } from "@/components/shared/toc";
 
+// Disable static generation for MDX pages to avoid build errors
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   return allPosts.map((post) => ({
     slug: post.slugAsParams,

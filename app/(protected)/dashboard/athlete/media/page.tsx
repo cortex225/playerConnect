@@ -14,6 +14,8 @@ export const metadata = constructMetadata({
   description: "Gérez vos médias et vos statistiques.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function MediaPage() {
   const session = await getServerSession();
   if (!session) redirect("/login");

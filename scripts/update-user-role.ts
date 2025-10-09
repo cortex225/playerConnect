@@ -42,8 +42,8 @@ async function updateUserRole() {
     console.log(`\n📊 Utilisateur trouvé:`);
     console.log(`   Email: ${user.email}`);
     console.log(`   Rôle actuel: ${user.role}`);
-    console.log(`   Profil athlète: ${user.athletes.length > 0 ? "✅ OUI" : "❌ NON"}`);
-    console.log(`   Profil recruteur: ${user.recruiters.length > 0 ? "✅ OUI" : "❌ NON"}`);
+    console.log(`   Profil athlète: ${user.athletes ? "✅ OUI" : "❌ NON"}`);
+    console.log(`   Profil recruteur: ${user.recruiters ? "✅ OUI" : "❌ NON"}`);
 
     // Mettre à jour le rôle
     const updatedUser = await prisma.user.update({

@@ -1,8 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, BadgeType, BadgeRarity } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const DEFAULT_BADGES = [
+const DEFAULT_BADGES: Array<{
+  name: string;
+  description: string;
+  icon: string;
+  type: BadgeType;
+  condition: string;
+  xpReward: number;
+  rarity: BadgeRarity;
+}> = [
   // Milestone Badges
   {
     name: "first_performance",

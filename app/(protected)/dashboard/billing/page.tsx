@@ -14,6 +14,8 @@ export const metadata = constructMetadata({
   description: "Manage billing and your subscription plan.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function BillingPage() {
   const user = await getCurrentUser();
 

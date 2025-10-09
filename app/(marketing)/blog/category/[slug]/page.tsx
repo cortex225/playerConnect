@@ -12,6 +12,8 @@ export async function generateStaticParams() {
   }));
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(
   props: {
     params: Promise<{ slug: string }>;

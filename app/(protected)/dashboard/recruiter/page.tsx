@@ -35,6 +35,8 @@ export const metadata = constructMetadata({
   description: "Create and manage content.",
 });
 
+export const dynamic = 'force-dynamic';
+
 // Composants de fallback pour le chargement
 const TopAthletesFallback = () => (
   <div className="h-[45vh] w-full rounded-lg border bg-card p-6">
@@ -232,14 +234,15 @@ export default async function DashboardPage() {
               problème persiste.
             </p>
             <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-              >
-                Réessayer
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/recruiter">
+                  Réessayer
+                </Link>
               </Button>
-              <Button onClick={() => (window.location.href = "/login")}>
-                Retour à la connexion
+              <Button asChild>
+                <Link href="/login">
+                  Retour à la connexion
+                </Link>
               </Button>
             </div>
           </CardContent>

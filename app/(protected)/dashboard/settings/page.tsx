@@ -20,6 +20,8 @@ export const metadata = constructMetadata({
   description: "Configurez vos paramètres de compte.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
   const user = await getCurrentUser();
   if (!user?.id) redirect("/");

@@ -12,6 +12,8 @@ export const metadata = constructMetadata({
   description: "Admin page for only admin management.",
 });
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
