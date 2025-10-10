@@ -163,7 +163,9 @@ Migration 2: ALTER TABLE verification ADD COLUMN ...
 Migration 3: ALTER TABLE verification MODIFY ...
 ```
 
-## 🚀 Migration Corrective Appliquée
+## 🚀 Solutions Appliquées
+
+### 1. Migration Corrective Idempotente
 
 Fichier: `prisma/migrations/20251010000000_ensure_verification_table/migration.sql`
 
@@ -184,14 +186,64 @@ Cette migration :
 - ✅ Ne cause pas d'erreur si la table existe déjà
 - ✅ Corrige le problème en production
 
+### 2. Configuration Vercel pour l'Ordre des Migrations
+
+**⚠️ Problème Critical Identifié :**
+
+Next.js sur Vercel exécutait le build **AVANT** les migrations, causant l'erreur :
+```
+ERROR [Better Auth]: The table `public.verification` does not exist
+```
+
+Ceci se produit lors de la **page data collection** car Better Auth essaie d'accéder à la table `verification` qui n'a pas encore été créée.
+
+**✅ Solution :** Fichier `vercel.json` pour contrôler l'ordre d'exécution :
+
+```json
+{
+  "buildCommand": "prisma migrate deploy && prisma generate && contentlayer build && next build",
+  "installCommand": "pnpm install"
+}
+```
+
+Cette configuration garantit que :
+1. ✅ **Migrations appliquées en PREMIER** (`prisma migrate deploy`)
+2. ✅ Client Prisma généré avec le bon schéma (`prisma generate`)
+3. ✅ Contentlayer peut accéder à la DB si nécessaire
+4. ✅ Next.js build s'exécute en DERNIER, après que tout soit prêt
+
+### 3. Variables d'Environnement Requises sur Vercel
+
+Assurez-vous que ces variables sont configurées dans les Settings de votre projet Vercel :
+
+```bash
+# Database
+DATABASE_URL="postgresql://..."              # Connection pooling
+DIRECT_URL="postgresql://..."                # Direct connection
+
+# Better Auth
+BETTER_AUTH_SECRET="votre-secret"
+BETTER_AUTH_URL="https://votre-domaine.com"  # URL de production
+NEXT_PUBLIC_APP_URL="https://votre-domaine.com"
+
+# OAuth (si utilisé)
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+```
+
+⚠️ **Important :** `BETTER_AUTH_URL` et `NEXT_PUBLIC_APP_URL` doivent pointer vers votre domaine de production, pas `localhost` !
+
 ## 📚 Ressources
 
 - [Prisma Migrate Docs](https://www.prisma.io/docs/concepts/components/prisma-migrate)
 - [Better Auth Database Schema](https://better-auth.com/docs/concepts/database)
+- [Vercel Build Configuration](https://vercel.com/docs/projects/project-configuration)
 - [PostgreSQL IF NOT EXISTS](https://www.postgresql.org/docs/current/sql-createtable.html)
 
 ## 🔄 Prochaines Étapes
 
-1. Déployer la migration corrective en production
-2. Monitorer les logs pour s'assurer que l'erreur ne se reproduit plus
-3. Suivre ces bonnes pratiques pour toutes les futures migrations
+1. ✅ Committer et pusher les changements (vercel.json, migration, package.json)
+2. ⏳ Vercel déclenchera automatiquement un nouveau déploiement
+3. ✅ Vérifier que le build réussit (les migrations s'exécutent avant le build)
+4. ✅ Tester l'authentification en production
+5. ✅ Monitorer les logs pour confirmer que l'erreur ne se reproduit plus
