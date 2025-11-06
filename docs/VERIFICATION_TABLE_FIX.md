@@ -41,6 +41,8 @@ Nous avons mis en place un script de vérification idempotent qui s'assure que t
      - `sessionState`
      - `tokenType`
      - `accessTokenExpiresAt`
+     - `accountId`
+     - `providerId`
    - Utilise `CREATE TABLE IF NOT EXISTS` et `ADD COLUMN IF NOT EXISTS` pour être idempotent
    - Vérifie l'existence des tables après création/modification
 
@@ -125,6 +127,8 @@ ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "scope" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "sessionState" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "tokenType" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessTokenExpiresAt" TIMESTAMP(3);
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accountId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "providerId" TEXT NOT NULL DEFAULT '';
 ```
 
 ## Prévention future

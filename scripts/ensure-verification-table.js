@@ -149,6 +149,40 @@ async function ensureDatabaseSchema() {
       `);
     }
 
+    // Vérifier si la colonne accountId existe
+    const accountIdExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'accounts'
+        AND column_name = 'accountId'
+      );
+    `);
+
+    if (!accountIdExists[0].exists) {
+      console.log('➕ Ajout de la colonne accountId à la table accounts...');
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accountId" TEXT NOT NULL DEFAULT '';
+      `);
+    }
+
+    // Vérifier si la colonne providerId existe
+    const providerIdExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'accounts'
+        AND column_name = 'providerId'
+      );
+    `);
+
+    if (!providerIdExists[0].exists) {
+      console.log('➕ Ajout de la colonne providerId à la table accounts...');
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "providerId" TEXT NOT NULL DEFAULT '';
+      `);
+    }
+
     console.log('✅ Table accounts vérifiée');
 
     // 3. Vérification finale
