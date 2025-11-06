@@ -253,7 +253,88 @@ async function ensureDatabaseSchema() {
 
     console.log('✅ Table accounts vérifiée');
 
-    // 3. Vérification finale
+    // 3. Vérifier la table sessions
+    console.log('📝 Vérification de la table sessions...');
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "sessions" (
+        "id" TEXT NOT NULL,
+        "sessionToken" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "expiresAt" TIMESTAMP(3) NOT NULL,
+        "ipAddress" TEXT,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "userAgent" TEXT,
+        CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
+      );
+    `);
+
+    // Créer l'index unique sur sessionToken si nécessaire
+    await prisma.$executeRawUnsafe(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "sessions_sessionToken_key" ON "sessions"("sessionToken");
+    `);
+
+    console.log('✅ Table sessions vérifiée');
+
+    // 4. Vérifier la table users
+    console.log('📝 Vérification de la table users...');
+
+    // Vérifier si la colonne password existe
+    const passwordExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = 'password'
+      );
+    `);
+
+    if (!passwordExists[0].exists) {
+      console.log('➕ Ajout de la colonne password à la table users...');
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password" TEXT;
+      `);
+    }
+
+    // Vérifier si la colonne emailVerified existe
+    const emailVerifiedExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = 'users'
+        AND column_name = 'emailVerified'
+      );
+    `);
+
+    if (!emailVerifiedExists[0].exists) {
+      console.log('➕ Ajout de la colonne emailVerified à la table users...');
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
+      `);
+    }
+
+    console.log('✅ Table users vérifiée');
+
+    // 5. Vérifier la table verificationtokens
+    console.log('📝 Vérification de la table verificationtokens...');
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "verificationtokens" (
+        "identifier" TEXT NOT NULL,
+        "token" TEXT NOT NULL,
+        "expires" TIMESTAMP(3) NOT NULL
+      );
+    `);
+
+    // Créer l'index unique sur identifier et token si nécessaire
+    await prisma.$executeRawUnsafe(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "verificationtokens_identifier_token_key" ON "verificationtokens"("identifier", "token");
+    `);
+
+    console.log('✅ Table verificationtokens vérifiée');
+
+    // 6. Vérification finale
     console.log('🔍 Vérification finale du schéma...');
     const verificationExists = await prisma.$queryRawUnsafe(`
       SELECT EXISTS (
@@ -271,9 +352,36 @@ async function ensureDatabaseSchema() {
       );
     `);
 
+    const sessionsExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'sessions'
+      );
+    `);
+
+    const verificationTokensExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'verificationtokens'
+      );
+    `);
+
+    const usersExists = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'users'
+      );
+    `);
+
     console.log('✅ Vérification finale réussie');
     console.log('  - Table verification:', verificationExists[0].exists ? '✓' : '✗');
     console.log('  - Table accounts:', accountsExists[0].exists ? '✓' : '✗');
+    console.log('  - Table sessions:', sessionsExists[0].exists ? '✓' : '✗');
+    console.log('  - Table verificationtokens:', verificationTokensExists[0].exists ? '✓' : '✗');
+    console.log('  - Table users:', usersExists[0].exists ? '✓' : '✗');
   } catch (error) {
     console.error('❌ Erreur lors de la vérification du schéma:', error);
     throw error;
