@@ -86,11 +86,59 @@ model Message {
   recipientId String
   isRead      Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  // Sécurité et modération
+  isModerated Boolean  @default(false)
+  isFlagged   Boolean  @default(false)
+  flagReason  String?
+
+  // Relations
   recipient   User     @relation("MessagesReceived", fields: [recipientId], references: [id], onDelete: Cascade)
   sender      User     @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
   User        User[]   @relation("MessageToUser")
 
+  @@index([senderId, recipientId])
+  @@index([createdAt])
   @@map("messages")
+}
+
+// Système de contacts approuvés pour les mineurs
+model ApprovedContact {
+  id          String   @id @default(cuid())
+  userId      String   // L'ID du mineur
+  contactId   String   // L'ID du contact approuvé (recruteur)
+  approvedBy  String?  // Parent/tuteur qui a approuvé
+  approvedAt  DateTime @default(now())
+  expiresAt   DateTime? // Optionnel: date d'expiration de l'approbation
+  isActive    Boolean  @default(true)
+
+  @@unique([userId, contactId])
+  @@index([userId])
+  @@map("approved_contacts")
+}
+
+// Historique de modération
+model ModerationLog {
+  id          String   @id @default(cuid())
+  messageId   String?
+  userId      String   // Utilisateur concerné
+  action      ModerationAction
+  reason      String
+  moderatedBy String?  // Système ou ID du modérateur
+  createdAt   DateTime @default(now())
+  metadata    String?  // JSON avec détails additionnels
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("moderation_logs")
+}
+
+enum ModerationAction {
+  FLAG
+  WARN
+  BLOCK
+  DELETE
+  APPROVE
 }
 
 model Sport {
@@ -143,6 +191,7 @@ model Athlete {
   userId        String            @unique
   gender        Gender?
   age           Int?
+  dateOfBirth   DateTime?         // Date de naissance pour vérifier si mineur
   city          String?
   country       String?           // Pour le ranking national
   region        String?           // Pour le ranking régional
@@ -153,6 +202,11 @@ model Athlete {
   programType   ProgramType?
   categoryId    String?
   sportId       String?
+
+  // Protection des mineurs
+  parentalConsentRequired Boolean @default(false)
+  parentalConsentGiven    Boolean @default(false)
+  parentEmail             String?
 
   // Gamification & Ranking
   totalScore    Float             @default(0) // Score total calculé

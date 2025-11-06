@@ -12,6 +12,7 @@ import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import { ContactButton } from "@/components/chat/contact-button";
 
 type AthleteDialogProps = {
   athlete: Athlete;
@@ -111,10 +112,14 @@ export default function AthleteProfileDialog({
               </TabsContent>
             </Tabs>
           </CardContent>
-          <div className="flex h-14 items-center justify-end p-6">
-            <Button variant="secondary">Contact Athlete</Button>
-            <Button  className="ml-4">
-              Add to Witchlist
+          <div className="flex h-14 items-center justify-end gap-4 p-6">
+            <ContactButton
+              contactId={athlete.userId}
+              contactName={athlete.user.name || "Athlete"}
+              variant="default"
+            />
+            <Button variant="outline">
+              Add to Watchlist
             </Button>
           </div>
         </Card>

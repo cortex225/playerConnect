@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "pnpm db:migrate && contentlayer build && next build",
+    "build": "pnpm db:migrate && node scripts/ensure-verification-table.js && contentlayer build && next build",
     "turbo": "next dev --turbo",
     "start": "next start",
     "lint": "next lint",
@@ -17,6 +17,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:verify": "prisma migrate status",
     "db:push": "prisma db push",
+    "db:ensure-verification": "node scripts/ensure-verification-table.js",
     "db:studio": "prisma studio"
   },
   "dependencies": {
