@@ -84,9 +84,9 @@ export default function RegisterPage() {
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <Link
         href="/"
-        className="absolute left-4 top-4 md:left-8 md:top-8 flex items-center text-sm font-medium"
+        className="absolute left-4 top-4 flex items-center text-sm font-medium md:left-8 md:top-8"
       >
-        <Icons.chevronLeft className="mr-2 h-4 w-4" />
+        <Icons.chevronLeft className="mr-2 size-4" />
         Retour
       </Link>
 
