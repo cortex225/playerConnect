@@ -1,6 +1,7 @@
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/session";
 
 /**
@@ -8,8 +9,11 @@ import { getCurrentUser } from "@/lib/session";
  */
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier la session directement avec authClient
-    const authSessionResponse = await authClient.getSession();
+    // ✅ CORRECTION: Utiliser auth.api côté serveur au lieu de authClient
+    const headersList = await headers();
+    const authSessionResponse = await auth.api.getSession({
+      headers: headersList,
+    });
 
     // Vérifier la session avec notre fonction getCurrentUser
     const userSession = await getCurrentUser();
@@ -17,14 +21,14 @@ export async function GET(request: NextRequest) {
     // Retourner toutes les informations pour le débogage
     return NextResponse.json({
       betterAuthSession: {
-        hasSession: !!authSessionResponse?.data?.session,
-        hasUser: !!authSessionResponse?.data?.user,
-        sessionId: authSessionResponse?.data?.session?.id,
-        userKeys: authSessionResponse?.data?.user
-          ? Object.keys(authSessionResponse.data.user)
+        hasSession: !!authSessionResponse?.session,
+        hasUser: !!authSessionResponse?.user,
+        sessionId: authSessionResponse?.session?.id,
+        userKeys: authSessionResponse?.user
+          ? Object.keys(authSessionResponse.user)
           : [],
-        hasMetadata: !!(authSessionResponse?.data?.user as any)?.user_metadata,
-        role: (authSessionResponse?.data?.user as any)?.user_metadata?.role,
+        hasMetadata: !!(authSessionResponse?.user as any)?.user_metadata,
+        role: (authSessionResponse?.user as any)?.user_metadata?.role,
       },
       userSession: userSession
         ? {

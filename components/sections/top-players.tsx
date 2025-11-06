@@ -149,7 +149,7 @@ export default function TopPlayers() {
               ? Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <CardHeader>
-                      <Skeleton className="h-20 w-20 rounded-full" />
+                      <Skeleton className="size-20 rounded-full" />
                       <Skeleton className="mt-4 h-6 w-3/4" />
                       <Skeleton className="mt-2 h-4 w-1/2" />
                     </CardHeader>
