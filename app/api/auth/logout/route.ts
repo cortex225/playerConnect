@@ -22,8 +22,10 @@ export async function POST(request: NextRequest) {
     // Pour être sûr de supprimer les cookies côté client
     const response = NextResponse.json({ success: true });
 
-    // Supprimer les cookies de session
-    response.cookies.delete("better_auth_session_token");
+    // ✅ CORRECTION: Utiliser le bon nom de cookie (avec point, pas underscore)
+    response.cookies.delete("better-auth.session_token");
+    // Supprimer aussi le cookie de rôle sélectionné si présent
+    response.cookies.delete("selectedRole");
 
     return response;
   } catch (error) {
