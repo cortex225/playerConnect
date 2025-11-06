@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 
+import { ROLES } from "@/lib/constants";
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-
-const prisma = new PrismaClient();
 
 export async function POST() {
   try {
@@ -20,10 +19,10 @@ export async function POST() {
       },
     });
 
-    // Mettre à jour le rôle de l'utilisateur
+    // ✅ CORRECTION CRITIQUE: Mettre à jour le rôle en MAJUSCULES
     await prisma.user.update({
       where: { id: user.id },
-      data: { role: "recruiter" },
+      data: { role: ROLES.RECRUITER },
     });
 
     return NextResponse.redirect(

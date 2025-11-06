@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { ROLES } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+
+// ✅ Rôles valides pour la validation
+const VALID_ROLES = [ROLES.ADMIN, ROLES.ATHLETE, ROLES.RECRUITER, ROLES.USER];
 
 /**
  * API pour mettre à jour le rôle d'un utilisateur
@@ -27,12 +31,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("[UpdateRole] Mise à jour du rôle pour", user.id, "vers", role);
+    // ✅ CORRECTION: Valider que le rôle est autorisé
+    const roleUpperCase = role.toUpperCase();
+    if (!VALID_ROLES.includes(roleUpperCase)) {
+      console.log("[UpdateRole] Rôle invalide:", role);
+      return NextResponse.json(
+        {
+          error: "Rôle invalide",
+          validRoles: VALID_ROLES,
+        },
+        { status: 400 },
+      );
+    }
+
+    console.log("[UpdateRole] Mise à jour du rôle pour", user.id, "vers", roleUpperCase);
 
     // Mettre à jour le rôle dans la base de données
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { role: role.toUpperCase() },
+      data: { role: roleUpperCase },
     });
 
     // Note: La mise à jour des métadonnées BetterAuth se fera automatiquement

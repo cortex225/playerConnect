@@ -19,12 +19,12 @@ export const dynamic = 'force-dynamic';
 export default async function BillingPage() {
   const user = await getCurrentUser();
 
-  let userSubscriptionPlan;
-  if (user && user.id && user.role === "USER") {
-    userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
-  } else {
-    redirect("/login");
+  // ✅ CORRECTION: Vérifier que l'utilisateur est un ATHLETE
+  if (!user || user.role !== "ATHLETE") {
+    redirect("/auth/login");
   }
+
+  const userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
 
   return (
     <DashboardShell>

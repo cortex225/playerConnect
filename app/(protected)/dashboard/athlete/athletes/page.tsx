@@ -16,12 +16,20 @@ export const dynamic = 'force-dynamic';
 export default async function AthletesPage() {
   const user = await getCurrentUser();
 
-  // let userSubscriptionPlan;
-  // if (user && user.id && user.role === "USER") {
-  //     userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
-  // } else {
-  //     redirect("/login");
-  // }
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  // ✅ CORRECTION CRITIQUE: Cette page devrait être pour les recruteurs uniquement
+  // Les athlètes ne devraient pas voir la liste des autres athlètes
+  if (user.role === "ATHLETE") {
+    redirect("/dashboard/athlete");
+  }
+
+  // Seuls les recruteurs et admins peuvent voir cette page
+  if (user.role !== "RECRUITER" && user.role !== "ADMIN") {
+    redirect("/dashboard");
+  }
 
   return (
     <DashboardShell>

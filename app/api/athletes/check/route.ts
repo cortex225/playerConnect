@@ -1,6 +1,7 @@
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -8,14 +9,17 @@ export async function GET(request: NextRequest) {
   try {
     console.log("API /athletes/check - Vérification de session en cours");
 
-    // Vérifier directement avec BetterAuth
-    const authResponse = await authClient.getSession();
+    // ✅ CORRECTION: Utiliser auth.api côté serveur au lieu de authClient
+    const headersList = await headers();
+    const authResponse = await auth.api.getSession({
+      headers: headersList,
+    });
     console.log(
       "API /athletes/check - Session BetterAuth:",
-      !!authResponse?.data?.user,
+      !!authResponse?.user,
     );
 
-    if (!authResponse?.data?.user) {
+    if (!authResponse?.user) {
       console.log("API /athletes/check - Aucune session BetterAuth");
       return NextResponse.json(
         {

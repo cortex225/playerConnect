@@ -99,8 +99,16 @@ export default async function DashboardPage() {
       redirect("/login");
     }
 
-    // Vérifier si l'utilisateur est un recruteur, mais ne pas rediriger immédiatement
-    // pour éviter les problèmes de session
+    // ✅ CORRECTION CRITIQUE: Vérifier que l'utilisateur est bien un recruteur
+    if (user.role !== "RECRUITER") {
+      // Rediriger vers le dashboard approprié selon le rôle
+      if (user.role === "ATHLETE") {
+        redirect("/dashboard/athlete");
+      } else {
+        redirect("/dashboard");
+      }
+    }
+
     const isRecruiter = user.role === "RECRUITER";
 
     return (

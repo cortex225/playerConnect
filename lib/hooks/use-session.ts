@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 
-import { getCurrentUser, type UserSession } from "@/lib/session";
+import { authClient } from "@/lib/auth-client";
+import type { UserSession } from "@/lib/session";
 
+/**
+ * Hook client pour récupérer la session utilisateur
+ * IMPORTANT: Utilise BetterAuth côté client et fait un appel API pour les détails
+ */
 export function useSession() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -12,11 +17,32 @@ export function useSession() {
 
     const checkSession = async () => {
       try {
-        // On utilise directement getCurrentUser qui utilise BetterAuth en interne
-        const user = await getCurrentUser();
+        // ✅ CORRECTION: Utiliser BetterAuth côté client
+        const betterAuthSession = await authClient.getSession();
+
+        if (!betterAuthSession?.data?.user) {
+          if (isMounted) {
+            setSession(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // Faire un appel API pour obtenir les détails complets de la session
+        // (rôle, permissions depuis la DB)
+        const response = await fetch("/api/auth/session", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch session details");
+        }
+
+        const sessionData = await response.json();
 
         if (isMounted) {
-          setSession(user);
+          setSession(sessionData);
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de la session:", error);
