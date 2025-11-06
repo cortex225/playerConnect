@@ -1,28 +1,48 @@
-# Correctif pour l'erreur "Table verification does not exist"
+# Correctif pour les erreurs de schéma de base de données
 
-## Problème
+## Problèmes
 
-En production sur Vercel, l'erreur suivante se produit lors de la connexion :
+En production sur Vercel, plusieurs erreurs se produisent lors de la connexion :
 
+### 1. Table verification manquante
 ```
 Invalid `prisma.verification.create()` invocation:
 The table `public.verification` does not exist in the current database.
 ```
 
+### 2. Colonnes manquantes dans la table accounts
+```
+Invalid `prisma.account.findMany()` invocation:
+The column `accounts.accessToken` does not exist in the current database.
+```
+
 ## Cause
 
-Cette erreur se produit lorsque les migrations Prisma ne sont pas exécutées correctement lors du déploiement sur Vercel, ou si la table `verification` a été supprimée accidentellement de la base de données de production.
+Ces erreurs se produisent lorsque les migrations Prisma ne sont pas exécutées correctement lors du déploiement sur Vercel, ou si les tables/colonnes ont été supprimées accidentellement de la base de données de production. Cela peut arriver dans les cas suivants :
+
+- Les migrations Prisma échouent silencieusement pendant le build
+- Le schéma de la base de données est désynchronisé avec le schéma Prisma
+- Des colonnes ont été ajoutées au schéma mais la base de données n'a pas été mise à jour
 
 ## Solution
 
-Nous avons mis en place un script de vérification idempotent qui s'assure que la table `verification` existe toujours avant chaque build.
+Nous avons mis en place un script de vérification idempotent qui s'assure que toutes les tables et colonnes nécessaires existent avant chaque build.
 
 ### Fichiers modifiés
 
-1. **scripts/ensure-verification-table.js** (nouveau)
-   - Script Node.js qui crée la table `verification` si elle n'existe pas
-   - Utilise `CREATE TABLE IF NOT EXISTS` pour être idempotent
-   - Vérifie l'existence de la table après création
+1. **scripts/ensure-verification-table.js** (nouveau/mis à jour)
+   - Script Node.js qui vérifie et crée/met à jour les tables et colonnes
+   - Crée la table `verification` si elle n'existe pas
+   - Ajoute les colonnes manquantes à la table `accounts` :
+     - `accessToken`
+     - `idToken`
+     - `refreshToken`
+     - `scope`
+     - `sessionState`
+     - `tokenType`
+     - `accessTokenExpiresAt`
+   - Utilise `CREATE TABLE IF NOT EXISTS` et `ADD COLUMN IF NOT EXISTS` pour être idempotent
+   - Vérifie l'existence des tables après création/modification
 
 2. **vercel.json**
    - Ajout du script dans le `buildCommand`
@@ -80,8 +100,9 @@ Après déploiement, vérifiez dans les logs de build Vercel que vous voyez :
 
 ## Alternative : Exécution directe sur la base de données
 
-Si le problème persiste, vous pouvez également exécuter cette requête SQL directement sur votre base de données de production :
+Si le problème persiste, vous pouvez également exécuter ces requêtes SQL directement sur votre base de données de production :
 
+### 1. Créer la table verification
 ```sql
 CREATE TABLE IF NOT EXISTS "verification" (
   "id" TEXT NOT NULL,
@@ -92,6 +113,18 @@ CREATE TABLE IF NOT EXISTS "verification" (
   "updatedAt" TIMESTAMP(3) NOT NULL,
   CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
 );
+```
+
+### 2. Ajouter les colonnes manquantes à la table accounts
+```sql
+-- Ajouter toutes les colonnes manquantes
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessToken" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "idToken" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "refreshToken" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "scope" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "sessionState" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "tokenType" TEXT;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessTokenExpiresAt" TIMESTAMP(3);
 ```
 
 ## Prévention future
