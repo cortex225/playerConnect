@@ -31,18 +31,20 @@ Nous avons mis en place un script de vérification idempotent qui s'assure que t
 ### Fichiers modifiés
 
 1. **scripts/ensure-verification-table.js** (nouveau/mis à jour)
-   - Script Node.js qui vérifie et crée/met à jour les tables et colonnes
-   - Crée la table `verification` si elle n'existe pas
-   - Ajoute les colonnes manquantes à la table `accounts` :
-     - `accessToken`
-     - `idToken`
-     - `refreshToken`
-     - `scope`
-     - `sessionState`
-     - `tokenType`
-     - `accessTokenExpiresAt`
-     - `accountId`
-     - `providerId`
+   - Script Node.js qui vérifie et crée/met à jour toutes les tables et colonnes Better Auth
+   - **Tables créées/vérifiées** :
+     - `verification` - pour les codes de vérification
+     - `accounts` - pour les comptes OAuth
+     - `sessions` - pour les sessions utilisateur
+     - `verificationtokens` - pour les tokens de vérification
+   - **Colonnes ajoutées à `accounts`** :
+     - `userId`, `type`, `createdAt`, `updatedAt`
+     - `accessToken`, `idToken`, `refreshToken`
+     - `scope`, `sessionState`, `tokenType`
+     - `accessTokenExpiresAt`, `accountId`, `providerId`
+   - **Colonnes ajoutées à `users`** :
+     - `password`, `emailVerified`
+   - Crée les index uniques nécessaires
    - Utilise `CREATE TABLE IF NOT EXISTS` et `ADD COLUMN IF NOT EXISTS` pour être idempotent
    - Vérifie l'existence des tables après création/modification
 
@@ -117,9 +119,41 @@ CREATE TABLE IF NOT EXISTS "verification" (
 );
 ```
 
-### 2. Ajouter les colonnes manquantes à la table accounts
+### 2. Créer la table sessions
 ```sql
--- Ajouter toutes les colonnes manquantes
+CREATE TABLE IF NOT EXISTS "sessions" (
+  "id" TEXT NOT NULL,
+  "sessionToken" TEXT NOT NULL,
+  "userId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "ipAddress" TEXT,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "userAgent" TEXT,
+  CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "sessions_sessionToken_key" ON "sessions"("sessionToken");
+```
+
+### 3. Créer la table verificationtokens
+```sql
+CREATE TABLE IF NOT EXISTS "verificationtokens" (
+  "identifier" TEXT NOT NULL,
+  "token" TEXT NOT NULL,
+  "expires" TIMESTAMP(3) NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "verificationtokens_identifier_token_key" ON "verificationtokens"("identifier", "token");
+```
+
+### 4. Ajouter les colonnes manquantes à la table accounts
+```sql
+-- Colonnes de base
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "type" TEXT NOT NULL DEFAULT 'oauth';
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- Colonnes OAuth
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessToken" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "idToken" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "refreshToken" TEXT;
@@ -129,6 +163,12 @@ ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "tokenType" TEXT;
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessTokenExpiresAt" TIMESTAMP(3);
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accountId" TEXT NOT NULL DEFAULT '';
 ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "providerId" TEXT NOT NULL DEFAULT '';
+```
+
+### 5. Ajouter les colonnes manquantes à la table users
+```sql
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password" TEXT;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
 ```
 
 ## Prévention future
