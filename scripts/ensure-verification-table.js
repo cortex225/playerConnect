@@ -2,15 +2,48 @@
 /**
  * Script pour s'assurer que toutes les tables et colonnes nécessaires existent
  * Ce script est idempotent et peut être exécuté plusieurs fois sans problème
+ *
+ * IMPORTANT: Ce script s'exécute APRÈS les migrations Prisma pour réparer
+ * les problèmes de schéma qui pourraient exister en production
  */
 
 const { PrismaClient } = require('@prisma/client');
+
+/**
+ * Helper function to check if a column exists
+ */
+async function columnExists(prisma, tableName, columnName) {
+  const result = await prisma.$queryRawUnsafe(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.columns
+      WHERE table_schema = 'public'
+      AND table_name = $1
+      AND column_name = $2
+    );
+  `, tableName, columnName);
+  return result[0]?.exists || false;
+}
+
+/**
+ * Helper function to check if a table exists
+ */
+async function tableExists(prisma, tableName) {
+  const result = await prisma.$queryRawUnsafe(`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables
+      WHERE table_schema = 'public'
+      AND table_name = $1
+    );
+  `, tableName);
+  return result[0]?.exists || false;
+}
 
 async function ensureDatabaseSchema() {
   const prisma = new PrismaClient();
 
   try {
     console.log('🔍 Vérification du schéma de la base de données...');
+    console.log('⏰ Démarrage:', new Date().toISOString());
 
     // 1. Créer la table verification si elle n'existe pas
     console.log('📝 Vérification de la table verification...');
@@ -30,225 +63,79 @@ async function ensureDatabaseSchema() {
     // 2. Vérifier et ajouter les colonnes manquantes dans la table accounts
     console.log('📝 Vérification de la table accounts...');
 
-    // Vérifier si la colonne userId existe
-    const userIdExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'userId'
-      );
-    `);
+    // Définir toutes les colonnes requises pour le modèle Account
+    const accountColumns = [
+      { name: 'userId', type: 'TEXT NOT NULL', defaultValue: null, required: true },
+      { name: 'type', type: 'TEXT NOT NULL', defaultValue: "'oauth'", required: true },
+      { name: 'createdAt', type: 'TIMESTAMP(3) NOT NULL', defaultValue: 'CURRENT_TIMESTAMP', required: true },
+      { name: 'updatedAt', type: 'TIMESTAMP(3) NOT NULL', defaultValue: 'CURRENT_TIMESTAMP', required: true },
+      { name: 'accessToken', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'idToken', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'refreshToken', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'scope', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'sessionState', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'tokenType', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'accessTokenExpiresAt', type: 'TIMESTAMP(3)', defaultValue: null, required: false },
+    ];
 
-    if (!userIdExists[0].exists) {
-      console.log('➕ Ajout de la colonne userId à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "userId" TEXT NOT NULL DEFAULT '';
-      `);
+    // Vérifier et ajouter chaque colonne si nécessaire
+    for (const column of accountColumns) {
+      const exists = await columnExists(prisma, 'accounts', column.name);
+      if (!exists) {
+        console.log(`➕ Ajout de la colonne ${column.name} à la table accounts...`);
+        const defaultClause = column.defaultValue ? `DEFAULT ${column.defaultValue}` : '';
+        await prisma.$executeRawUnsafe(`
+          ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "${column.name}" ${column.type} ${defaultClause};
+        `);
+        console.log(`✅ Colonne ${column.name} ajoutée`);
+      }
     }
 
-    // Vérifier si la colonne type existe
-    const typeExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'type'
-      );
-    `);
+    // Vérifier et ajouter accountId et providerId (colonnes critiques pour OAuth)
+    const hasAccountId = await columnExists(prisma, 'accounts', 'accountId');
+    const hasProviderId = await columnExists(prisma, 'accounts', 'providerId');
 
-    if (!typeExists[0].exists) {
-      console.log('➕ Ajout de la colonne type à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "type" TEXT NOT NULL DEFAULT 'oauth';
-      `);
-    }
-
-    // Vérifier si la colonne createdAt existe
-    const createdAtExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'createdAt'
-      );
-    `);
-
-    if (!createdAtExists[0].exists) {
-      console.log('➕ Ajout de la colonne createdAt à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-      `);
-    }
-
-    // Vérifier si la colonne updatedAt existe
-    const updatedAtExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'updatedAt'
-      );
-    `);
-
-    if (!updatedAtExists[0].exists) {
-      console.log('➕ Ajout de la colonne updatedAt à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-      `);
-    }
-
-    // Vérifier si la colonne accessToken existe
-    const accessTokenExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'accessToken'
-      );
-    `);
-
-    if (!accessTokenExists[0].exists) {
-      console.log('➕ Ajout de la colonne accessToken à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessToken" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne idToken existe
-    const idTokenExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'idToken'
-      );
-    `);
-
-    if (!idTokenExists[0].exists) {
-      console.log('➕ Ajout de la colonne idToken à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "idToken" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne refreshToken existe
-    const refreshTokenExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'refreshToken'
-      );
-    `);
-
-    if (!refreshTokenExists[0].exists) {
-      console.log('➕ Ajout de la colonne refreshToken à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "refreshToken" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne scope existe
-    const scopeExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'scope'
-      );
-    `);
-
-    if (!scopeExists[0].exists) {
-      console.log('➕ Ajout de la colonne scope à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "scope" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne sessionState existe
-    const sessionStateExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'sessionState'
-      );
-    `);
-
-    if (!sessionStateExists[0].exists) {
-      console.log('➕ Ajout de la colonne sessionState à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "sessionState" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne tokenType existe
-    const tokenTypeExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'tokenType'
-      );
-    `);
-
-    if (!tokenTypeExists[0].exists) {
-      console.log('➕ Ajout de la colonne tokenType à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "tokenType" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne accessTokenExpiresAt existe
-    const accessTokenExpiresAtExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'accessTokenExpiresAt'
-      );
-    `);
-
-    if (!accessTokenExpiresAtExists[0].exists) {
-      console.log('➕ Ajout de la colonne accessTokenExpiresAt à la table accounts...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accessTokenExpiresAt" TIMESTAMP(3);
-      `);
-    }
-
-    // Vérifier si la colonne accountId existe
-    const accountIdExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'accountId'
-      );
-    `);
-
-    if (!accountIdExists[0].exists) {
+    if (!hasAccountId) {
       console.log('➕ Ajout de la colonne accountId à la table accounts...');
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accountId" TEXT NOT NULL DEFAULT '';
+        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "accountId" TEXT;
       `);
+      console.log('   Mise à jour des enregistrements existants...');
+      await prisma.$executeRawUnsafe(`
+        UPDATE "accounts" SET "accountId" = 'legacy-' || "id" WHERE "accountId" IS NULL;
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "accounts" ALTER COLUMN "accountId" SET NOT NULL;
+      `);
+      console.log('✅ Colonne accountId ajoutée et configurée');
     }
 
-    // Vérifier si la colonne providerId existe
-    const providerIdExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-        AND column_name = 'providerId'
-      );
-    `);
-
-    if (!providerIdExists[0].exists) {
+    if (!hasProviderId) {
       console.log('➕ Ajout de la colonne providerId à la table accounts...');
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "providerId" TEXT NOT NULL DEFAULT '';
+        ALTER TABLE "accounts" ADD COLUMN IF NOT EXISTS "providerId" TEXT;
       `);
+      console.log('   Mise à jour des enregistrements existants...');
+      await prisma.$executeRawUnsafe(`
+        UPDATE "accounts" SET "providerId" = 'unknown' WHERE "providerId" IS NULL;
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "accounts" ALTER COLUMN "providerId" SET NOT NULL;
+      `);
+      console.log('✅ Colonne providerId ajoutée et configurée');
+    }
+
+    // Vérifier et recréer l'index unique si nécessaire
+    if (!hasAccountId || !hasProviderId) {
+      console.log('🔧 Recréation de l\'index unique sur providerId et accountId...');
+      await prisma.$executeRawUnsafe(`
+        DROP INDEX IF EXISTS "accounts_providerId_accountId_key";
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "accounts_providerId_accountId_key"
+        ON "accounts"("providerId", "accountId");
+      `);
+      console.log('✅ Index unique créé');
     }
 
     console.log('✅ Table accounts vérifiée');
@@ -280,38 +167,22 @@ async function ensureDatabaseSchema() {
     // 4. Vérifier la table users
     console.log('📝 Vérification de la table users...');
 
-    // Vérifier si la colonne password existe
-    const passwordExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'users'
-        AND column_name = 'password'
-      );
-    `);
+    // Vérifier les colonnes de la table users
+    const userColumns = [
+      { name: 'password', type: 'TEXT', defaultValue: null, required: false },
+      { name: 'emailVerified', type: 'BOOLEAN NOT NULL', defaultValue: 'false', required: true },
+    ];
 
-    if (!passwordExists[0].exists) {
-      console.log('➕ Ajout de la colonne password à la table users...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password" TEXT;
-      `);
-    }
-
-    // Vérifier si la colonne emailVerified existe
-    const emailVerifiedExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name = 'users'
-        AND column_name = 'emailVerified'
-      );
-    `);
-
-    if (!emailVerifiedExists[0].exists) {
-      console.log('➕ Ajout de la colonne emailVerified à la table users...');
-      await prisma.$executeRawUnsafe(`
-        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
-      `);
+    for (const column of userColumns) {
+      const exists = await columnExists(prisma, 'users', column.name);
+      if (!exists) {
+        console.log(`➕ Ajout de la colonne ${column.name} à la table users...`);
+        const defaultClause = column.defaultValue ? `DEFAULT ${column.defaultValue}` : '';
+        await prisma.$executeRawUnsafe(`
+          ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "${column.name}" ${column.type} ${defaultClause};
+        `);
+        console.log(`✅ Colonne ${column.name} ajoutée`);
+      }
     }
 
     console.log('✅ Table users vérifiée');
@@ -336,52 +207,27 @@ async function ensureDatabaseSchema() {
 
     // 6. Vérification finale
     console.log('🔍 Vérification finale du schéma...');
-    const verificationExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'verification'
-      );
-    `);
+    const tables = ['verification', 'accounts', 'sessions', 'verificationtokens', 'users'];
+    const tableStatuses = {};
 
-    const accountsExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'accounts'
-      );
-    `);
-
-    const sessionsExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'sessions'
-      );
-    `);
-
-    const verificationTokensExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'verificationtokens'
-      );
-    `);
-
-    const usersExists = await prisma.$queryRawUnsafe(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'users'
-      );
-    `);
+    for (const table of tables) {
+      tableStatuses[table] = await tableExists(prisma, table);
+    }
 
     console.log('✅ Vérification finale réussie');
-    console.log('  - Table verification:', verificationExists[0].exists ? '✓' : '✗');
-    console.log('  - Table accounts:', accountsExists[0].exists ? '✓' : '✗');
-    console.log('  - Table sessions:', sessionsExists[0].exists ? '✓' : '✗');
-    console.log('  - Table verificationtokens:', verificationTokensExists[0].exists ? '✓' : '✗');
-    console.log('  - Table users:', usersExists[0].exists ? '✓' : '✗');
+    console.log('⏰ Fin:', new Date().toISOString());
+    console.log('\n📊 Statut des tables:');
+    for (const [table, exists] of Object.entries(tableStatuses)) {
+      console.log(`  - Table ${table}: ${exists ? '✅ Existe' : '❌ Manquante'}`);
+    }
+
+    // Vérifier les colonnes critiques OAuth
+    const criticalColumns = ['accountId', 'providerId'];
+    console.log('\n🔑 Colonnes critiques OAuth:');
+    for (const col of criticalColumns) {
+      const exists = await columnExists(prisma, 'accounts', col);
+      console.log(`  - ${col}: ${exists ? '✅ Existe' : '❌ Manquante'}`);
+    }
   } catch (error) {
     console.error('❌ Erreur lors de la vérification du schéma:', error);
     throw error;

@@ -2,6 +2,18 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 
+// Validate required environment variables
+if (!process.env.BETTER_AUTH_SECRET) {
+  console.error("❌ BETTER_AUTH_SECRET is not set!");
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("BETTER_AUTH_SECRET must be set in production");
+  }
+}
+
+if (!process.env.NEXT_PUBLIC_APP_URL && process.env.NODE_ENV === "production") {
+  console.warn("⚠️ NEXT_PUBLIC_APP_URL is not set in production");
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -11,7 +23,7 @@ export const auth = betterAuth({
   trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
     ? [process.env.NEXT_PUBLIC_APP_URL]
     : ["http://localhost:3000"],
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
   emailAndPassword: {
     enabled: true,
 
@@ -105,6 +117,7 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      enabled: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
       profile(profile) {
         return {
           id: profile.sub,
@@ -114,6 +127,47 @@ export const auth = betterAuth({
           emailVerified: profile.email_verified,
         };
       },
+    },
+  },
+
+  // Advanced security options
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+    cookiePrefix: "player_connect",
+    crossSubDomainCookies: {
+      enabled: false,
+    },
+    generateId: () => {
+      // Use default CUID generation
+      return undefined;
+    },
+  },
+
+  // Session configuration
+  session: {
+    // Session expires after 7 days of inactivity
+    expiresIn: 60 * 60 * 24 * 7, // 7 days in seconds
+    // Refresh session if it's older than 1 day
+    updateAge: 60 * 60 * 24, // 1 day in seconds
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes
+    },
+  },
+
+  // Email and password configuration
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false, // Set to true when email service is configured
+    sendResetPassword: async (data, request) => {
+      // TODO: Implement email sending when RESEND_API_KEY is configured
+      console.log("Password reset requested for:", data.user.email);
+      console.log("Reset link:", data.url);
+
+      // For now, just log. In production, send actual email.
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔗 Password reset link (dev only):", data.url);
+      }
     },
   },
 });
