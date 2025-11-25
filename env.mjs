@@ -3,8 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    // Better Auth requires BETTER_AUTH_SECRET
-    BETTER_AUTH_SECRET: z.string().min(32).optional(),
+    // This is optional because it's only used in development.
+    // See https://next-auth.js.org/deployment.
+    NEXTAUTH_URL: z.string().url().optional(),
+    AUTH_SECRET: z.string().min(1).optional(),
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
     GITHUB_OAUTH_TOKEN: z.string().min(1).optional(),
@@ -25,7 +27,8 @@ export const env = createEnv({
     NEXT_PUBLIC_PUSHER_CLUSTER: z.string().min(1).optional(),
   },
   runtimeEnv: {
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GITHUB_OAUTH_TOKEN: process.env.GITHUB_OAUTH_TOKEN,

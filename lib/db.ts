@@ -5,13 +5,13 @@ declare global {
   var cachedPrisma: PrismaClient;
 }
 
-// PrismaClient est attaché à une variable globale pour prévenir l'instanciation
-// de plusieurs instances (important en dev pour le hot-reloading, et en prod pour éviter
-// l'épuisement du pool de connexions)
+// PrismaClient est attaché à une variable globale lorsqu'il est utilisé en développement
+// pour prévenir l'instanciation de plusieurs instances pendant le hot-reloading
 export const prisma = global.cachedPrisma || new PrismaClient();
 
-// Cache le singleton dans tous les environnements
-global.cachedPrisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  global.cachedPrisma = prisma;
+}
 
 // Protection pour éviter l'exécution côté client
 if (typeof window !== "undefined") {
