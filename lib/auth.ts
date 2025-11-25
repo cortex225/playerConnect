@@ -11,7 +11,28 @@ if (!process.env.BETTER_AUTH_SECRET) {
 }
 
 if (!process.env.NEXT_PUBLIC_APP_URL && process.env.NODE_ENV === "production") {
-  console.warn("⚠️ NEXT_PUBLIC_APP_URL is not set in production");
+  console.error("❌ NEXT_PUBLIC_APP_URL is not set in production");
+  throw new Error("NEXT_PUBLIC_APP_URL must be set in production");
+}
+
+// Détecter l'URL de base (utilise localhost uniquement en développement)
+const baseURL = process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("NEXT_PUBLIC_APP_URL must be set in production"); })()
+    : "http://localhost:3000");
+
+const trustedOrigins = process.env.NEXT_PUBLIC_APP_URL
+  ? [process.env.NEXT_PUBLIC_APP_URL]
+  : (process.env.NODE_ENV === "production"
+      ? (() => { throw new Error("NEXT_PUBLIC_APP_URL must be set in production"); })()
+      : ["http://localhost:3000"]);
+
+// Valider les credentials Google OAuth si nécessaire
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.warn("⚠️ Google OAuth credentials not set - Google sign-in will be disabled");
+    console.warn("⚠️ Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable Google authentication");
+  }
 }
 
 export const auth = betterAuth({
@@ -19,19 +40,10 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
 
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
-    ? [process.env.NEXT_PUBLIC_APP_URL]
-    : ["http://localhost:3000"],
+  baseURL,
+  trustedOrigins,
   secret: process.env.BETTER_AUTH_SECRET || "dev-secret-change-in-production",
-  emailAndPassword: {
-    enabled: true,
 
-    async sendResetPassword(data, request) {
-      // Send an email to the user with a link to reset their password
-      console.log("Reset password email:", data);
-    },
-  },
   // TODO: Migrer vers la nouvelle API de hooks de better-auth
   /* hooks: {
     async afterUserCreated(user) {
