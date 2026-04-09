@@ -131,6 +131,7 @@ export function NavBar({ scroll = false, large = false }: NavBarProps) {
       >
         {/* Logo */}
         <div className="flex gap-6 md:gap-10">
+          <NavMobile items={(links || []) as any} />
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src="/images/logo-1.png"

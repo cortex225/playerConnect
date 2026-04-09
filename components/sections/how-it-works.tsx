@@ -76,10 +76,10 @@ export default function HowItWorks() {
                     isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }
                   }
                   transition={{ duration: 0.5, delay: index * 0.2 }}
-                  className="relative flex items-start gap-6"
+                  className="relative flex flex-col items-start gap-4 sm:flex-row sm:gap-6"
                 >
                   {/* Step number */}
-                  <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                  <div className="flex size-12 sm:size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg sm:text-xl font-bold text-primary-foreground shadow-lg shadow-primary/20">
                     {index + 1}
                   </div>
 

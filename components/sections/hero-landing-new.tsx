@@ -55,7 +55,7 @@ export default function HeroLandingNew() {
               href="#"
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
-                "group gap-2 px-4 py-2",
+                "group gap-2 px-4 py-2 text-center",
               )}
             >
               <Sparkles className="size-4 text-primary transition-transform group-hover:rotate-12" />
@@ -70,7 +70,7 @@ export default function HeroLandingNew() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="font-urban text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
+            className="font-urban text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
           >
             Où le talent
             <br />
@@ -137,7 +137,7 @@ export default function HeroLandingNew() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-16 grid grid-cols-3 gap-8 border-t border-border/40 pt-8"
+            className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 border-t border-border/40 pt-8"
           >
             {[
               { value: "10K+", label: "Athlètes" },
@@ -151,7 +151,7 @@ export default function HeroLandingNew() {
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
                 className="flex flex-col items-center"
               >
-                <div className="text-3xl font-bold sm:text-4xl">{stat.value}</div>
+                <div className="text-2xl font-bold sm:text-4xl">{stat.value}</div>
                 <div className="mt-1 text-sm text-muted-foreground">
                   {stat.label}
                 </div>

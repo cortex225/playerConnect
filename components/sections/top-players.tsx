@@ -115,7 +115,7 @@ export default function TopPlayers() {
               <Award className="size-4 text-primary" />
               <span className="text-sm font-medium">Classement des Talents</span>
             </div>
-            <h2 className="font-urban text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+            <h2 className="font-urban text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
               Top Players{" "}
               <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 du Moment

@@ -53,7 +53,7 @@ export default function CTASection() {
           transition={{ duration: 0.5 }}
           className="mx-auto max-w-4xl"
         >
-          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card/50 p-12 backdrop-blur-sm">
+          <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card/50 p-6 sm:p-8 md:p-12 backdrop-blur-sm">
             {/* Decorative corner accents */}
             <div className="absolute left-0 top-0 size-24 bg-gradient-to-br from-primary/20 to-transparent" />
             <div className="absolute bottom-0 right-0 size-24 bg-gradient-to-tl from-purple-500/20 to-transparent" />
