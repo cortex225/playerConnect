@@ -113,6 +113,75 @@ export async function canCommunicate(
   userId: string,
   recipientId: string
 ): Promise<{ allowed: boolean; reason?: string }> {
+  // Vérifier les restrictions de communication recruteur-athlète
+  const [senderUser, recipientUser] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: recipientId },
+      select: { role: true },
+    }),
+  ]);
+
+  // Athlete-to-Athlete: allow if they follow each other
+  const isAthleteToAthlete = senderUser?.role === "ATHLETE" && recipientUser?.role === "ATHLETE";
+  if (isAthleteToAthlete) {
+    const followExists = await prisma.follow.findFirst({
+      where: {
+        OR: [
+          { followerId: userId, followingId: recipientId },
+          { followerId: recipientId, followingId: userId },
+        ],
+      },
+    });
+    if (!followExists) {
+      return {
+        allowed: false,
+        reason: "Tu dois suivre cet athlete ou etre suivi pour pouvoir lui envoyer un message.",
+      };
+    }
+    // Follow exists — skip invitation check, proceed to minor protection below
+  }
+
+  const isRecruiterToAthlete = senderUser?.role === "RECRUITER" && recipientUser?.role === "ATHLETE";
+  const isAthleteToRecruiter = senderUser?.role === "ATHLETE" && recipientUser?.role === "RECRUITER";
+
+  if (isRecruiterToAthlete || isAthleteToRecruiter) {
+    const recruiterId = isRecruiterToAthlete ? userId : recipientId;
+    const athleteUserId = isRecruiterToAthlete ? recipientId : userId;
+
+    const [recruiter, athlete] = await Promise.all([
+      prisma.recruiter.findUnique({ where: { userId: recruiterId } }),
+      prisma.athlete.findUnique({ where: { userId: athleteUserId } }),
+    ]);
+
+    if (!recruiter || !athlete) {
+      return {
+        allowed: false,
+        reason: "Profil recruteur ou athlète introuvable.",
+      };
+    }
+
+    const acceptedInvitation = await prisma.invitation.findFirst({
+      where: {
+        recruiterId: recruiter.id,
+        event: { athleteId: athlete.id },
+        status: "ACCEPTED",
+      },
+    });
+
+    if (!acceptedInvitation) {
+      return {
+        allowed: false,
+        reason: isRecruiterToAthlete
+          ? "Vous devez d'abord demander à assister à un match de cet athlète et que l'invitation soit acceptée avant de pouvoir le contacter."
+          : "Ce recruteur doit d'abord avoir une invitation acceptée à l'un de vos matchs pour pouvoir vous contacter.",
+      };
+    }
+  }
+
   // Vérifier si l'utilisateur est un mineur
   const userIsMinor = await isMinor(userId);
   const recipientIsMinor = await isMinor(recipientId);

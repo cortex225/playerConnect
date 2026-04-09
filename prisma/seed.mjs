@@ -178,11 +178,26 @@ async function main() {
         },
       });
 
-      // Ajouter des KPI à cette performance
-      for (let j = 0; j < 5; j++) {
+      // Ajouter des KPI réalistes selon le sport
+      const sportKPIs = {
+        BASKETBALL: ["Points", "Rebonds", "Passes", "Interceptions", "Contres"],
+        SOCCER: ["Buts", "Passes dec.", "Tacles", "Dribbles", "Precis. tirs"],
+        FOOTBALL: ["Yards", "Touchdowns", "Receptions", "Plaquages", "Interceptions"],
+        RUGBY: ["Essais", "Plaquages", "Passes", "Metres", "Turnovers"],
+      };
+
+      // Trouver le sport de l'athlète
+      const athleteData = await prisma.athlete.findUnique({
+        where: { id: athlete.id },
+        include: { sport: true },
+      });
+      const sportName = athleteData?.sport?.name || "BASKETBALL";
+      const kpiNames = sportKPIs[sportName] || sportKPIs.BASKETBALL;
+
+      for (let j = 0; j < kpiNames.length; j++) {
         await prisma.kPI.create({
           data: {
-            name: `KPI ${j + 1}`,
+            name: kpiNames[j],
             weight: faker.number.float({ min: 0.1, max: 1 }),
             value: faker.number.float({ min: 0, max: 100 }),
             positionId: randomPosition.id,

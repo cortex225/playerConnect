@@ -1,20 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import frLocale from "@fullcalendar/core/locales/fr";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, CalendarIcon, Clock, MapPin, Palette } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarIcon,
+  Check,
+  Clock,
+  MapPin,
+  Palette,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
-// Suppression des imports CSS problématiques
-// Les styles seront appliqués via globals.css
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +84,15 @@ const eventColors = [
   { name: "Orange", value: "orange", class: "bg-orange-500" },
 ];
 
+const colorMap: Record<string, string> = {
+  blue: "#3b82f6",
+  red: "#ef4444",
+  green: "#22c55e",
+  yellow: "#eab308",
+  purple: "#a855f7",
+  orange: "#f97316",
+};
+
 export function AthleteCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,9 +103,22 @@ export function AthleteCalendar() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [invitationCounts, setInvitationCounts] = useState<
+    Record<string, { pending: number; accepted: number }>
+  >({});
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
 
-  // Charger les événements depuis l'API
+  // Detecter mobile
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Charger les evenements depuis l'API
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -85,14 +126,13 @@ export function AthleteCalendar() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Erreur API:", errorText);
-          throw new Error("Erreur lors du chargement des événements");
+          throw new Error("Erreur lors du chargement des evenements");
         }
         const data = await response.json();
 
-        // Vérifier que les données sont bien un tableau
         if (!Array.isArray(data)) {
-          console.error("Format de données invalide:", data);
-          throw new Error("Format de données invalide");
+          console.error("Format de donnees invalide:", data);
+          throw new Error("Format de donnees invalide");
         }
 
         setEvents(data);
@@ -100,10 +140,13 @@ export function AthleteCalendar() {
         console.error("Erreur:", error);
         toast({
           title: "Erreur",
-          description: error instanceof Error ? error.message : "Impossible de charger les événements",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Impossible de charger les evenements",
           variant: "destructive",
         });
-        setEvents([]); // Définir un tableau vide en cas d'erreur
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }
@@ -112,30 +155,45 @@ export function AthleteCalendar() {
     fetchEvents();
   }, []);
 
-  // Gérer la création d'un nouvel événement
-  const handleDateSelect = (selectInfo: any) => {
-    console.log("Selection info:", selectInfo);
+  // Charger les invitations
+  useEffect(() => {
+    const fetchInvitations = async () => {
+      try {
+        const response = await fetch("/api/events/invitations");
+        if (response.ok) {
+          const data = await response.json();
+          setInvitationCounts(data);
+        }
+      } catch (e) {
+        console.error("Erreur:", e);
+      }
+    };
+    fetchInvitations();
+  }, [events]);
 
-    // Créer des copies des dates pour éviter de modifier les objets originaux
+  // Prochains evenements tries par date
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return events
+      .filter((e) => new Date(e.start) >= now)
+      .sort(
+        (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+      );
+  }, [events]);
+
+  // Gerer la creation d'un nouvel evenement
+  const handleDateSelect = (selectInfo: any) => {
     const start = new Date(selectInfo.start);
     const end = new Date(selectInfo.end);
 
-    // Pour la vue mois, la date de fin est le jour suivant à minuit
-    // On l'ajuste pour qu'elle soit le même jour que la date de début
     if (selectInfo.view.type === "dayGridMonth") {
-      // Dans la vue mois, la date de fin est le jour suivant à minuit
-      // On veut que la date de fin soit le même jour que la date de début
       end.setDate(end.getDate() - 1);
     }
 
-    // Définir les heures de début et de fin en fonction de la sélection
     const startTimeHours = start.getHours().toString().padStart(2, "0");
     const startTimeMinutes = start.getMinutes().toString().padStart(2, "0");
-
-    // Formater l'heure de début pour le formulaire
     const formattedStartTime = `${startTimeHours}:${startTimeMinutes}`;
 
-    // Pour l'heure de fin, on utilise soit l'heure de fin sélectionnée, soit on ajoute 1 heure par défaut
     let formattedEndTime = "";
     if (
       selectInfo.view.type === "timeGridWeek" ||
@@ -145,7 +203,6 @@ export function AthleteCalendar() {
       const endTimeMinutes = end.getMinutes().toString().padStart(2, "0");
       formattedEndTime = `${endTimeHours}:${endTimeMinutes}`;
     } else {
-      // Pour la vue mois, on ajoute 1 heure par défaut
       const endDate = new Date(start);
       endDate.setHours(endDate.getHours() + 1);
       const endTimeHours = endDate.getHours().toString().padStart(2, "0");
@@ -176,7 +233,7 @@ export function AthleteCalendar() {
     setIsDialogOpen(true);
   };
 
-  // Gérer le clic sur un événement existant
+  // Gerer le clic sur un evenement existant
   const handleEventClick = (clickInfo: any) => {
     const event = events.find((e) => e.id === clickInfo.event.id);
     if (event) {
@@ -197,6 +254,24 @@ export function AthleteCalendar() {
     }
   };
 
+  // Gerer le clic sur un evenement depuis la liste
+  const handleUpcomingEventClick = (event: Event) => {
+    const sd = new Date(event.start);
+    const ed = event.end ? new Date(event.end) : new Date(sd);
+
+    setStartDate(sd);
+    setEndDate(ed);
+    setStartTime(format(sd, "HH:mm"));
+    setEndTime(format(ed, "HH:mm"));
+
+    setSelectedEvent({
+      ...event,
+      color: event.color || "blue",
+    });
+    setIsEditMode(true);
+    setIsDialogOpen(true);
+  };
+
   // Combiner la date et l'heure
   const combineDateAndTime = (
     date: Date | undefined,
@@ -210,7 +285,7 @@ export function AthleteCalendar() {
     return newDate;
   };
 
-  // Sauvegarder un événement (création ou modification)
+  // Sauvegarder un evenement (creation ou modification)
   const handleSaveEvent = async () => {
     if (!selectedEvent || !selectedEvent.title || !startDate) {
       toast({
@@ -224,15 +299,13 @@ export function AthleteCalendar() {
     try {
       setIsLoading(true);
 
-      // Combiner date et heure
       const startDateTime = combineDateAndTime(startDate, startTime);
       const endDateTime = combineDateAndTime(endDate || startDate, endTime);
 
-      // Valider que la date de fin est après la date de début
       if (endDateTime < startDateTime) {
         toast({
           title: "Erreur",
-          description: "La date de fin doit être après la date de début",
+          description: "La date de fin doit etre apres la date de debut",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -262,14 +335,16 @@ export function AthleteCalendar() {
         const errorText = await response.text();
         console.error("Erreur API:", errorText);
         throw new Error(
-          `Erreur lors de la ${isEditMode ? "modification" : "création"} de l'événement`,
+          `Erreur lors de la ${isEditMode ? "modification" : "creation"} de l'evenement`,
         );
       }
 
       const savedEvent = await response.json();
 
       if (isEditMode) {
-        setEvents(events.map((e) => (e.id === savedEvent.id ? savedEvent : e)));
+        setEvents(
+          events.map((e) => (e.id === savedEvent.id ? savedEvent : e)),
+        );
       } else {
         setEvents([...events, savedEvent]);
       }
@@ -277,15 +352,15 @@ export function AthleteCalendar() {
       setIsDialogOpen(false);
       setSelectedEvent(null);
       toast({
-        title: "Succès",
-        description: `Événement ${isEditMode ? "modifié" : "créé"} avec succès`,
+        title: "Succes",
+        description: `Evenement ${isEditMode ? "modifie" : "cree"} avec succes`,
       });
       router.refresh();
     } catch (error) {
       console.error("Erreur:", error);
       toast({
         title: "Erreur",
-        description: `Impossible de ${isEditMode ? "modifier" : "créer"} l'événement`,
+        description: `Impossible de ${isEditMode ? "modifier" : "creer"} l'evenement`,
         variant: "destructive",
       });
     } finally {
@@ -293,13 +368,9 @@ export function AthleteCalendar() {
     }
   };
 
-  // Supprimer un événement
+  // Supprimer un evenement
   const handleDeleteEvent = async () => {
     if (!selectedEvent || !selectedEvent.id) return;
-
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
-      return;
-    }
 
     try {
       setIsLoading(true);
@@ -310,22 +381,23 @@ export function AthleteCalendar() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Erreur API:", errorText);
-        throw new Error("Erreur lors de la suppression de l'événement");
+        throw new Error("Erreur lors de la suppression de l'evenement");
       }
 
       setEvents(events.filter((e) => e.id !== selectedEvent.id));
       setIsDialogOpen(false);
+      setIsDeleteDialogOpen(false);
       setSelectedEvent(null);
       toast({
-        title: "Succès",
-        description: "Événement supprimé avec succès",
+        title: "Succes",
+        description: "Evenement supprime avec succes",
       });
       router.refresh();
     } catch (error) {
       console.error("Erreur:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer l'événement",
+        description: "Impossible de supprimer l'evenement",
         variant: "destructive",
       });
     } finally {
@@ -333,7 +405,7 @@ export function AthleteCalendar() {
     }
   };
 
-  // Générer les options d'heure pour les sélecteurs
+  // Generer les options d'heure pour les selecteurs
   const generateTimeOptions = () => {
     const options: string[] = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -348,99 +420,264 @@ export function AthleteCalendar() {
 
   const timeOptions = generateTimeOptions();
 
+  const openNewEventDialog = () => {
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+
+    setStartDate(now);
+    setEndDate(now);
+    setStartTime(format(now, "HH:mm"));
+    setEndTime(format(nextHour, "HH:mm"));
+
+    setSelectedEvent({
+      id: "",
+      title: "",
+      start: now.toISOString(),
+      end: nextHour.toISOString(),
+      allDay: false,
+      location: "",
+      description: "",
+      isPublic: true,
+      color: "blue",
+    });
+    setIsEditMode(false);
+    setIsDialogOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="text-center">
+          <CalendarDays className="mx-auto size-8 animate-pulse text-primary" />
+          <p className="mt-2 text-sm text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-2xl font-bold">
-            Calendrier des événements
-          </CardTitle>
+    <div className="space-y-4">
+      {/* Actions rapides */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {events.length} evenement{events.length !== 1 ? "s" : ""}
+        </p>
+        <Button
+          onClick={openNewEventDialog}
+          className="rounded-xl bg-gradient-to-r from-primary to-purple-600"
+        >
+          <Plus className="mr-2 size-4" />
+          Nouveau
+        </Button>
+      </div>
+
+      {/* Calendrier */}
+      <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5 pb-2">
+          <CardTitle className="font-urban text-lg">Calendrier</CardTitle>
         </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex h-96 items-center justify-center">
-              <p className="text-muted-foreground">Chargement des événements...</p>
-            </div>
-          ) : (
-            <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{
-                left: "prev,next today",
-                center: "title",
-                right: "dayGridMonth,timeGridWeek,timeGridDay",
-              }}
-              locale={frLocale}
-              events={events.map((event) => ({
-                ...event,
-                className: `fc-event-${event.color || "blue"}`,
-              }))}
-              selectable={true}
-              selectMirror={true}
-              dayMaxEvents={true}
-              weekends={true}
-              select={handleDateSelect}
-              eventClick={handleEventClick}
-              height="auto"
-              themeSystem="standard"
-              buttonText={{
-                today: "Aujourd'hui",
-                month: "Mois",
-                week: "Semaine",
-                day: "Jour",
-              }}
-              slotLabelFormat={{
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-              }}
-            />
-          )}
+        <CardContent className="p-2 md:p-4">
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+            initialView={isMobile ? "listWeek" : "dayGridMonth"}
+            headerToolbar={
+              isMobile
+                ? {
+                    left: "prev,next",
+                    center: "title",
+                    right: "listWeek,dayGridMonth",
+                  }
+                : {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay",
+                  }
+            }
+            locale={frLocale}
+            events={events.map((event) => ({
+              ...event,
+              className: `fc-event-${event.color || "blue"}`,
+            }))}
+            selectable={true}
+            selectMirror={true}
+            dayMaxEvents={true}
+            weekends={true}
+            select={handleDateSelect}
+            eventClick={handleEventClick}
+            height="auto"
+            themeSystem="standard"
+            buttonText={{
+              today: "Aujourd'hui",
+              month: "Mois",
+              week: "Semaine",
+              day: "Jour",
+              list: "Liste",
+            }}
+            slotLabelFormat={{
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }}
+          />
         </CardContent>
       </Card>
 
+      {/* Prochains evenements */}
+      <div className="mt-6">
+        <h3 className="mb-3 font-urban text-lg font-semibold">
+          Prochains evenements
+        </h3>
+        <div className="space-y-3">
+          {upcomingEvents.slice(0, 5).map((event) => (
+            <div
+              key={event.id}
+              onClick={() => handleUpcomingEventClick(event)}
+              className="flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all hover:bg-accent"
+            >
+              {/* Badge date */}
+              <div className="flex size-14 flex-col items-center justify-center rounded-xl bg-gradient-to-r from-primary/10 to-purple-600/10">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {format(new Date(event.start), "MMM", {
+                    locale: fr,
+                  }).toUpperCase()}
+                </span>
+                <span className="text-xl font-bold text-primary">
+                  {format(new Date(event.start), "d")}
+                </span>
+              </div>
+              {/* Info evenement */}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{event.title}</p>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="size-3" />
+                    {format(new Date(event.start), "HH:mm")}
+                  </span>
+                  {event.location && (
+                    <span className="flex items-center gap-1 truncate">
+                      <MapPin className="size-3" />
+                      {event.location}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Badge + couleur */}
+              <div className="flex items-center gap-2">
+                {invitationCounts[event.id] && (
+                  <Badge variant="secondary" className="text-xs">
+                    {invitationCounts[event.id].pending +
+                      invitationCounts[event.id].accepted}{" "}
+                    recruteur
+                    {invitationCounts[event.id].pending +
+                      invitationCounts[event.id].accepted !==
+                    1
+                      ? "s"
+                      : ""}
+                  </Badge>
+                )}
+                {event.isPublic && (
+                  <Badge variant="secondary" className="text-xs">
+                    Public
+                  </Badge>
+                )}
+                <div
+                  className="size-3 rounded-full"
+                  style={{
+                    backgroundColor:
+                      colorMap[event.color || "blue"] || colorMap.blue,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+          {upcomingEvents.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Aucun evenement a venir. Cliquez sur le calendrier pour en creer
+              un.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Dialog creation/modification */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              {isEditMode ? "Modifier l'événement" : "Ajouter un événement"}
+        <DialogContent className="rounded-2xl sm:max-w-[500px]">
+          <DialogHeader className="-mx-6 -mt-6 rounded-t-2xl bg-gradient-to-r from-primary/10 to-purple-600/10 px-6 pb-4 pt-6">
+            <DialogTitle className="font-urban text-xl font-bold">
+              {isEditMode ? "Modifier l'evenement" : "Nouvel evenement"}
             </DialogTitle>
             <DialogDescription>
-              Remplissez les détails de votre événement ci-dessous.
+              Remplissez les details de votre evenement ci-dessous.
             </DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-5 py-4">
+            {/* Suivi des invitations */}
+            {isEditMode &&
+              selectedEvent &&
+              invitationCounts[selectedEvent.id] && (
+                <div className="rounded-xl bg-gradient-to-r from-primary/5 to-purple-600/5 p-4">
+                  <h4 className="mb-2 text-sm font-semibold">
+                    Demandes de recruteurs
+                  </h4>
+                  <div className="flex gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">
+                        {invitationCounts[selectedEvent.id].pending}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        En attente
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">
+                        {invitationCounts[selectedEvent.id].accepted}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Acceptees
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             <div className="space-y-2">
               <Label htmlFor="title" className="font-medium">
-                Titre de l'événement
+                Titre de l'evenement
               </Label>
               <Input
                 id="title"
                 placeholder="Ajouter un titre"
+                className="rounded-2xl"
                 value={selectedEvent?.title || ""}
                 onChange={(e) =>
-                  setSelectedEvent({ ...selectedEvent!, title: e.target.value })
+                  setSelectedEvent({
+                    ...selectedEvent!,
+                    title: e.target.value,
+                  })
                 }
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-medium">Date de début</Label>
+                <Label className="font-medium">
+                  <CalendarIcon className="mr-1 inline size-3.5" /> Debut
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start rounded-2xl text-left font-normal",
                         !startDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 size-4" />
                       {startDate ? (
-                        format(startDate, "PPP", { locale: fr })
+                        format(startDate, "dd MMM yyyy", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>Date</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -456,10 +693,12 @@ export function AthleteCalendar() {
               </div>
 
               <div className="space-y-2">
-                <Label className="font-medium">Heure de début</Label>
+                <Label className="font-medium">
+                  <Clock className="mr-1 inline size-3.5" /> Heure
+                </Label>
                 <Select value={startTime} onValueChange={setStartTime}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner l'heure" />
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue placeholder="Heure" />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((time) => (
@@ -474,21 +713,22 @@ export function AthleteCalendar() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-medium">Date de fin</Label>
+                <Label className="font-medium">
+                  <CalendarIcon className="mr-1 inline size-3.5" /> Fin
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant={"outline"}
+                      variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start rounded-2xl text-left font-normal",
                         !endDate && "text-muted-foreground",
                       )}
                     >
-                      <CalendarIcon className="mr-2 size-4" />
                       {endDate ? (
-                        format(endDate, "PPP", { locale: fr })
+                        format(endDate, "dd MMM yyyy", { locale: fr })
                       ) : (
-                        <span>Sélectionner une date</span>
+                        <span>Date</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -504,10 +744,12 @@ export function AthleteCalendar() {
               </div>
 
               <div className="space-y-2">
-                <Label className="font-medium">Heure de fin</Label>
+                <Label className="font-medium">
+                  <Clock className="mr-1 inline size-3.5" /> Heure
+                </Label>
                 <Select value={endTime} onValueChange={setEndTime}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner l'heure" />
+                  <SelectTrigger className="rounded-2xl">
+                    <SelectValue placeholder="Heure" />
                   </SelectTrigger>
                   <SelectContent>
                     {timeOptions.map((time) => (
@@ -522,11 +764,12 @@ export function AthleteCalendar() {
 
             <div className="space-y-2">
               <Label htmlFor="location" className="font-medium">
-                <MapPin className="mr-1 inline size-4" /> Lieu
+                <MapPin className="mr-1 inline size-3.5" /> Lieu
               </Label>
               <Input
                 id="location"
                 placeholder="Ajouter un lieu"
+                className="rounded-2xl"
                 value={selectedEvent?.location || ""}
                 onChange={(e) =>
                   setSelectedEvent({
@@ -551,40 +794,58 @@ export function AthleteCalendar() {
                     description: e.target.value,
                   })
                 }
-                className="min-h-[80px]"
+                className="min-h-[80px] rounded-2xl"
               />
             </div>
 
             <div className="space-y-2">
               <Label className="font-medium">
-                <Palette className="mr-1 inline size-4" /> Couleur de
-                l'événement
+                <Palette className="mr-1 inline size-3.5" /> Couleur
               </Label>
-              <div className="mt-1 flex flex-wrap gap-2">
+              <div className="mt-1 flex flex-wrap gap-3">
                 {eventColors.map((color) => (
                   <button
                     key={color.value}
                     type="button"
                     className={cn(
-                      "size-8 rounded-full transition-all",
-                      color.class,
+                      "flex items-center gap-2 rounded-xl px-3 py-2 transition-all",
                       selectedEvent?.color === color.value
                         ? "ring-2 ring-primary ring-offset-2"
-                        : "hover:scale-110",
+                        : "hover:bg-accent",
                     )}
-                    title={color.name}
                     onClick={() =>
                       setSelectedEvent({
                         ...selectedEvent!,
                         color: color.value,
                       })
                     }
-                  />
+                  >
+                    <div
+                      className={cn(
+                        "flex size-6 items-center justify-center rounded-full",
+                        color.class,
+                      )}
+                    >
+                      {selectedEvent?.color === color.value && (
+                        <Check className="size-3.5 text-white" />
+                      )}
+                    </div>
+                    <span className="text-xs font-medium">{color.name}</span>
+                  </button>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between rounded-2xl bg-muted/50 p-4">
+              <div>
+                <Label htmlFor="isPublic" className="font-medium">
+                  Evenement public
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Les recruteurs pourront voir et demander a assister a cet
+                  evenement.
+                </p>
+              </div>
               <Switch
                 id="isPublic"
                 checked={selectedEvent?.isPublic || false}
@@ -594,36 +855,74 @@ export function AthleteCalendar() {
                     isPublic: checked,
                   })
                 }
+                className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-primary data-[state=checked]:to-purple-600"
               />
-              <Label htmlFor="isPublic" className="font-medium">
-                Événement public
-              </Label>
             </div>
           </div>
-          <DialogFooter className="flex justify-between sm:justify-between">
+
+          <DialogFooter className="flex justify-between gap-2 sm:justify-between">
             <div>
               {isEditMode && (
                 <Button
                   variant="destructive"
-                  onClick={handleDeleteEvent}
+                  size="sm"
+                  onClick={() => setIsDeleteDialogOpen(true)}
                   disabled={isLoading}
-                  className="mr-2"
+                  className="rounded-xl"
                 >
+                  <Trash2 className="mr-2 size-4" />
                   Supprimer
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                className="rounded-xl"
+              >
                 Annuler
               </Button>
-              <Button onClick={handleSaveEvent} disabled={isLoading}>
-                {isEditMode ? "Mettre à jour" : "Créer"}
+              <Button
+                onClick={handleSaveEvent}
+                disabled={isLoading}
+                className="rounded-xl bg-gradient-to-r from-primary to-purple-600"
+              >
+                {isEditMode ? "Mettre a jour" : "Creer"}
               </Button>
             </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+
+      {/* Dialog de confirmation de suppression */}
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-urban">
+              Supprimer cet evenement ?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irreversible. L'evenement sera definitivement
+              supprime ainsi que toutes les demandes de recruteurs associees.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

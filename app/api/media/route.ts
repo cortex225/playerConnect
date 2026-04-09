@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { supabase } from "@/lib/supabase";
+import { rewardMedia } from "@/lib/gamification";
 
 export async function GET(req: Request) {
   try {
@@ -20,12 +21,25 @@ export async function GET(req: Request) {
 
     console.log(`Session utilisateur trouvée: ${user.id}, rôle: ${user.role}`);
 
-    // Vérifier si l'URL contient le paramètre 'all'
     const url = new URL(req.url);
     const getAllMedias = url.searchParams.get("all") === "true";
-    console.log(`Paramètre 'all' détecté: ${getAllMedias}`);
+    const athleteIdParam = url.searchParams.get("athleteId");
 
-    // Si le paramètre 'all' est présent et que l'utilisateur est un recruteur, récupérer tous les médias
+    // Si athleteId est specifie, retourner les medias de cet athlete (pour le dialog profil)
+    if (athleteIdParam) {
+      const athleteId = parseInt(athleteIdParam);
+      if (isNaN(athleteId)) {
+        return NextResponse.json({ error: "ID invalide" }, { status: 400 });
+      }
+      const medias = await prisma.media.findMany({
+        where: { athleteId },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      });
+      return NextResponse.json(medias);
+    }
+
+    // Si le paramètre 'all' est present et que l'utilisateur est un recruteur
     if (getAllMedias) {
       console.log("Tentative de récupération de tous les médias");
 
@@ -220,6 +234,10 @@ export async function POST(req: Request) {
       });
 
       console.log(`Média créé avec succès, ID: ${media.id}`);
+
+      // Award XP for uploading media
+      await rewardMedia(athlete.id);
+
       return NextResponse.json(media);
     } catch (error) {
       console.error("Erreur lors de la création du média:", error);

@@ -4,10 +4,13 @@ import { redirect } from "next/navigation";
 import { adminConfig } from "@/config/admin";
 import { dashboardConfig } from "@/config/dashboard";
 import { ROLES } from "@/lib/constants";
+import { prisma } from "@/lib/db";
 import { getServerSession } from "@/lib/server/session";
+import { getSportIcon } from "@/lib/sport-icons";
 import { RoleDialogs } from "@/components/dialogs/role-dialogs";
+import { AthleteTopBar } from "@/components/layout/athlete-top-bar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { DashboardNav } from "@/components/layout/dashboard-sidenav";
-import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
@@ -79,30 +82,79 @@ export default async function ProtectedLayout({
       ? adminConfig.sidebarNav
       : dashboardConfig.sidebarNav;
 
+  // Fetch athlete data for the mobile top bar
+  let athleteTopBarProps: {
+    name: string | null;
+    image: string | null;
+    sportIcon: string;
+    level: number;
+    xp: number;
+    xpProgress: number;
+    streak: number;
+  } | null = null;
+
+  if (user.role === ROLES.ATHLETE) {
+    const athlete = await prisma.athlete.findUnique({
+      where: { userId: user.id },
+      include: {
+        sport: { select: { name: true } },
+        _count: { select: { performances: true } },
+      },
+    });
+
+    if (athlete) {
+      const level = athlete.level || 1;
+      const xp = athlete.xp || 0;
+      const LEVEL_XP = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5500];
+      const currentLevelXP = LEVEL_XP[level - 1] || 0;
+      const nextLevelXP = LEVEL_XP[level] || 10000;
+      const xpProgress = ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+
+      athleteTopBarProps = {
+        name: user.name ?? null,
+        image: user.image ?? null,
+        sportIcon: getSportIcon(athlete.sport?.name || "BASKETBALL"),
+        level,
+        xp,
+        xpProgress,
+        streak: athlete._count.performances,
+      };
+    }
+  }
+
   return (
-    <div className="flex min-h-screen flex-col space-y-6">
+    <div className="flex min-h-screen flex-col md:space-y-6">
       {/* Modal de sélection de rôle pour l'onboarding */}
       <RoleDialogs roleCookie={roleCookie} />
 
-      <NavBar />
-      <MaxWidthWrapper className="min-h-svh min-w-full px-8">
+      {/* Mobile: athlete top bar replaces navbar */}
+      {athleteTopBarProps ? (
+        <>
+          <AthleteTopBar {...athleteTopBarProps} />
+          {/* Desktop: keep the normal navbar */}
+          <div className="hidden md:block">
+            <NavBar />
+          </div>
+        </>
+      ) : (
+        <NavBar />
+      )}
+      <MaxWidthWrapper className="min-h-svh min-w-full px-0 md:px-8">
         <div className="grid flex-1 gap-12 md:grid-cols-[200px_1fr]">
           {/* Desktop Sidebar */}
-          <aside className="hidden w-[200px] flex-col md:flex ">
+          <aside className="hidden w-[200px] flex-col md:flex">
             <DashboardNav items={navItems as any} userRole={user.role} />
           </aside>
 
-          {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <NavMobile items={navItems as any} userRole={user.role} />
-          </div>
-
-          <main className="flex w-full flex-1 flex-col overflow-hidden">
+          <main className="flex w-full flex-1 flex-col overflow-hidden pb-20 md:pb-0">
             {children}
           </main>
         </div>
       </MaxWidthWrapper>
-      <SiteFooter className="border-t" />
+      <SiteFooter className="hidden border-t md:block" />
+
+      {/* Mobile Bottom Tab Bar */}
+      <BottomNav userRole={user.role} />
     </div>
   );
 }

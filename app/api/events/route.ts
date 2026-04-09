@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/server/session";
 import { prisma } from "@/lib/db";
+import { rewardEvent } from "@/lib/gamification";
 
 // Interface pour typer correctement les événements
 interface EventWithAllFields {
@@ -107,6 +108,9 @@ export async function POST(req: Request) {
         color: color || "blue",
       },
     })) as EventWithAllFields;
+
+    // Award XP for creating an event
+    await rewardEvent(athlete.id, isPublic || false);
 
     // Formater l'événement pour FullCalendar
     const formattedEvent = {

@@ -26,6 +26,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "randomuser.me",
       },
+      {
+        protocol: "https",
+        hostname: "xbtwvljymsmlhvdbvkyw.supabase.co",
+      },
     ],
     domains: ["image.mux.com"],
   },

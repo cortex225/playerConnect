@@ -1,35 +1,71 @@
-"use client";
+import { CheckCircle, Clock, Send, Users } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
-export const QuickStats = () => {
-  // Fake data for recruiter stats
-  const recruiterStats = [
-    { name: "Athletes Contacted", value: 150 },
-    { name: "Potential Prospects", value: 45 },
-    { name: "Successful Recruits", value: 20 },
+interface QuickStatsProps {
+  totalAthletes: number;
+  sentInvitations: number;
+  acceptedInvitations: number;
+  pendingInvitations: number;
+}
+
+export const QuickStats = ({
+  totalAthletes,
+  sentInvitations,
+  acceptedInvitations,
+  pendingInvitations,
+}: QuickStatsProps) => {
+  const stats = [
+    {
+      label: "Athletes disponibles",
+      value: totalAthletes,
+      icon: Users,
+      gradient: "from-blue-500/10 to-primary/10",
+      iconColor: "text-blue-500",
+    },
+    {
+      label: "Invitations envoyées",
+      value: sentInvitations,
+      icon: Send,
+      gradient: "from-primary/10 to-purple-600/10",
+      iconColor: "text-primary",
+    },
+    {
+      label: "Invitations acceptées",
+      value: acceptedInvitations,
+      icon: CheckCircle,
+      gradient: "from-green-500/10 to-emerald-500/10",
+      iconColor: "text-green-500",
+    },
+    {
+      label: "Invitations en attente",
+      value: pendingInvitations,
+      icon: Clock,
+      gradient: "from-amber-500/10 to-orange-500/10",
+      iconColor: "text-amber-500",
+    },
   ];
+
   return (
     <>
-      {recruiterStats.map((stat, index) => (
-        <Card key={index} className="w-full">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.name}</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="size-4 text-muted-foreground"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
+      {stats.map((stat, index) => (
+        <Card key={index} className="w-full rounded-2xl border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </p>
+                <p className="mt-1 font-urban text-3xl font-bold tracking-tight">
+                  {stat.value}
+                </p>
+              </div>
+              <div
+                className={`flex size-12 items-center justify-center rounded-2xl bg-gradient-to-r ${stat.gradient}`}
+              >
+                <stat.icon className={`size-6 ${stat.iconColor}`} />
+              </div>
+            </div>
           </CardContent>
         </Card>
       ))}

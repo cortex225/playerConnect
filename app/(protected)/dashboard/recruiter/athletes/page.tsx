@@ -1,37 +1,37 @@
 import { redirect } from "next/navigation";
+import { Users } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import AthletesTable from "@/components/dashboard/datatable/AthletesTable";
-import { DashboardHeader } from "@/components/dashboard/header";
-import { DashboardShell } from "@/components/dashboard/shell";
 
 export const metadata = constructMetadata({
-  title: "Billing – SaaS Starter",
-  description: "Manage billing and your subscription plan.",
+  title: "Athletes - Player Connect",
+  description: "Decouvrez et recrutez les meilleurs athletes.",
 });
 
 export const dynamic = 'force-dynamic';
 
 export default async function AthletesPage() {
   const user = await getCurrentUser();
-
-  // let userSubscriptionPlan;
-  // if (user && user.id && user.role === "USER") {
-  //     userSubscriptionPlan = await getUserSubscriptionPlan(user.id);
-  // } else {
-  //     redirect("/login");
-  // }
+  if (!user || user.role !== "RECRUITER") redirect("/");
 
   return (
-    <DashboardShell>
-      <DashboardHeader
-        heading="All Athletes"
-        text="Manage your athletes and their profiles."
-      />
-      <div className="grid gap-8">
-        <AthletesTable />
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+          <Users className="size-5 text-white" />
+        </div>
+        <div>
+          <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-2xl font-bold text-transparent">
+            Athletes
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Decouvrez et recrutez les meilleurs talents
+          </p>
+        </div>
       </div>
-    </DashboardShell>
+      <AthletesTable />
+    </div>
   );
 }

@@ -5,17 +5,17 @@ import { getCurrentUser } from "@/lib/session";
 
 /**
  * GET /api/recruiter/events
- * Récupère les événements du calendrier du recruteur (matchs acceptés)
+ * Recupere les evenements du calendrier du recruteur (matchs acceptes et en attente)
  */
 export async function GET() {
   try {
     const user = await getCurrentUser();
 
     if (!user || user.role !== "RECRUITER") {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+      return NextResponse.json({ error: "Non autorise" }, { status: 401 });
     }
 
-    // Récupérer l'ID du recruteur
+    // Recuperer l'ID du recruteur
     const recruiter = await prisma.recruiter.findFirst({
       where: {
         userId: user.id,
@@ -24,16 +24,16 @@ export async function GET() {
 
     if (!recruiter) {
       return NextResponse.json(
-        { error: "Profil recruteur non trouvé" },
+        { error: "Profil recruteur non trouve" },
         { status: 404 },
       );
     }
 
-    // Récupérer les invitations acceptées pour ce recruteur
+    // Recuperer les invitations acceptees et en attente pour ce recruteur
     const invitations = await prisma.invitation.findMany({
       where: {
         recruiterId: recruiter.id,
-        status: "ACCEPTED", // Uniquement les invitations acceptées
+        status: { in: ["ACCEPTED", "PENDING"] },
       },
       include: {
         event: {
@@ -41,9 +41,10 @@ export async function GET() {
             athlete: {
               include: {
                 user: {
-                  select: {
-                    name: true,
-                  },
+                  select: { name: true, image: true },
+                },
+                sport: {
+                  select: { name: true },
                 },
               },
             },
@@ -52,7 +53,7 @@ export async function GET() {
       },
     });
 
-    // Formater les événements pour FullCalendar
+    // Formater les evenements pour FullCalendar
     const events = invitations.map((invitation) => ({
       id: invitation.event.id.toString(),
       title: invitation.event.title,
@@ -62,16 +63,21 @@ export async function GET() {
         : undefined,
       location: invitation.event.location,
       description: invitation.event.description,
-      color: "#4f46e5", // Couleur par défaut pour les événements du recruteur
+      color:
+        invitation.status === "ACCEPTED" ? "#4f46e5" : "#f59e0b",
       athleteId: invitation.event.athleteId,
       athleteName: invitation.event.athlete.user.name,
+      athleteImage: invitation.event.athlete.user.image,
+      athleteSport: invitation.event.athlete.sport?.name || null,
+      invitationStatus: invitation.status,
+      invitationId: invitation.id,
     }));
 
     return NextResponse.json(events);
   } catch (error) {
-    console.error("Erreur lors de la récupération des événements:", error);
+    console.error("Erreur lors de la recuperation des evenements:", error);
     return NextResponse.json(
-      { error: "Erreur lors de la récupération des événements" },
+      { error: "Erreur lors de la recuperation des evenements" },
       { status: 500 },
     );
   }

@@ -41,8 +41,11 @@ export async function middleware(request: NextRequest) {
 
   try {
     // Vérifier la présence du cookie de session BetterAuth
-    // BetterAuth utilise le nom 'better-auth.session_token' par défaut
-    const sessionCookie = request.cookies.get("better-auth.session_token");
+    // Le cookiePrefix est "player_connect" (configuré dans lib/auth.ts)
+    // En production avec useSecureCookies, le préfixe __Secure- est ajouté
+    const sessionCookie =
+      request.cookies.get("player_connect.session_token") ||
+      request.cookies.get("__Secure-player_connect.session_token");
     const isAuthenticated = !!sessionCookie?.value;
 
     console.log("[Middleware] Authentifié:", isAuthenticated);

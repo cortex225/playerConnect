@@ -11,8 +11,8 @@ export default async function ConnectedRecruiter() {
       <div className="flex items-center space-x-4">
         <Avatar className="size-16 shrink-0">
           <AvatarImage
-            src="/placeholder.svg?height=40&width=40"
-            alt="Sarah Thompson"
+            src={session?.image || ""}
+            alt={session?.name || ""}
           />
           <AvatarFallback>
             {session?.name
@@ -24,11 +24,11 @@ export default async function ConnectedRecruiter() {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-bold dark:text-white">
+          <h1 className="truncate bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-xl font-bold text-transparent">
             {session?.name}
           </h1>
-          <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-            NCAA Division I Scout
+          <p className="truncate text-sm text-muted-foreground">
+            Recruteur
           </p>
         </div>
       </div>

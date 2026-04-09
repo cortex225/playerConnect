@@ -31,6 +31,19 @@ model User {
   recruiters             Recruiter?
   sessions               Session[]
   messages               Message[]      @relation("MessageToUser")
+  likes                  Like[]
+  comments               Comment[]      @relation("UserComments")
+  followers              Follow[]       @relation("UserFollowing")  // People who follow this user
+  following              Follow[]       @relation("UserFollowers")  // People this user follows
+  activities             Activity[]     @relation("UserActivities")
+  actorActivities        Activity[]     @relation("ActorActivities")
+  stories                Story[]
+  storyViews             StoryView[]
+  groups                 Group[]
+  groupMemberships       GroupMember[]
+  groupPosts             GroupPost[]
+  eventSharesSent        EventShare[]   @relation("EventSharesSent")
+  eventSharesReceived    EventShare[]   @relation("EventSharesReceived")
 
   @@map("users")
 }
@@ -282,6 +295,9 @@ model Media {
   type        String
   updatedAt   DateTime @updatedAt
   athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  likes       Like[]
+  comments    Comment[]
+  views       MediaView[]
 
   @@map("media")
 }
@@ -299,6 +315,7 @@ model Event {
   endDate                  DateTime?
   athlete                  Athlete      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   invitations              Invitation[]
+  shares                   EventShare[]
 
   @@map("events")
 }
@@ -471,4 +488,204 @@ enum BadgeRarity {
   RARE
   EPIC
   LEGENDARY
+}
+
+// ==========================================
+// Social Network Features
+// ==========================================
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([mediaId])
+  @@map("likes")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // The user who follows
+  followingId String   // The user being followed
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  // Moderation
+  isModerated Boolean @default(false)
+  isFlagged   Boolean @default(false)
+  flagReason  String?
+
+  user  User  @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
+  @@index([createdAt])
+  @@map("comments")
+}
+
+model MediaView {
+  id        String   @id @default(cuid())
+  userId    String?  // null for anonymous views
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
+  @@map("media_views")
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String   // The user who receives the notification
+  actorId   String   // The user who performed the action
+  type      ActivityType
+  mediaId   String?  // Optional: related media
+  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
+
+  user  User @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("ActorActivities", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("activities")
+}
+
+enum ActivityType {
+  LIKE
+  COMMENT
+  FOLLOW
+  VIEW_PROFILE
+  RECRUITER_VIEW
+}
+
+// ==========================================
+// Stories (ephemeral 24h content)
+// ==========================================
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaUrl  String   // Video or image URL
+  type      String   @default("video") // "video" or "image"
+  caption   String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Set to createdAt + 24h
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views     StoryView[]
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("stories")
+}
+
+model StoryView {
+  id        String   @id @default(cuid())
+  storyId   String
+  userId    String
+  viewedAt  DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@map("story_views")
+}
+
+// ==========================================
+// Groups (sport/region communities)
+// ==========================================
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sport       String?  // Sport filter (BASKETBALL, SOCCER, etc.)
+  region      String?  // Region filter
+  image       String?
+  isPublic    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  creator  User          @relation(fields: [createdBy], references: [id])
+  members  GroupMember[]
+  posts    GroupPost[]
+
+  @@index([sport])
+  @@index([region])
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  role     String   @default("MEMBER") // ADMIN, MODERATOR, MEMBER
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+model GroupPost {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  content   String
+  mediaUrl  String?
+  createdAt DateTime @default(now())
+
+  // Moderation
+  isFlagged Boolean @default(false)
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@map("group_posts")
+}
+
+// ==========================================
+// Match sharing between athletes
+// ==========================================
+
+model EventShare {
+  id        String   @id @default(cuid())
+  eventId   Int
+  sharedBy  String   // User who shared
+  sharedTo  String   // User receiving the share
+  message   String?  // Optional message
+  createdAt DateTime @default(now())
+  seen      Boolean  @default(false)
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sender    User  @relation("EventSharesSent", fields: [sharedBy], references: [id], onDelete: Cascade)
+  receiver  User  @relation("EventSharesReceived", fields: [sharedTo], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, sharedBy, sharedTo])
+  @@map("event_shares")
 }

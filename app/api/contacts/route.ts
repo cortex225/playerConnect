@@ -57,15 +57,11 @@ export async function GET(req: Request) {
       }
     });
 
-    // Si aucun contact, retourner un tableau vide
-    if (contactIds.size === 0) {
-      return NextResponse.json([]);
-    }
-
-    // Récupérer les détails de tous les contacts
-    const contacts = await prisma.user.findMany({
+    // Récupérer les détails de tous les contacts (may be empty if no messages yet)
+    const contactIdArray = Array.from(contactIds);
+    const contacts = contactIdArray.length > 0 ? await prisma.user.findMany({
       where: {
-        id: { in: Array.from(contactIds) },
+        id: { in: contactIdArray },
       },
       select: {
         id: true,
@@ -90,7 +86,7 @@ export async function GET(req: Request) {
           },
         },
       },
-    });
+    }) : [];
 
     // Vérifier si l'utilisateur est mineur pour les contacts approuvés
     const userIsMinor = await isMinor(session.id);
@@ -125,7 +121,166 @@ export async function GET(req: Request) {
         return (b.lastMessageDate?.getTime() || 0) - (a.lastMessageDate?.getTime() || 0);
       });
 
-    return NextResponse.json(enrichedContacts);
+    // Also fetch contacts from accepted invitations that don't have messages yet
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.id },
+      select: { role: true },
+    });
+
+    let invitationContacts: any[] = [];
+
+    if (currentUser?.role === "RECRUITER") {
+      const recruiter = await prisma.recruiter.findUnique({
+        where: { userId: session.id },
+      });
+
+      if (recruiter) {
+        const acceptedInvitations = await prisma.invitation.findMany({
+          where: {
+            recruiterId: recruiter.id,
+            status: "ACCEPTED",
+          },
+          include: {
+            event: {
+              include: {
+                athlete: {
+                  include: {
+                    user: {
+                      select: { id: true, name: true, image: true },
+                    },
+                    sport: { select: { name: true } },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        const seen = new Set(contactIds);
+        for (const inv of acceptedInvitations) {
+          const athleteUser = inv.event.athlete.user;
+          if (!seen.has(athleteUser.id)) {
+            seen.add(athleteUser.id);
+            invitationContacts.push({
+              id: athleteUser.id,
+              name: athleteUser.name,
+              image: athleteUser.image,
+              athletes: {
+                city: inv.event.athlete.city,
+                country: inv.event.athlete.country,
+                sport: inv.event.athlete.sport,
+              },
+              recruiters: null,
+              lastMessageDate: null,
+              unreadCount: 0,
+              approved: true,
+              fromInvitation: true,
+            });
+          }
+        }
+      }
+    } else if (currentUser?.role === "ATHLETE") {
+      const athlete = await prisma.athlete.findUnique({
+        where: { userId: session.id },
+      });
+
+      if (athlete) {
+        const acceptedInvitations = await prisma.invitation.findMany({
+          where: {
+            event: { athleteId: athlete.id },
+            status: "ACCEPTED",
+          },
+          include: {
+            recruiter: {
+              include: {
+                user: {
+                  select: { id: true, name: true, image: true },
+                },
+              },
+            },
+          },
+        });
+
+        const seen = new Set(contactIds);
+        for (const inv of acceptedInvitations) {
+          const recruiterUser = inv.recruiter.user;
+          if (!seen.has(recruiterUser.id)) {
+            seen.add(recruiterUser.id);
+            invitationContacts.push({
+              id: recruiterUser.id,
+              name: recruiterUser.name,
+              image: recruiterUser.image,
+              athletes: null,
+              recruiters: {
+                organization: inv.recruiter.organization,
+                position: inv.recruiter.position,
+              },
+              lastMessageDate: null,
+              unreadCount: 0,
+              approved: true,
+              fromInvitation: true,
+            });
+          }
+        }
+      }
+    }
+
+    // Also add followed users as contacts (social network)
+    try {
+      const followedUsers = await prisma.follow.findMany({
+        where: { followerId: session.id },
+        include: {
+          following: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              athletes: {
+                select: {
+                  city: true,
+                  country: true,
+                  sport: { select: { name: true } },
+                },
+              },
+              recruiters: {
+                select: {
+                  organization: true,
+                  position: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const seenIds = new Set([
+        ...Array.from(contactIds),
+        ...invitationContacts.map((c: any) => c.id),
+      ]);
+
+      for (const follow of followedUsers) {
+        if (!seenIds.has(follow.following.id)) {
+          seenIds.add(follow.following.id);
+          invitationContacts.push({
+            id: follow.following.id,
+            name: follow.following.name,
+            image: follow.following.image,
+            athletes: follow.following.athletes || null,
+            recruiters: follow.following.recruiters || null,
+            lastMessageDate: null,
+            unreadCount: 0,
+            approved: true,
+            fromInvitation: false,
+          });
+        }
+      }
+    } catch (e) {
+      // Silently fail if follows table doesn't exist yet
+      console.error("[CONTACTS] Error fetching follows:", e);
+    }
+
+    const allContacts = [...enrichedContacts, ...invitationContacts];
+    return NextResponse.json(allContacts);
   } catch (error) {
     console.error("[CONTACTS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

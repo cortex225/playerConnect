@@ -38,7 +38,6 @@ export async function getAllAthletes() {
               },
             },
             KPI: {
-              // Inclure les kpis ici
               select: {
                 id: true,
                 name: true,
@@ -46,19 +45,14 @@ export async function getAllAthletes() {
               },
             },
           },
+          orderBy: { score: "desc" },
+          take: 5,
+        },
+        media: {
+          select: { id: true },
         },
       },
     });
-
-    // Rechercher l'athlète avec l'id 288
-    const athlete288 = athletes.find((athlete) => athlete.id === 288);
-
-    // Afficher l'athlète en détail dans la console
-    if (athlete288) {
-      console.log("Athlete 288:", JSON.stringify(athlete288, null, 2));
-    } else {
-      console.log("Athlete with id 288 not found.");
-    }
 
     return athletes;
   } catch (error) {
@@ -90,8 +84,8 @@ export async function getAthleteById(id: number) {
 export async function getTopAthletes() {
   console.log("Début de la fonction getTopAthletes");
   try {
-    // D'abord, récupérer les IDs des 5 meilleurs athlètes
-    console.log("Récupération des IDs des 5 meilleurs athlètes");
+    // D'abord, récupérer les IDs des 8 meilleurs athlètes
+    console.log("Récupération des IDs des 8 meilleurs athlètes");
     let topAthleteIds;
     try {
       topAthleteIds = await prisma.performance.groupBy({
@@ -104,7 +98,7 @@ export async function getTopAthletes() {
             score: "desc",
           },
         },
-        take: 5,
+        take: 8,
       });
       console.log(`${topAthleteIds.length} IDs d'athlètes récupérés`);
     } catch (error) {
@@ -152,23 +146,17 @@ export async function getTopAthletes() {
               id: true,
               score: true,
               date: true,
-              position: {
-                select: {
-                  name: true,
-                },
-              },
-              KPI: {
-                select: {
-                  id: true,
-                  name: true,
-                  value: true,
-                },
-              },
+              position: { select: { name: true } },
+              KPI: { select: { id: true, name: true, value: true } },
             },
-            orderBy: {
-              score: "desc",
+            orderBy: { score: "desc" },
+            take: 5,
+          },
+          _count: {
+            select: {
+              performances: true,
+              events: true,
             },
-            take: 1,
           },
         },
       });
