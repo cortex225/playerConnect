@@ -79,7 +79,7 @@ export default function HowItWorks() {
                   className="relative flex flex-col items-start gap-4 sm:flex-row sm:gap-6"
                 >
                   {/* Step number */}
-                  <div className="flex size-12 sm:size-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg sm:text-xl font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground shadow-lg shadow-primary/20 sm:size-16 sm:text-xl">
                     {index + 1}
                   </div>
 

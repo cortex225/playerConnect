@@ -137,7 +137,7 @@ export default function HeroLandingNew() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 border-t border-border/40 pt-8"
+            className="mt-16 grid grid-cols-3 gap-4 border-t border-border/40 pt-8 sm:gap-8"
           >
             {[
               { value: "10K+", label: "Athlètes" },
