@@ -19,7 +19,8 @@
     "db:verify": "prisma migrate status",
     "db:push": "prisma db push",
     "db:ensure-verification": "node scripts/ensure-verification-table.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:demo": "node prisma/demo-seed.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
