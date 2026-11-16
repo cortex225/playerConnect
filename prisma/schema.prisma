@@ -77,6 +77,8 @@ model Account {
   sessionState         String?
   tokenType            String?
   accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  password             String?
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
