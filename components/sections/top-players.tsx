@@ -1,298 +1,209 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Award, MapPin, TrendingUp, Trophy } from "lucide-react";
-import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
+import { positionLabel, sportLabel } from "@/lib/sport-labels";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface TopAthlete {
   id: number;
   rank: number;
-  name: string;
-  image: string | null;
-  sport: string;
+  name: string | null;
+  sport: string | null;
   position: string;
   city: string | null;
-  region: string | null;
-  country: string | null;
   totalScore: number;
-  level: number;
-  xp: number;
   averagePerformance: number;
   performancesCount: number;
-  badges: Array<{
-    name: string;
-    icon: string;
-    rarity: string;
-  }>;
 }
 
 const SPORTS = [
-  { value: "all", label: "Tous les sports" },
+  { value: "all", label: "Tous" },
   { value: "BASKETBALL", label: "Basketball" },
-  { value: "FOOTBALL", label: "Football" },
   { value: "SOCCER", label: "Soccer" },
+  { value: "FOOTBALL", label: "Football" },
   { value: "RUGBY", label: "Rugby" },
 ];
 
+type Status = "loading" | "ready" | "error";
+
 export default function TopPlayers() {
-  const [selectedSport, setSelectedSport] = useState("all");
+  const [sport, setSport] = useState("all");
   const [athletes, setAthletes] = useState<TopAthlete[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<Status>("loading");
+
+  const load = useCallback(async (selected: string) => {
+    setStatus("loading");
+    try {
+      const params = new URLSearchParams({ limit: "8" });
+      if (selected !== "all") params.set("sport", selected);
+      const response = await fetch(`/api/rankings/top-athletes?${params}`);
+      if (!response.ok) throw new Error(String(response.status));
+      const data = await response.json();
+      setAthletes(data.athletes ?? []);
+      setStatus("ready");
+    } catch {
+      setStatus("error");
+    }
+  }, []);
 
   useEffect(() => {
-    fetchTopAthletes();
-  }, [selectedSport]);
-
-  async function fetchTopAthletes() {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        limit: "10",
-        ...(selectedSport !== "all" && { sport: selectedSport }),
-      });
-
-      const response = await fetch(`/api/rankings/top-athletes?${params}`);
-      const data = await response.json();
-      setAthletes(data.athletes || []);
-    } catch (error) {
-      console.error("Error fetching top athletes:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return "text-yellow-500";
-    if (rank === 2) return "text-gray-400";
-    if (rank === 3) return "text-orange-500";
-    return "text-muted-foreground";
-  };
-
-  const getRankIcon = (rank: number) => {
-    if (rank <= 3) {
-      return <Trophy className={cn("size-5", getRankColor(rank))} />;
-    }
-    return null;
-  };
+    load(sport);
+  }, [sport, load]);
 
   return (
-    <section className="relative overflow-hidden py-20 sm:py-32">
-      {/* Background gradient */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-primary/5 to-background" />
-
-      <div className="container">
-        <div className="mx-auto max-w-6xl">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-2">
-              <Award className="size-4 text-primary" />
-              <span className="text-sm font-medium">Classement des Talents</span>
-            </div>
-            <h2 className="font-urban text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-              Top Players{" "}
-              <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                du Moment
-              </span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-              Découvrez les athlètes qui excellent dans leur discipline. Un classement
-              basé sur les performances, la régularité et l'engagement.
+    <section className="border-y bg-card" aria-labelledby="classement-titre">
+      <div className="container max-w-6xl py-20 md:py-24">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Classement de la saison
             </p>
-
-            {/* Sport Filter */}
-            <div className="mt-8 flex justify-center">
-              <Select value={selectedSport} onValueChange={setSelectedSport}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Filtrer par sport" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPORTS.map((sport) => (
-                    <SelectItem key={sport.value} value={sport.value}>
-                      {sport.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </motion.div>
-
-          {/* Athletes Grid */}
-          <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {loading
-              ? Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <CardHeader>
-                      <Skeleton className="size-20 rounded-full" />
-                      <Skeleton className="mt-4 h-6 w-3/4" />
-                      <Skeleton className="mt-2 h-4 w-1/2" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-20 w-full" />
-                    </CardContent>
-                  </Card>
-                ))
-              : athletes.map((athlete, index) => (
-                  <motion.div
-                    key={athlete.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <Card
-                      className={cn(
-                        "group relative overflow-hidden transition-all hover:shadow-lg",
-                        athlete.rank === 1 &&
-                          "border-yellow-500/50 bg-gradient-to-br from-yellow-500/5 to-background",
-                        athlete.rank === 2 &&
-                          "border-gray-400/50 bg-gradient-to-br from-gray-400/5 to-background",
-                        athlete.rank === 3 &&
-                          "border-orange-500/50 bg-gradient-to-br from-orange-500/5 to-background"
-                      )}
-                    >
-                      {/* Rank Badge */}
-                      <div className="absolute right-4 top-4 flex items-center gap-1">
-                        {getRankIcon(athlete.rank)}
-                        <span
-                          className={cn(
-                            "text-2xl font-bold",
-                            getRankColor(athlete.rank)
-                          )}
-                        >
-                          #{athlete.rank}
-                        </span>
-                      </div>
-
-                      <CardHeader className="pb-4">
-                        {/* Avatar */}
-                        <Avatar className="size-20 border-2 border-primary/20">
-                          <AvatarImage src={athlete.image || ""} alt={athlete.name} />
-                          <AvatarFallback>
-                            {athlete.name
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-
-                        {/* Info */}
-                        <div className="mt-4">
-                          <CardTitle className="text-xl">{athlete.name}</CardTitle>
-                          <CardDescription className="mt-1 flex items-center gap-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {athlete.sport}
-                            </Badge>
-                            <span className="text-xs">{athlete.position}</span>
-                          </CardDescription>
-                          {(athlete.city || athlete.region) && (
-                            <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="size-3" />
-                              <span>
-                                {athlete.city}
-                                {athlete.region && `, ${athlete.region}`}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="space-y-4">
-                        {/* Stats */}
-                        <div className="grid grid-cols-3 gap-2 rounded-lg bg-muted/50 p-3">
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Score</div>
-                            <div className="text-lg font-bold">
-                              {Math.round(athlete.totalScore)}
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Niveau</div>
-                            <div className="text-lg font-bold">{athlete.level}</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted-foreground">Matchs</div>
-                            <div className="text-lg font-bold">
-                              {athlete.performancesCount}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Average Performance */}
-                        <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3">
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="size-4 text-primary" />
-                            <span className="text-sm font-medium">
-                              Perf. moyenne
-                            </span>
-                          </div>
-                          <span className="text-lg font-bold text-primary">
-                            {athlete.averagePerformance}/100
-                          </span>
-                        </div>
-
-                        {/* Badges */}
-                        {athlete.badges.length > 0 && (
-                          <div className="flex gap-2">
-                            {athlete.badges.slice(0, 3).map((badge, i) => (
-                              <div
-                                key={i}
-                                className="flex size-8 items-center justify-center rounded-full bg-primary/10"
-                                title={badge.name}
-                              >
-                                <Award className="size-4 text-primary" />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+            <h2
+              id="classement-titre"
+              className="font-display mt-3 text-4xl uppercase sm:text-5xl"
+            >
+              Qui performe en ce moment
+            </h2>
+            <p className="mt-3 max-w-xl text-muted-foreground">
+              Calculé à partir des notes de match saisies sur la plateforme.
+              Même grille pour tous les athlètes d&apos;une position.
+            </p>
           </div>
 
-          {/* View All Button */}
-          {!loading && athletes.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="mt-12 text-center"
-            >
-              <Button size="lg" variant="outline" className="gap-2">
-                Voir le classement complet
-                <TrendingUp className="size-4" />
+          <div
+            role="radiogroup"
+            aria-label="Filtrer par sport"
+            className="flex flex-wrap gap-1 rounded-md border bg-background p-1"
+          >
+            {SPORTS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                role="radio"
+                aria-checked={sport === item.value}
+                onClick={() => setSport(item.value)}
+                className={cn(
+                  "rounded-sm px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  sport === item.value
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10 overflow-x-auto">
+          <table className="w-full min-w-[40rem] text-left">
+            <caption className="sr-only">
+              Classement des athlètes par score total
+            </caption>
+            <thead>
+              <tr className="border-b-2 border-foreground text-xs font-semibold uppercase text-muted-foreground">
+                <th scope="col" className="w-14 py-3 pr-2">
+                  Rang
+                </th>
+                <th scope="col" className="py-3 pr-4">
+                  Athlète
+                </th>
+                <th scope="col" className="py-3 pr-4">
+                  Sport · position
+                </th>
+                <th scope="col" className="py-3 pr-4">
+                  Ville
+                </th>
+                <th scope="col" className="py-3 pr-4 text-right">
+                  Matchs
+                </th>
+                <th scope="col" className="py-3 pr-4 text-right">
+                  Moy.
+                </th>
+                <th scope="col" className="py-3 text-right">
+                  Score
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {status === "loading" &&
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} className="border-b">
+                    <td colSpan={7} className="py-3">
+                      <Skeleton className="h-6 w-full" />
+                    </td>
+                  </tr>
+                ))}
+
+              {status === "ready" &&
+                athletes.map((athlete) => (
+                  <tr key={athlete.id} className="border-b">
+                    <td
+                      className={cn(
+                        "font-display tabular py-3 pr-2 text-2xl",
+                        athlete.rank === 1 && "text-foreground",
+                        athlete.rank > 1 && "text-muted-foreground",
+                      )}
+                    >
+                      {athlete.rank}
+                    </td>
+                    <td className="py-3 pr-4 font-semibold">
+                      {athlete.name ?? "Athlète"}
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {sportLabel(athlete.sport)} ·{" "}
+                      {positionLabel(athlete.position)}
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {athlete.city ?? "-"}
+                    </td>
+                    <td className="tabular py-3 pr-4 text-right">
+                      {athlete.performancesCount}
+                    </td>
+                    <td className="tabular py-3 pr-4 text-right">
+                      {athlete.averagePerformance.toLocaleString("fr-CA")}
+                    </td>
+                    <td className="tabular py-3 text-right font-semibold">
+                      {Math.round(athlete.totalScore).toLocaleString("fr-CA")}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+
+          {status === "ready" && athletes.length === 0 && (
+            <p className="py-10 text-center text-muted-foreground">
+              Aucun athlète classé pour ce sport cette saison. Le classement
+              apparaît dès les premières notes de match.
+            </p>
+          )}
+
+          {status === "error" && (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-muted-foreground">
+                Le classement n&apos;a pas pu être chargé.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => load(sport)}>
+                Réessayer
               </Button>
-            </motion.div>
+            </div>
           )}
         </div>
+
+        <p className="mt-6 text-sm text-muted-foreground">
+          Tu veux apparaître ici ?{" "}
+          <Link
+            href="/auth/register"
+            className="font-medium text-foreground underline underline-offset-4"
+          >
+            Crée ton profil
+          </Link>{" "}
+          et ajoute tes matchs.
+        </p>
       </div>
     </section>
   );
