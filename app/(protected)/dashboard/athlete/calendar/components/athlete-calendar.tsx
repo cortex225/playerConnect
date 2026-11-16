@@ -166,6 +166,11 @@ export function AthleteCalendar() {
           const counts: Record<number, { pending: number; accepted: number }> =
             {};
           for (const invitation of data) {
+            if (
+              invitation.status !== "ACCEPTED" &&
+              invitation.status !== "PENDING"
+            )
+              continue;
             const entry = (counts[invitation.eventId] ??= {
               pending: 0,
               accepted: 0,

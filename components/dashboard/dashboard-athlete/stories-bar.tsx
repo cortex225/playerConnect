@@ -247,7 +247,7 @@ export function StoriesBar() {
               {group.isOwn && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowUpload(true); }}
-                  className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full bg-primary text-white shadow-md ring-2 ring-background"
+                  className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background"
                 >
                   <Plus className="size-3.5" />
                 </button>
@@ -462,7 +462,7 @@ export function StoriesBar() {
                     Changer
                   </Button>
                   <Button
-                    className="flex-1 bg-primary text-white"
+                    className="flex-1 bg-primary text-primary-foreground"
                     onClick={handleUploadStory}
                     disabled={uploading}
                   >

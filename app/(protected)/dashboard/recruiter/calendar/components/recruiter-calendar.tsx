@@ -224,7 +224,7 @@ export function RecruiterCalendar() {
                   }}
                 >
                   <CardContent className="flex gap-3 p-4">
-                    <div className="flex min-w-[48px] flex-col items-center justify-center rounded-lg bg-primary px-2 py-1 text-white">
+                    <div className="flex min-w-[48px] flex-col items-center justify-center rounded-lg bg-primary px-2 py-1 text-primary-foreground">
                       <span className="text-xs font-medium uppercase">
                         {format(startDate, "MMM", { locale: fr })}
                       </span>

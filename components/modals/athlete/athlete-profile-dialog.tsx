@@ -120,7 +120,7 @@ export default function AthleteProfileDialog({
           <div className="flex items-start gap-4">
             <Avatar className="size-20 border-4 border-background shadow-lg">
               <AvatarImage src={athlete.user.image || ""} />
-              <AvatarFallback className="bg-primary text-xl text-white">
+              <AvatarFallback className="bg-primary text-xl text-primary-foreground">
                 {initials}
               </AvatarFallback>
             </Avatar>

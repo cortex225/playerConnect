@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { getAllAthletes } from "@/actions/get-athlete";
 import { Athlete } from "@/types";
 import { MapPin, Search, SlidersHorizontal, Video } from "lucide-react";
@@ -31,7 +32,10 @@ import AthleteProfileDialog from "@/components/modals/athlete/athlete-profile-di
 export default function AthletesTable() {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [filteredAthletes, setFilteredAthletes] = useState<Athlete[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState<string>(
+    searchParams.get("q") ?? "",
+  );
   const [sportFilter, setSportFilter] = useState<string>("Tous");
   const [categoryFilter, setCategoryFilter] = useState<string>("Toutes");
   const [sortBy, setSortBy] = useState<string>("score");

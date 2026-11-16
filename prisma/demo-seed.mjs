@@ -14,10 +14,22 @@ import { hashPassword } from "better-auth/crypto";
 const DEMO_PASSWORD = "demo-playerconnect";
 const DEMO_DOMAIN = "demo.playerconnect.local";
 
-const url = process.env.DATABASE_URL ?? "";
-if (!/@(localhost|127\.0\.0\.1)(:\d+)?\//.test(url)) {
+// Double garde : hôte local ET nom de base se terminant par _demo.
+// Un tunnel vers une base distante passerait le premier test, pas le second.
+let target;
+try {
+  target = new URL(process.env.DATABASE_URL ?? "");
+} catch {
+  target = null;
+}
+const dbName = target?.pathname.replace(/^\//, "") ?? "";
+if (
+  !target ||
+  !["localhost", "127.0.0.1"].includes(target.hostname) ||
+  !dbName.endsWith("_demo")
+) {
   console.error(
-    "Refus : demo-seed ne s'exécute que sur une base locale (DATABASE_URL doit pointer vers localhost).",
+    "Refus : demo-seed ne tourne que sur une base locale dont le nom se termine par _demo (ex. postgresql://postgres@localhost:5432/playerconnect_demo).",
   );
   process.exit(1);
 }

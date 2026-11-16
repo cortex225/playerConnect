@@ -35,7 +35,14 @@ async function getOverview(userId: string) {
   });
   const followedIds = follows.map((f) => f.followingId);
 
-  const [shortlist, matches, unread, newProfiles, media] = await Promise.all([
+  const upcomingWhere = {
+    recruiterId: recruiter.id,
+    status: "ACCEPTED",
+    event: { eventDate: { gte: new Date() } },
+  };
+
+  const [shortlist, matches, matchCount, unread, newProfiles, media] =
+    await Promise.all([
     prisma.athlete.findMany({
       where: { userId: { in: followedIds } },
       orderBy: { totalScore: "desc" },
@@ -44,7 +51,7 @@ async function getOverview(userId: string) {
         user: { select: { name: true } },
         sport: true,
         positions: { include: { position: true }, take: 1 },
-        rankings: { where: { scope: "GLOBAL" }, take: 1 },
+        rankings: { where: { scope: "GLOBAL", period: "all-time" }, take: 1 },
         performances: {
           orderBy: { date: "desc" },
           take: 5,
@@ -53,11 +60,7 @@ async function getOverview(userId: string) {
       },
     }),
     prisma.invitation.findMany({
-      where: {
-        recruiterId: recruiter.id,
-        status: "ACCEPTED",
-        event: { eventDate: { gte: new Date() } },
-      },
+      where: upcomingWhere,
       orderBy: { event: { eventDate: "asc" } },
       take: 4,
       include: {
@@ -68,6 +71,7 @@ async function getOverview(userId: string) {
         },
       },
     }),
+    prisma.invitation.count({ where: upcomingWhere }),
     prisma.message.count({ where: { recipientId: userId, isRead: false } }),
     prisma.athlete.count({ where: { user: { createdAt: { gte: since } } } }),
     prisma.media.findMany({
@@ -82,6 +86,7 @@ async function getOverview(userId: string) {
     recruiter,
     shortlist,
     matches,
+    matchCount,
     unread,
     newProfiles,
     media,
@@ -116,6 +121,7 @@ export async function RecruiterOverview({ userId }: { userId: string }) {
     recruiter,
     shortlist,
     matches,
+    matchCount,
     unread,
     newProfiles,
     media,
@@ -158,7 +164,7 @@ export async function RecruiterOverview({ userId }: { userId: string }) {
 
       <dl className="grid grid-cols-2 gap-y-6 md:grid-cols-4 md:divide-x">
         <Stat label="Athlètes suivis" value={followed} />
-        <Stat label="Matchs à venir confirmés" value={matches.length} />
+        <Stat label="Matchs à venir confirmés" value={matchCount} />
         <Stat label="Messages non lus" value={unread} />
         <Stat
           label="Nouveaux profils"

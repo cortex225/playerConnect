@@ -90,7 +90,7 @@ export default function CalendarPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-          <CalendarDays className="size-5 text-white" />
+          <CalendarDays className="size-5 text-primary-foreground" />
         </div>
         <div>
           <h1 className="font-urban text-2xl font-bold text-foreground">
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                     <Button size="sm" variant="outline" className="flex-1">
                       Refuser
                     </Button>
-                    <Button size="sm" className="flex-1 bg-primary text-white">
+                    <Button size="sm" className="flex-1 bg-primary text-primary-foreground">
                       Accepter
                     </Button>
                   </div>

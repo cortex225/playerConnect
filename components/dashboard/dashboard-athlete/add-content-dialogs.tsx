@@ -181,7 +181,7 @@ export function AddContentDialogs({
               </p>
             </div>
             <Button
-              className="w-full gap-2 bg-primary text-white"
+              className="w-full gap-2 bg-primary text-primary-foreground"
               asChild
               onClick={() => setStatsOpen(false)}
             >
@@ -218,7 +218,7 @@ export function AddContentDialogs({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-                <Calendar className="size-4 text-white" />
+                <Calendar className="size-4 text-primary-foreground" />
               </div>
               Ajouter un match
             </DialogTitle>

@@ -319,7 +319,7 @@ export function SecureMessagerie() {
       <div className="shrink-0 bg-muted/60 p-4">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-            <Shield className="size-5 text-white" />
+            <Shield className="size-5 text-primary-foreground" />
           </div>
           <div className="flex-1">
             <h2 className="font-urban text-xl font-bold">
@@ -327,7 +327,7 @@ export function SecureMessagerie() {
             </h2>
           </div>
           {totalUnread > 0 && (
-            <Badge className="border-0 bg-primary text-white">
+            <Badge className="border-0 bg-primary text-primary-foreground">
               {totalUnread}
             </Badge>
           )}
@@ -406,7 +406,7 @@ export function SecureMessagerie() {
                           : "Aucun message"}
                     </p>
                     {contact.unreadCount && contact.unreadCount > 0 ? (
-                      <Badge className="size-5 shrink-0 justify-center rounded-full border-0 bg-primary p-0 text-[10px] text-white">
+                      <Badge className="size-5 shrink-0 justify-center rounded-full border-0 bg-primary p-0 text-[10px] text-primary-foreground">
                         {contact.unreadCount}
                       </Badge>
                     ) : null}

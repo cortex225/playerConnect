@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Eye, MessageSquare, Users } from "lucide-react";
+import { ArrowRight, Eye, Images, MessageSquare } from "lucide-react";
 
 import { prisma } from "@/lib/db";
 import { positionLabel, sportLabel } from "@/lib/sport-labels";
@@ -41,7 +41,7 @@ async function getOverview(userId: string) {
         take: 10,
         include: { KPI: true },
       },
-      rankings: { where: { scope: "GLOBAL" }, take: 1 },
+      rankings: { where: { scope: "GLOBAL", period: "all-time" }, take: 1 },
       media: { orderBy: { createdAt: "desc" }, take: 3 },
     },
   });
@@ -70,7 +70,11 @@ async function getOverview(userId: string) {
       prisma.message.count({ where: { recipientId: userId, isRead: false } }),
       athlete.sportId
         ? prisma.ranking.count({
-            where: { sportId: athlete.sportId, scope: "GLOBAL" },
+            where: {
+              sportId: athlete.sportId,
+              scope: "GLOBAL",
+              period: "all-time",
+            },
           })
         : Promise.resolve(0),
     ]);
@@ -124,10 +128,12 @@ export async function AthleteOverview({ userId }: { userId: string }) {
       kpiTotals.set(kpi.name, entry);
     }
   }
-  const kpis = Array.from(kpiTotals.entries()).map(([name, { sum, count }]) => ({
-    name,
-    value: sum / count,
-  }));
+  const kpis = Array.from(kpiTotals.entries()).map(
+    ([name, { sum, count }]) => ({
+      name,
+      value: sum / count,
+    }),
+  );
 
   const rank = athlete.rankings[0]?.rank;
   const position = athlete.positions[0]?.position.name;
@@ -183,10 +189,7 @@ export async function AthleteOverview({ userId }: { userId: string }) {
           >
             Ajouter un média
           </Link>
-          <Link
-            href="/dashboard/athlete/settings"
-            className={buttonVariants()}
-          >
+          <Link href="/dashboard/athlete/settings" className={buttonVariants()}>
             Ajouter un match
           </Link>
         </div>
@@ -253,7 +256,9 @@ export async function AthleteOverview({ userId }: { userId: string }) {
                             ? "bg-brand"
                             : "bg-primary/85 dark:bg-foreground/60",
                         )}
-                        style={{ height: `${Math.max(4, ((game.score - 40) / 60) * 100)}%` }}
+                        style={{
+                          height: `${Math.max(4, ((game.score - 40) / 60) * 100)}%`,
+                        }}
                       />
                       <span className="sr-only">
                         {dateFormat.format(game.date)} :{" "}
@@ -264,7 +269,9 @@ export async function AthleteOverview({ userId }: { userId: string }) {
                 </ol>
                 <figcaption className="mt-2 flex justify-between text-xs text-muted-foreground">
                   <span>{dateFormat.format(games[0].date)}</span>
-                  <span className="text-center">Note sur 100, axe de 40 à 100</span>
+                  <span className="text-center">
+                    Note sur 100, axe de 40 à 100
+                  </span>
                   <span>{dateFormat.format(games[games.length - 1].date)}</span>
                 </figcaption>
               </figure>
@@ -405,9 +412,9 @@ export async function AthleteOverview({ userId }: { userId: string }) {
                 badge={unread > 0 ? String(unread) : undefined}
               />
               <Shortcut
-                href="/dashboard/athlete/athletes"
-                icon={<Users className="size-4" aria-hidden />}
-                label="Autres athlètes de ton sport"
+                href="/dashboard/athlete/media"
+                icon={<Images className="size-4" aria-hidden />}
+                label="Mes médias"
               />
             </ul>
           </section>
@@ -429,7 +436,9 @@ function Stat({
   return (
     <div className="md:px-6 md:first:pl-0">
       <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="font-display tabular mt-1 text-4xl sm:text-5xl">{value}</dd>
+      <dd className="font-display tabular mt-1 text-4xl sm:text-5xl">
+        {value}
+      </dd>
       <dd className="text-sm text-muted-foreground">{hint}</dd>
     </div>
   );
