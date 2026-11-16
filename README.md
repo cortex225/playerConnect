@@ -1,104 +1,114 @@
-# PlayerConnect
+<p align="center">
+  <img src="public/logo-black.png" alt="PlayerConnect" width="160" />
+</p>
+
+<h1 align="center">PlayerConnect</h1>
 
 <p align="center">
-  <img alt="PlayerConnect" src="public/og.jpg">
-  <h1 align="center">PlayerConnect</h1>
+  Le profil sportif que les recruteurs consultent.<br/>
+  Stats, vidéos et calendrier de match des athlètes du secondaire, du cégep et de l'université, au même endroit.
 </p>
 
 <p align="center">
-  La plateforme qui connecte les athlètes et les recruteurs sportifs
+  <img src="docs/screenshots/planche-mobile.png" alt="Écrans mobiles de PlayerConnect : fiche athlète, médias, calendrier, liste du recruteur, recherche et messagerie" />
 </p>
 
-<p align="center">
-  <a href="#introduction"><strong>Introduction</strong></a> ·
-  <a href="#fonctionnalités-principales"><strong>Fonctionnalités</strong></a> ·
-  <a href="#tech-stack"><strong>Tech Stack</strong></a> ·
-  <a href="#installation"><strong>Installation</strong></a> ·
-  <a href="#roadmap"><strong>Roadmap</strong></a>
-</p>
-<br/>
+## Le problème
 
-## Introduction
+Au Québec, un athlète de 16 ans qui vise le collégial ou l'universitaire envoie encore des vidéos YouTube et un PDF de stats par courriel. Les recruteurs reçoivent des formats différents, impossibles à comparer, et n'ont aucun moyen simple de savoir quand l'athlète joue. Et comme la majorité de ces athlètes sont mineurs, le contact direct pose de vraies questions d'encadrement.
 
-PlayerConnect est une plateforme innovante conçue pour faciliter la mise en relation entre athlètes et recruteurs sportifs. Notre application permet aux athlètes de créer leur profil, partager leurs performances et médias, tandis que les recruteurs peuvent découvrir de nouveaux talents et suivre leur progression.
+PlayerConnect est une application web pensée d'abord pour le téléphone (PWA) qui règle ces trois points.
 
-## Fonctionnalités principales
+## Ce que fait l'application
 
-### Pour les athlètes
+**Pour l'athlète**
 
-- Création d'un profil détaillé avec informations sportives
-- Gestion d'un calendrier d'événements et de matchs
-- Partage de vidéos et médias de performances
-- Suivi des statistiques et KPIs sportifs
-- Visibilité auprès des recruteurs
+- Une fiche : position, niveau, mensurations, classement dans son sport, note moyenne et tendance sur les derniers matchs.
+- Des notes de match calculées à partir d'indicateurs propres à chaque sport et pondérés selon la position (points et passes au basketball, duels gagnés au soccer, plaquages au rugby...).
+- Une galerie de photos et vidéos avec les vues et réactions des recruteurs.
+- Un calendrier de matchs partageable : un recruteur peut confirmer sa présence, en mode discret s'il le souhaite.
 
-### Pour les recruteurs
+**Pour le recruteur**
 
-- Découverte des meilleurs athlètes par sport et catégorie
-- Visualisation des médias et performances des athlètes
-- Système de notification pour les nouveaux contenus
-- Gestion des contacts et communication avec les athlètes
+- Une liste d'athlètes suivis avec rang, moyenne et courbe de forme sur 5 matchs.
+- Une recherche filtrable par sport, position, niveau, catégorie et ville.
+- Une fiche détaillée (évolution, indicateurs clés, historique des matchs) et une messagerie intégrée.
 
-## Tech Stack
+**Encadrement des mineurs**
 
-PlayerConnect est construit avec les technologies modernes suivantes :
+- Un athlète de moins de 18 ans ne reçoit de messages que des recruteurs approuvés par un parent ou tuteur (`ApprovedContact`).
+- Les messages sont analysés avant l'envoi : numéros de téléphone, courriels et demandes de coordonnées sont bloqués et journalisés (`lib/moderation.ts`, `ModerationLog`).
 
-- [Next.js 14](https://nextjs.org/) – Framework React pour des applications performantes
-- [Auth.js v5](https://authjs.dev/) – Gestion de l'authentification avec différents fournisseurs
-- [Prisma](https://www.prisma.io/) – ORM TypeScript pour Node.js
-- [Neon](https://neon.tech/) – Base de données PostgreSQL serverless
-- [Shadcn/ui](https://ui.shadcn.com/) – Composants UI réutilisables
-- [FullCalendar](https://fullcalendar.io/) – Gestion avancée de calendrier
-- [Supabase Storage](https://supabase.com/) – Stockage des médias et vidéos
-- [Tailwind CSS](https://tailwindcss.com/) – Framework CSS utilitaire
+## Captures
 
-## Installation
+| Athlète | Recruteur |
+| --- | --- |
+| <img src="docs/screenshots/mobile-01-athlete-fiche.png" width="260" alt="Fiche athlète sur mobile" /> | <img src="docs/screenshots/mobile-05-recruteur-accueil.png" width="260" alt="Accueil recruteur sur mobile" /> |
 
-1. Clonez le dépôt :
+<img src="docs/screenshots/desktop-02-athlete-fiche.png" alt="Fiche athlète sur ordinateur" />
 
-```bash
-git clone https://github.com/votre-username/playerconnect.git
-```
+## Stack
 
-2. Installez les dépendances avec pnpm :
+| Couche | Choix |
+| --- | --- |
+| Framework | Next.js 15 (App Router, Server Components), React 19, TypeScript |
+| Données | PostgreSQL, Prisma 6 |
+| Authentification | Better Auth (courriel et mot de passe, Google OAuth), rôles athlète et recruteur |
+| UI | Tailwind CSS, Radix UI (shadcn/ui), FullCalendar, Recharts |
+| Temps réel et médias | Pusher, Supabase Storage |
+| Paiements | Stripe (abonnements) |
+| Application | PWA installable, service worker hors ligne |
+
+## Lancer le projet en local avec les données de démo
+
+Prérequis : Node 20+, pnpm 9, une base PostgreSQL locale.
 
 ```sh
 pnpm install
+
+# Base locale vierge
+createdb playerconnect_demo
+export DATABASE_URL="postgresql://postgres@localhost:5432/playerconnect_demo"
+export DIRECT_URL="$DATABASE_URL"
+export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+export NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+pnpm db:push    # crée le schéma
+pnpm db:demo    # 24 athlètes, 5 recruteurs, matchs, médias, messages (fictifs)
+pnpm dev
 ```
 
-3. Copiez `.env.example` vers `.env.local` et mettez à jour les variables :
+`pnpm db:demo` refuse de tourner si `DATABASE_URL` ne pointe pas vers `localhost`. Les comptes de démo :
 
-```sh
-cp .env.example .env.local
+| Rôle | Courriel | Mot de passe |
+| --- | --- | --- |
+| Athlète | `athlete@demo.playerconnect.local` | `demo-playerconnect` |
+| Recruteur | `recruteur@demo.playerconnect.local` | `demo-playerconnect` |
+
+Les autres variables (Stripe, Pusher, Supabase, Resend, Google) sont décrites dans `.env.example`. Pour parcourir la démo, des valeurs factices suffisent : l'envoi de médias, le temps réel et le paiement sont alors inactifs.
+
+Les noms d'athlètes, d'équipes et d'établissements des données de démo sont fictifs. Les photos viennent d'Unsplash.
+
+## Organisation du code
+
+```
+app/                    Routes (App Router) : site public, auth, espaces athlète et recruteur, API
+components/dashboard/   Écrans des tableaux de bord (fiche athlète, vue recruteur, calendrier)
+components/sections/    Sections de la page d'accueil
+lib/                    Auth, accès base, classement, gamification, modération
+prisma/                 Schéma, migrations, données de démo (demo-seed.mjs)
 ```
 
-4. Lancez le serveur de développement :
+## Scripts utiles
 
-```sh
-pnpm run dev
-```
+| Commande | Rôle |
+| --- | --- |
+| `pnpm dev` | Serveur de développement |
+| `pnpm build` | Migrations Prisma puis build de production |
+| `pnpm lint` | ESLint |
+| `pnpm db:demo` | Recharge les données de démo (base locale uniquement) |
+| `pnpm db:studio` | Explorer la base avec Prisma Studio |
 
-## Structure du projet
+## Auteur
 
-- `app/` - Routes et pages de l'application (Next.js App Router)
-- `components/` - Composants UI réutilisables
-- `lib/` - Utilitaires, hooks et configuration
-- `prisma/` - Schéma de base de données et migrations
-- `public/` - Fichiers statiques
-- `styles/` - Styles globaux et configuration Tailwind
-
-## Roadmap
-
-- [x] Authentification et gestion des profils
-- [x] Tableau de bord athlète avec statistiques
-- [x] Tableau de bord recruteur avec découverte d'athlètes
-- [x] Gestion de calendrier et d'événements
-- [x] Upload et partage de médias
-- [ ] Système de messagerie entre athlètes et recruteurs
-- [ ] Notifications en temps réel
-- [ ] Application mobile (React Native)
-- [ ] Analyse avancée des performances
-
-## Contribuer
-
-Nous accueillons les contributions à PlayerConnect ! N'hésitez pas à ouvrir une issue ou une pull request.
+Conçu et développé par [Jean-Luc Gouaho](https://github.com/cortex225).
