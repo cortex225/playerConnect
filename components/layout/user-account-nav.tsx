@@ -89,7 +89,7 @@ export function UserAccountNav() {
                 className="flex items-center space-x-2.5"
               >
                 <LayoutDashboard className="size-4" />
-                <p className="text-sm">Athlete Dashboard</p>
+                <p className="text-sm">Ma fiche</p>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>

@@ -133,7 +133,7 @@ export function MediaFeed() {
         <Play className="mx-auto size-10 text-muted-foreground/40" />
         <p className="mt-3 font-urban text-lg font-semibold">Aucun contenu</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Les highlights des autres athletes apparaitront ici
+          Les meilleures actions des autres athlètes apparaîtront ici
         </p>
       </div>
     );
@@ -514,7 +514,7 @@ function FeedCard({
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-full transition-all",
                   newComment.trim()
-                    ? "bg-gradient-to-r from-primary to-purple-600 text-white"
+                    ? "bg-primary text-white"
                     : "bg-muted text-muted-foreground"
                 )}
               >

@@ -41,7 +41,7 @@ export function SocialLeaderboard() {
   if (loading) {
     return (
       <Card className="overflow-hidden rounded-2xl">
-        <CardHeader className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 pb-3">
+        <CardHeader className="bg-muted/60 pb-3">
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="p-4">
@@ -66,15 +66,15 @@ export function SocialLeaderboard() {
   };
 
   const getRankBg = (rank: number) => {
-    if (rank === 1) return "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/20";
-    if (rank === 2) return "bg-gradient-to-r from-gray-300/10 to-gray-400/10 border-gray-400/20";
-    if (rank === 3) return "bg-gradient-to-r from-orange-400/10 to-orange-500/10 border-orange-400/20";
+    if (rank === 1) return "bg-muted/60 border-yellow-500/20";
+    if (rank === 2) return "bg-muted/60 border-gray-400/20";
+    if (rank === 3) return "bg-muted/60 border-orange-400/20";
     return "";
   };
 
   return (
     <Card className="overflow-hidden rounded-2xl">
-      <CardHeader className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 pb-3">
+      <CardHeader className="bg-muted/60 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Flame className="size-5 text-orange-500" />

@@ -165,7 +165,7 @@ export function AddContentDialogs({
         <SheetContent side="bottom" className="rounded-t-2xl pb-8">
           <SheetHeader className="mb-4">
             <SheetTitle className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary">
                 <BarChart3 className="size-4 text-white" />
               </div>
               Ajouter des statistiques
@@ -175,13 +175,13 @@ export function AddContentDialogs({
             </SheetDescription>
           </SheetHeader>
           <div className="space-y-4">
-            <div className="rounded-xl border bg-gradient-to-r from-primary/5 to-purple-600/5 p-4">
+            <div className="rounded-xl border bg-muted/60 p-4">
               <p className="text-sm text-muted-foreground">
                 Pour ajouter des statistiques détaillées, rendez-vous sur la page dédiée où vous pouvez saisir toutes vos performances selon votre sport et votre position.
               </p>
             </div>
             <Button
-              className="w-full gap-2 bg-gradient-to-r from-primary to-purple-600 text-white"
+              className="w-full gap-2 bg-primary text-white"
               asChild
               onClick={() => setStatsOpen(false)}
             >
@@ -199,7 +199,7 @@ export function AddContentDialogs({
         <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-2xl pb-8">
           <SheetHeader className="mb-4">
             <SheetTitle className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-500">
+              <div className="flex size-8 items-center justify-center rounded-full bg-brand">
                 <Camera className="size-4 text-white" />
               </div>
               Ajouter un media
@@ -217,7 +217,7 @@ export function AddContentDialogs({
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-orange-500">
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary">
                 <Calendar className="size-4 text-white" />
               </div>
               Ajouter un match

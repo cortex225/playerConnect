@@ -91,7 +91,7 @@ export const TopAthletes = () => {
   if (loading) {
     return (
       <Card className="overflow-hidden rounded-2xl border-0 shadow-sm md:col-span-2">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5">
+        <CardHeader className="bg-muted/60">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-primary" />
             <CardTitle className="font-urban text-lg">
@@ -124,7 +124,7 @@ export const TopAthletes = () => {
   if (error) {
     return (
       <Card className="overflow-hidden rounded-2xl border-0 shadow-sm md:col-span-2">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5">
+        <CardHeader className="bg-muted/60">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-primary" />
             <CardTitle className="font-urban text-lg">
@@ -147,7 +147,7 @@ export const TopAthletes = () => {
   if (athletes.length === 0 && !loading) {
     return (
       <Card className="overflow-hidden rounded-2xl border-0 shadow-sm md:col-span-2">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5">
+        <CardHeader className="bg-muted/60">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-primary" />
             <CardTitle className="font-urban text-lg">
@@ -171,7 +171,7 @@ export const TopAthletes = () => {
 
   return (
     <Card className="overflow-hidden rounded-2xl border-0 shadow-sm md:col-span-2">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5">
+      <CardHeader className="bg-muted/60">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-primary" />

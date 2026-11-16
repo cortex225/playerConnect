@@ -55,7 +55,7 @@ export function BottomNav({ userRole }: BottomNavProps) {
 
   if (isRecruiter) {
     return (
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur-lg md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background md:hidden">
         <div className="flex h-16 items-center justify-around pb-[env(safe-area-inset-bottom)]">
           {RECRUITER_TABS.map((tab) => {
             const href = `${baseRoute}${tab.path}`;
@@ -67,11 +67,11 @@ export function BottomNav({ userRole }: BottomNavProps) {
                 href={href}
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground",
+                  isActive ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                <tab.icon className="size-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <tab.icon className="size-5" strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
+                <span className={cn("text-[11px]", isActive ? "font-semibold" : "font-medium")}>{tab.label}</span>
               </Link>
             );
           })}
@@ -82,7 +82,7 @@ export function BottomNav({ userRole }: BottomNavProps) {
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur-lg md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background md:hidden">
         <div className="relative flex h-16 items-center justify-around pb-[env(safe-area-inset-bottom)]">
           {ATHLETE_TABS.map((tab, index) => {
             if (tab === null) {
@@ -90,12 +90,10 @@ export function BottomNav({ userRole }: BottomNavProps) {
                 <div key="center" className="flex flex-1 flex-col items-center justify-center">
                   <button
                     onClick={() => setAddSheetOpen(true)}
-                    className="relative -mt-6 flex size-14 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600 shadow-lg shadow-primary/40 ring-4 ring-background transition-transform active:scale-90"
-                    aria-label="Ajouter du contenu"
+                    className="-mt-5 flex size-14 items-center justify-center rounded-full bg-brand text-brand-foreground ring-4 ring-background transition-transform duration-150 ease-out active:scale-95"
+                    aria-label="Ajouter un média ou un match"
                   >
-                    <Plus className="size-6 text-white" />
-                    {/* Glow pulse ring */}
-                    <span className="absolute inset-0 animate-ping rounded-full bg-primary/30" />
+                    <Plus className="size-6" aria-hidden />
                   </button>
                 </div>
               );
@@ -111,11 +109,11 @@ export function BottomNav({ userRole }: BottomNavProps) {
                 href={href}
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground",
+                  isActive ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                <tab.icon className="size-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <tab.icon className="size-5" strokeWidth={isActive ? 2.4 : 1.8} aria-hidden />
+                <span className={cn("text-[11px]", isActive ? "font-semibold" : "font-medium")}>{tab.label}</span>
               </Link>
             );
           })}
@@ -132,24 +130,24 @@ export function BottomNav({ userRole }: BottomNavProps) {
             {/* Media - primary action */}
             <button
               onClick={() => { setAddSheetOpen(false); setMediaOpen(true); }}
-              className="flex flex-col items-center gap-3 rounded-2xl border-2 border-purple-500/30 bg-gradient-to-b from-purple-600/10 to-pink-500/10 p-6 transition-all active:scale-95"
+              className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 transition-transform duration-150 ease-out active:scale-95"
             >
-              <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-500 shadow-md shadow-purple-500/30">
-                <Camera className="size-8 text-white" />
+              <div className="flex size-14 items-center justify-center rounded-full bg-brand text-brand-foreground">
+                <Camera className="size-7" aria-hidden />
               </div>
               <div className="text-center">
-                <p className="font-semibold">Media</p>
-                <p className="text-[11px] text-muted-foreground">Vidéos & highlights</p>
+                <p className="font-semibold">Média</p>
+                <p className="text-[11px] text-muted-foreground">Photo ou vidéo de match</p>
               </div>
             </button>
 
             {/* Match */}
             <button
               onClick={() => { setAddSheetOpen(false); setMatchOpen(true); }}
-              className="flex flex-col items-center gap-3 rounded-2xl border-2 border-orange-500/30 bg-gradient-to-b from-pink-500/10 to-orange-500/10 p-6 transition-all active:scale-95"
+              className="flex flex-col items-center gap-3 rounded-xl border bg-card p-6 transition-transform duration-150 ease-out active:scale-95"
             >
-              <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-r from-pink-500 to-orange-500 shadow-md shadow-orange-500/20">
-                <Calendar className="size-8 text-white" />
+              <div className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Calendar className="size-7" aria-hidden />
               </div>
               <div className="text-center">
                 <p className="font-semibold">Match</p>

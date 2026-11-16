@@ -1,7 +1,6 @@
 "use client";
 
 import { useContext } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 
@@ -20,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DocsSearch } from "@/components/docs/search";
 import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 import { NavMobile } from "./mobile-nav";
@@ -121,8 +121,8 @@ export function NavBar({ scroll = false, large = false }: NavBarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all",
-        scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b",
+        "sticky top-0 z-40 flex w-full justify-center bg-background/95 transition-colors",
+        scroll && !scrolled ? "border-b border-transparent" : "border-b",
       )}
     >
       <MaxWidthWrapper
@@ -133,15 +133,7 @@ export function NavBar({ scroll = false, large = false }: NavBarProps) {
         <div className="flex gap-6 md:gap-10">
           <NavMobile items={(links || []) as any} />
           <Link href="/" className="flex items-center space-x-2">
-            <Image
-              src="/images/logo-1.png"
-              width={100}
-              height={100}
-              alt="logo Player Connect"
-            />
-            <span className="font-urban text-xl font-bold">
-              {siteConfig.name}
-            </span>
+            <BrandLogo />
           </Link>
 
           {/* Navigation Links */}
