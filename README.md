@@ -104,7 +104,8 @@ prisma/                 Schéma, migrations, données de démo (demo-seed.mjs)
 | Commande | Rôle |
 | --- | --- |
 | `pnpm dev` | Serveur de développement |
-| `pnpm build` | Migrations Prisma puis build de production |
+| `pnpm build` | Build de production, sans accès à la base |
+| `pnpm db:deploy` | Applique les migrations sur la base visée par `DATABASE_URL` (étape de déploiement séparée) |
 | `pnpm lint` | ESLint |
 | `pnpm db:demo` | Recharge les données de démo (base locale uniquement) |
 | `pnpm db:studio` | Explorer la base avec Prisma Studio |
