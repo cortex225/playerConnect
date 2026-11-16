@@ -78,7 +78,7 @@ pnpm db:demo    # 24 athlètes, 5 recruteurs, matchs, médias, messages (fictifs
 pnpm dev
 ```
 
-`pnpm db:demo` refuse de tourner si `DATABASE_URL` ne pointe pas vers `localhost`. Les comptes de démo :
+`pnpm db:demo` refuse de tourner si `DATABASE_URL` ne pointe pas vers `localhost` ou si le nom de la base ne se termine pas par `_demo`. Les comptes de démo :
 
 | Rôle | Courriel | Mot de passe |
 | --- | --- | --- |
