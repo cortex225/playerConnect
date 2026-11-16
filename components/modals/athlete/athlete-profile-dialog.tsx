@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Athlete } from "@/types";
+
+import { positionLabel } from "@/lib/sport-labels";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -82,7 +84,9 @@ export default function AthleteProfileDialog({
       ? Math.max(...athlete.performances.map((p) => p.score))
       : null;
 
-  const mainPosition = athlete.performances[0]?.position?.name || null;
+  const mainPosition = athlete.performances[0]?.position?.name
+    ? positionLabel(athlete.performances[0].position.name, (athlete as any).gender)
+    : null;
 
   const chartData = [...athlete.performances]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -106,17 +110,17 @@ export default function AthleteProfileDialog({
 
   return (
     <Dialog open={!!selectedAthlete} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto p-0">
+      <DialogContent className="h-dvh max-h-none max-w-4xl grid-cols-[minmax(0,1fr)] overflow-y-auto rounded-none p-0 sm:h-auto sm:max-h-[90vh] sm:rounded-lg">
         <VisuallyHidden>
           <DialogTitle>Profil de {athlete.user.name}</DialogTitle>
         </VisuallyHidden>
 
         {/* HEADER */}
-        <div className="bg-gradient-to-r from-primary/10 to-purple-600/10 p-6">
+        <div className="bg-muted/60 p-6">
           <div className="flex items-start gap-4">
             <Avatar className="size-20 border-4 border-background shadow-lg">
               <AvatarImage src={athlete.user.image || ""} />
-              <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-xl text-white">
+              <AvatarFallback className="bg-primary text-xl text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -181,7 +185,7 @@ export default function AthleteProfileDialog({
               </span>
             </div>
             <p className="mt-1 font-urban text-2xl font-bold text-primary">
-              {bestScore ? bestScore.toFixed(1) : "-"}
+              {bestScore ? bestScore.toLocaleString("fr-CA", { maximumFractionDigits: 1 }) : "-"}
             </p>
           </div>
           <div className="bg-background p-4 text-center">
@@ -210,7 +214,7 @@ export default function AthleteProfileDialog({
             <div>
               <h3 className="mb-3 flex items-center gap-2 font-urban text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <TrendingUp className="size-4" />
-                Evolution des performances
+                Évolution des performances
               </h3>
               <div className="h-[200px] rounded-xl bg-muted/30 p-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -271,14 +275,14 @@ export default function AthleteProfileDialog({
             <div>
               <h3 className="mb-3 flex items-center gap-2 font-urban text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <Trophy className="size-4" />
-                Indicateurs cles
+                Indicateurs clés
               </h3>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {latestKPIs.map((kpi) => (
                   <div key={kpi.id} className="rounded-xl border p-3">
                     <p className="text-xs text-muted-foreground">{kpi.name}</p>
                     <p className="mt-1 font-urban text-lg font-bold">
-                      {kpi.value.toFixed(1)}
+                      {kpi.value.toLocaleString("fr-CA", { maximumFractionDigits: 1 })}
                     </p>
                     <Progress
                       value={Math.min(kpi.value, 100)}
@@ -446,7 +450,7 @@ export default function AthleteProfileDialog({
                       <Progress value={perf.score} className="h-2" />
                     </div>
                     <span className="min-w-[45px] text-right font-urban font-bold text-primary">
-                      {perf.score.toFixed(1)}
+                      {perf.score.toLocaleString("fr-CA", { maximumFractionDigits: 1 })}
                     </span>
                   </div>
                 ))}

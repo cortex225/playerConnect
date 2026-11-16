@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,7 +125,7 @@ export function AthleteCalendar() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Erreur API:", errorText);
-          throw new Error("Erreur lors du chargement des evenements");
+          throw new Error("Erreur lors du chargement des événements");
         }
         const data = await response.json();
 
@@ -143,7 +142,7 @@ export function AthleteCalendar() {
           description:
             error instanceof Error
               ? error.message
-              : "Impossible de charger les evenements",
+              : "Impossible de charger les événements",
           variant: "destructive",
         });
         setEvents([]);
@@ -159,10 +158,22 @@ export function AthleteCalendar() {
   useEffect(() => {
     const fetchInvitations = async () => {
       try {
-        const response = await fetch("/api/events/invitations");
+        // Regroupe les invitations par match pour afficher le nombre de recruteurs.
+        const response = await fetch("/api/matches/invitations");
         if (response.ok) {
-          const data = await response.json();
-          setInvitationCounts(data);
+          const data: { eventId: number; status: string }[] =
+            await response.json();
+          const counts: Record<number, { pending: number; accepted: number }> =
+            {};
+          for (const invitation of data) {
+            const entry = (counts[invitation.eventId] ??= {
+              pending: 0,
+              accepted: 0,
+            });
+            if (invitation.status === "ACCEPTED") entry.accepted += 1;
+            else if (invitation.status === "PENDING") entry.pending += 1;
+          }
+          setInvitationCounts(counts);
         }
       } catch (e) {
         console.error("Erreur:", e);
@@ -335,16 +346,14 @@ export function AthleteCalendar() {
         const errorText = await response.text();
         console.error("Erreur API:", errorText);
         throw new Error(
-          `Erreur lors de la ${isEditMode ? "modification" : "creation"} de l'evenement`,
+          `Erreur lors de la ${isEditMode ? "modification" : "création"} de l'événement`,
         );
       }
 
       const savedEvent = await response.json();
 
       if (isEditMode) {
-        setEvents(
-          events.map((e) => (e.id === savedEvent.id ? savedEvent : e)),
-        );
+        setEvents(events.map((e) => (e.id === savedEvent.id ? savedEvent : e)));
       } else {
         setEvents([...events, savedEvent]);
       }
@@ -360,7 +369,7 @@ export function AthleteCalendar() {
       console.error("Erreur:", error);
       toast({
         title: "Erreur",
-        description: `Impossible de ${isEditMode ? "modifier" : "creer"} l'evenement`,
+        description: `Impossible de ${isEditMode ? "modifier" : "créer"} l'événement`,
         variant: "destructive",
       });
     } finally {
@@ -381,7 +390,7 @@ export function AthleteCalendar() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Erreur API:", errorText);
-        throw new Error("Erreur lors de la suppression de l'evenement");
+        throw new Error("Erreur lors de la suppression de l'événement");
       }
 
       setEvents(events.filter((e) => e.id !== selectedEvent.id));
@@ -397,7 +406,7 @@ export function AthleteCalendar() {
       console.error("Erreur:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer l'evenement",
+        description: "Impossible de supprimer l'événement",
         variant: "destructive",
       });
     } finally {
@@ -461,12 +470,9 @@ export function AthleteCalendar() {
       {/* Actions rapides */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {events.length} evenement{events.length !== 1 ? "s" : ""}
+          {events.length} événement{events.length !== 1 ? "s" : ""}
         </p>
-        <Button
-          onClick={openNewEventDialog}
-          className="rounded-xl bg-gradient-to-r from-primary to-purple-600"
-        >
+        <Button onClick={openNewEventDialog} className="rounded-xl bg-primary">
           <Plus className="mr-2 size-4" />
           Nouveau
         </Button>
@@ -474,19 +480,24 @@ export function AthleteCalendar() {
 
       {/* Calendrier */}
       <Card className="overflow-hidden rounded-2xl border-0 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-purple-600/5 pb-2">
+        <CardHeader className="bg-muted/60 pb-2">
           <CardTitle className="font-urban text-lg">Calendrier</CardTitle>
         </CardHeader>
         <CardContent className="p-2 md:p-4">
           <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-            initialView={isMobile ? "listWeek" : "dayGridMonth"}
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin,
+              listPlugin,
+            ]}
+            initialView={isMobile ? "listMonth" : "dayGridMonth"}
             headerToolbar={
               isMobile
                 ? {
                     left: "prev,next",
                     center: "title",
-                    right: "listWeek,dayGridMonth",
+                    right: "listMonth,dayGridMonth",
                   }
                 : {
                     left: "prev,next today",
@@ -526,7 +537,7 @@ export function AthleteCalendar() {
       {/* Prochains evenements */}
       <div className="mt-6">
         <h3 className="mb-3 font-urban text-lg font-semibold">
-          Prochains evenements
+          Prochains événements
         </h3>
         <div className="space-y-3">
           {upcomingEvents.slice(0, 5).map((event) => (
@@ -536,7 +547,7 @@ export function AthleteCalendar() {
               className="flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition-all hover:bg-accent"
             >
               {/* Badge date */}
-              <div className="flex size-14 flex-col items-center justify-center rounded-xl bg-gradient-to-r from-primary/10 to-purple-600/10">
+              <div className="flex size-14 flex-col items-center justify-center rounded-xl bg-muted/60">
                 <span className="text-xs font-medium text-muted-foreground">
                   {format(new Date(event.start), "MMM", {
                     locale: fr,
@@ -603,7 +614,7 @@ export function AthleteCalendar() {
       {/* Dialog creation/modification */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="rounded-2xl sm:max-w-[500px]">
-          <DialogHeader className="-mx-6 -mt-6 rounded-t-2xl bg-gradient-to-r from-primary/10 to-purple-600/10 px-6 pb-4 pt-6">
+          <DialogHeader className="-mx-6 -mt-6 rounded-t-2xl bg-muted/60 px-6 pb-4 pt-6">
             <DialogTitle className="font-urban text-xl font-bold">
               {isEditMode ? "Modifier l'evenement" : "Nouvel evenement"}
             </DialogTitle>
@@ -617,7 +628,7 @@ export function AthleteCalendar() {
             {isEditMode &&
               selectedEvent &&
               invitationCounts[selectedEvent.id] && (
-                <div className="rounded-xl bg-gradient-to-r from-primary/5 to-purple-600/5 p-4">
+                <div className="rounded-xl bg-muted/60 p-4">
                   <h4 className="mb-2 text-sm font-semibold">
                     Demandes de recruteurs
                   </h4>
@@ -634,9 +645,7 @@ export function AthleteCalendar() {
                       <p className="text-2xl font-bold text-green-600">
                         {invitationCounts[selectedEvent.id].accepted}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Acceptees
-                      </p>
+                      <p className="text-xs text-muted-foreground">Acceptees</p>
                     </div>
                   </div>
                 </div>
@@ -855,7 +864,7 @@ export function AthleteCalendar() {
                     isPublic: checked,
                   })
                 }
-                className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-primary data-[state=checked]:to-purple-600"
+                className="data-[state=checked]:bg-primary"
               />
             </div>
           </div>
@@ -886,7 +895,7 @@ export function AthleteCalendar() {
               <Button
                 onClick={handleSaveEvent}
                 disabled={isLoading}
-                className="rounded-xl bg-gradient-to-r from-primary to-purple-600"
+                className="rounded-xl bg-primary"
               >
                 {isEditMode ? "Mettre a jour" : "Creer"}
               </Button>

@@ -86,14 +86,14 @@ export default function CalendarPage() {
   }, [activeTab]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 pt-2 md:px-0">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+        <div className="flex size-10 items-center justify-center rounded-full bg-primary">
           <CalendarDays className="size-5 text-white" />
         </div>
         <div>
-          <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-2xl font-bold text-transparent">
+          <h1 className="font-urban text-2xl font-bold text-foreground">
             Calendrier
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -241,7 +241,7 @@ export default function CalendarPage() {
                     <Button size="sm" variant="outline" className="flex-1">
                       Refuser
                     </Button>
-                    <Button size="sm" className="flex-1 bg-gradient-to-r from-primary to-purple-600 text-white">
+                    <Button size="sm" className="flex-1 bg-primary text-white">
                       Accepter
                     </Button>
                   </div>

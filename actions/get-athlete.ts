@@ -12,7 +12,6 @@ export async function getAllAthletes() {
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
           },
         },
@@ -52,6 +51,7 @@ export async function getAllAthletes() {
           select: { id: true },
         },
       },
+      orderBy: { totalScore: "desc" },
     });
 
     return athletes;

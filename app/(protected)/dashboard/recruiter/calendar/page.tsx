@@ -6,17 +6,17 @@ import { RecruiterCalendar } from "./components/recruiter-calendar";
 
 export default function CalendarPage() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 pt-2 md:px-0">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+        <div className="flex size-10 items-center justify-center rounded-full bg-primary">
           <CalendarDays className="size-5 text-white" />
         </div>
         <div>
-          <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-2xl font-bold text-transparent">
+          <h1 className="font-urban text-2xl font-bold text-foreground">
             Calendrier
           </h1>
           <p className="text-sm text-muted-foreground">
-            Matchs auxquels vous etes invite
+            Matchs auxquels tu es invité
           </p>
         </div>
       </div>

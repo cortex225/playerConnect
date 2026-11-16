@@ -55,19 +55,19 @@ export const KPIChart = ({ performances }: KPIChartProps) => {
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
-        <CardTitle>Key Performance Indicators</CardTitle>
+        <CardTitle>Indicateurs clés</CardTitle>
         <CardDescription className="text-sm">
           {kpiData.length > 0
-            ? "Average stats from recent performances"
-            : "No KPI data available"}
+            ? "Moyennes de tes derniers matchs"
+            : "Aucun indicateur pour l'instant"}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex items-center justify-center">
         {kpiData.length === 0 ? (
           <div className="flex h-[250px] items-center justify-center text-center text-muted-foreground">
             <div>
-              <p className="mb-2">No KPI data yet</p>
-              <p className="text-sm">Add performance stats to see your KPIs!</p>
+              <p className="mb-2">Aucun indicateur pour l'instant</p>
+              <p className="text-sm">Ajoute un match pour voir tes indicateurs.</p>
             </div>
           </div>
         ) : (

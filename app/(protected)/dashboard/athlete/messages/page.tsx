@@ -105,7 +105,7 @@ export default function MessagesPage() {
           )}
         >
           <Bell className="size-4" />
-          Activite
+          Activité
           {unreadCount > 0 && (
             <Badge className="absolute right-1/4 top-1 size-5 justify-center rounded-full border-0 bg-red-500 p-0 text-[10px] text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -126,7 +126,7 @@ export default function MessagesPage() {
               </div>
             ) : activities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-r from-primary/10 to-purple-600/10">
+                <div className="flex size-16 items-center justify-center rounded-full bg-muted/60">
                   <Bell className="size-8 text-primary" />
                 </div>
                 <h3 className="mt-4 font-urban text-lg font-bold">Aucune activite</h3>

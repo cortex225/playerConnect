@@ -1,13 +1,12 @@
 import { redirect } from "next/navigation";
-import { Users } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import AthletesTable from "@/components/dashboard/datatable/AthletesTable";
 
 export const metadata = constructMetadata({
-  title: "Athletes - Player Connect",
-  description: "Decouvrez et recrutez les meilleurs athletes.",
+  title: "Athlètes - PlayerConnect",
+  description: "Recherche d'athlètes par sport, position et niveau.",
 });
 
 export const dynamic = 'force-dynamic';
@@ -17,20 +16,14 @@ export default async function AthletesPage() {
   if (!user || user.role !== "RECRUITER") redirect("/");
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
-          <Users className="size-5 text-white" />
-        </div>
-        <div>
-          <h1 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-2xl font-bold text-transparent">
-            Athletes
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Decouvrez et recrutez les meilleurs talents
-          </p>
-        </div>
-      </div>
+    <div className="space-y-5 px-4 pb-24 pt-2 md:px-0 md:pb-10">
+      <header className="border-b pb-5">
+        <h1 className="font-display text-4xl uppercase sm:text-5xl">Athlètes</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Filtre par sport, position et niveau. Touche un profil pour voir ses
+          matchs et ses médias.
+        </p>
+      </header>
       <AthletesTable />
     </div>
   );

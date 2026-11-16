@@ -1,14 +1,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardHeader } from "@/components/dashboard/header";
-import { DashboardShell } from "@/components/dashboard/shell";
 
-export default function DashboardLoading() {
+export default function AthleteDashboardLoading() {
   return (
-    <DashboardShell>
-      <DashboardHeader heading="Panel" text="Current Role :" />
-      <div className="divide-border-200 divide-y rounded-md border">
-        <Skeleton className="h-[400px] w-full rounded-lg" />
+    <div className="space-y-10 px-4 pt-2 md:px-0" aria-busy="true" aria-label="Chargement de ta fiche">
+      <div className="flex items-center gap-5 border-b pb-8">
+        <Skeleton className="size-20 rounded-md" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-10 w-72" />
+          <Skeleton className="h-4 w-56" />
+        </div>
       </div>
-    </DashboardShell>
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-20" />
+        ))}
+      </div>
+      <Skeleton className="h-56 w-full" />
+    </div>
   );
 }

@@ -3,9 +3,16 @@
 import { useEffect, useState } from "react";
 import { getAllAthletes } from "@/actions/get-athlete";
 import { Athlete } from "@/types";
-import { Eye, MapPin, Search, SlidersHorizontal, Video } from "lucide-react";
+import { MapPin, Search, SlidersHorizontal, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getSportIcon, getSportColor } from "@/lib/sport-icons";
+import { positionLabel, sportLabel } from "@/lib/sport-labels";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  BENJAMIN: "Benjamin",
+  CADET: "Cadet",
+  JUVENILE: "Juvénile",
+  SENIOR: "Senior",
+};
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -191,10 +198,11 @@ export default function AthletesTable() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Rechercher un athlete..."
+          placeholder="Nom ou ville"
+          aria-label="Rechercher un athlète"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-2xl pl-10"
+          className="h-11 rounded-xl pl-10"
         />
       </div>
 
@@ -208,12 +216,12 @@ export default function AthletesTable() {
               "shrink-0 rounded-full border px-4 py-1.5 text-sm transition-all",
               sportFilter === sport
                 ? sport === "Tous"
-                  ? "border-primary bg-primary text-white"
-                  : cn(getSportColor(sport), "border-current font-medium")
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-primary bg-primary text-primary-foreground"
                 : "hover:bg-accent"
             )}
           >
-            {sport === "Tous" ? "Tous" : `${getSportIcon(sport)} ${sport}`}
+            {sport === "Tous" ? "Tous" : sportLabel(sport)}
           </button>
         ))}
       </div>
@@ -227,7 +235,7 @@ export default function AthletesTable() {
           className="gap-2"
         >
           <SlidersHorizontal className="size-4" />
-          Filtres avances
+          Filtres avancés
           {activeFilterCount > 0 && (
             <Badge className="ml-1 size-5 justify-center rounded-full p-0 text-[10px]">
               {activeFilterCount}
@@ -341,14 +349,13 @@ export default function AthletesTable() {
       {/* Nombre de resultats */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {filteredAthletes.length} athlete
-          {filteredAthletes.length > 1 ? "s" : ""} trouve
-          {filteredAthletes.length > 1 ? "s" : ""}
+          {filteredAthletes.length} athlète
+          {filteredAthletes.length > 1 ? "s" : ""}, classés par note
         </p>
       </div>
 
-      {/* Grille de cartes */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Liste d'athlètes */}
+      <ul className="divide-y rounded-xl border bg-card">
         {currentAthletes.map((athlete) => {
           const bestScore = athlete.performances?.[0]?.score;
           const position = athlete.performances?.[0]?.position?.name;
@@ -359,114 +366,66 @@ export default function AthletesTable() {
                 .split(" ")
                 .map((n) => n[0])
                 .join("")
+                .slice(0, 2)
             : "A";
 
           return (
-            <div
-              key={athlete.id}
-              className="group cursor-pointer overflow-hidden rounded-2xl border transition-all hover:border-primary/30 hover:shadow-md"
-              onClick={() => setSelectedAthlete(athlete)}
-            >
-              {/* En-tete avec gradient sport */}
-              <div
-                className={cn(
-                  "bg-gradient-to-r p-4",
-                  sportName
-                    ? `${getSportColor(sportName).split(" ")[0]}/5 to-transparent`
-                    : "from-primary/5 to-purple-600/5"
-                )}
+            <li key={athlete.id}>
+              <button
+                type="button"
+                onClick={() => setSelectedAthlete(athlete)}
+                className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted focus-visible:outline-none"
               >
-                <div className="flex items-start gap-3">
-                  <div className="relative">
-                    <Avatar className="size-14 border-2 border-primary/20">
-                      <AvatarImage src={athlete.user?.image || ""} />
-                      <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                    {hasMedia && (
-                      <div className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-blue-500 text-white">
-                        <Video className="size-3" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold">
-                      {athlete.user?.name}
-                    </h3>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      <Badge
-                        className={cn(
-                          "text-xs",
-                          sportName
-                            ? getSportColor(sportName)
-                            : "bg-secondary text-secondary-foreground"
-                        )}
-                      >
-                        {getSportIcon(sportName)} {sportName || "N/A"}
-                      </Badge>
-                      {athlete.category?.name && (
-                        <Badge variant="outline" className="text-xs">
-                          {athlete.category.name}
-                        </Badge>
-                      )}
-                    </div>
-                    {athlete.city && (
-                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="size-3" />
-                        {athlete.city}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-px border-t bg-border">
-                <div className="bg-background p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Score</p>
-                  <p className="font-urban text-lg font-bold">
-                    {bestScore ? bestScore.toFixed(1) : "-"}
-                  </p>
-                </div>
-                <div className="bg-background p-3 text-center">
-                  <p className="text-xs text-muted-foreground">Matchs</p>
-                  <p className="font-urban text-lg font-bold">
-                    {athlete.performances?.length || 0}
-                  </p>
-                </div>
-              </div>
-
-              {position && (
-                <div className="border-t bg-background px-4 py-2">
-                  <p className="text-xs text-muted-foreground">
-                    Position :{" "}
-                    <span className="font-medium text-foreground">
-                      {position}
+                <div className="relative shrink-0">
+                  <Avatar className="size-12">
+                    <AvatarImage src={athlete.user?.image || ""} alt="" />
+                    <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {hasMedia && (
+                    <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-brand text-brand-foreground ring-2 ring-card">
+                      <Video className="size-3" aria-hidden />
+                      <span className="sr-only">A des médias</span>
                     </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{athlete.user?.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {positionLabel(position, (athlete as any).gender)} ·{" "}
+                    {sportLabel(sportName)}
+                  </p>
+                  {athlete.city && (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="size-3" aria-hidden />
+                      {athlete.city}
+                      {athlete.category?.name ? ` · ${CATEGORY_LABELS[athlete.category.name] ?? athlete.category.name}` : ""}
+                    </p>
+                  )}
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="font-display tabular text-2xl leading-none">
+                    {bestScore
+                      ? bestScore.toLocaleString("fr-CA", { maximumFractionDigits: 0 })
+                      : "-"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {athlete.performances?.length || 0} match
+                    {(athlete.performances?.length || 0) > 1 ? "s" : ""}
                   </p>
                 </div>
-              )}
-
-              {/* Action */}
-              <div className="border-t p-3">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-center gap-2 text-primary"
-                  size="sm"
-                >
-                  <Eye className="size-4" />
-                  Voir le profil
-                </Button>
-              </div>
-            </div>
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
 
       {/* Etat vide */}
       {currentAthletes.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-12">
           <p className="text-sm text-muted-foreground">
-            Aucun athlete trouve
+            Aucun athlète ne correspond à ces filtres.
           </p>
         </div>
       )}
@@ -476,7 +435,7 @@ export default function AthletesTable() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Page {currentPage} sur {totalPages} ({filteredAthletes.length}{" "}
-            athlete
+            athlète
             {filteredAthletes.length !== 1 ? "s" : ""})
           </p>
           <div className="flex gap-2">
@@ -488,7 +447,7 @@ export default function AthletesTable() {
               }
               disabled={currentPage === 1}
             >
-              Precedent
+              Précédent
             </Button>
             <Button
               variant="outline"
