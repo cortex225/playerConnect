@@ -233,7 +233,7 @@ export function StoriesBar() {
                   ? "bg-muted"
                   : group.allViewed
                     ? "bg-muted"
-                    : "bg-gradient-to-r from-primary via-purple-600 to-pink-500"
+                    : "bg-brand"
               )}
             >
               <div className="rounded-full bg-background p-[2px]">
@@ -247,7 +247,7 @@ export function StoriesBar() {
               {group.isOwn && (
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowUpload(true); }}
-                  className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600 text-white shadow-md ring-2 ring-background"
+                  className="absolute -bottom-0.5 -right-0.5 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background"
                 >
                   <Plus className="size-3.5" />
                 </button>
@@ -345,7 +345,7 @@ export function StoriesBar() {
         <SheetContent side="bottom" className="rounded-t-2xl pb-10">
           <SheetHeader className="mb-4">
             <SheetTitle className="flex items-center gap-2 text-center">
-              <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+              <div className="flex size-8 items-center justify-center rounded-full bg-primary">
                 <Camera className="size-4 text-white" />
               </div>
               Ajouter une story
@@ -390,7 +390,7 @@ export function StoriesBar() {
                     onClick={() => document.getElementById("story-camera-video")?.click()}
                     className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 transition-all hover:border-primary/50 active:scale-95"
                   >
-                    <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-primary">
                       <Video className="size-5 text-white" />
                     </div>
                     <span className="text-xs font-medium">Filmer</span>
@@ -398,9 +398,9 @@ export function StoriesBar() {
                   {/* Camera photo */}
                   <button
                     onClick={() => document.getElementById("story-camera-photo")?.click()}
-                    className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-purple-500/30 bg-purple-500/5 p-4 transition-all hover:border-purple-500/50 active:scale-95"
+                    className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-brand bg-accent p-4 transition-all hover:border-brand active:scale-95"
                   >
-                    <div className="flex size-12 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-500">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-brand">
                       <Camera className="size-5 text-white" />
                     </div>
                     <span className="text-xs font-medium">Photo</span>
@@ -462,7 +462,7 @@ export function StoriesBar() {
                     Changer
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-primary to-purple-600 text-white"
+                    className="flex-1 bg-primary text-primary-foreground"
                     onClick={handleUploadStory}
                     disabled={uploading}
                   >

@@ -3,17 +3,15 @@ import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
 import { RoleDialogs } from "@/components/dialogs/role-dialogs";
-import CTASection from "@/components/sections/cta-section";
-import FeaturesNew from "@/components/sections/features-new";
-import HeroLandingNew from "@/components/sections/hero-landing-new";
-import HowItWorks from "@/components/sections/how-it-works";
-import TestimonialsNew from "@/components/sections/testimonials-new";
+import { LandingHero } from "@/components/sections/landing-hero";
+import { LandingRoles } from "@/components/sections/landing-roles";
+import { LandingCta, LandingSafety } from "@/components/sections/landing-safety";
 import TopPlayers from "@/components/sections/top-players";
 
 export const metadata: Metadata = {
-  title: "PlayerConnect - Connectez le Talent aux Opportunités Sportives",
+  title: "PlayerConnect, le profil sportif que les recruteurs consultent",
   description:
-    "Plateforme professionnelle pour athlètes, recruteurs et médias sportifs. Créez votre profil, découvrez des talents, suivez les performances avec des analytics avancées. Rejoignez plus de 10 000 professionnels du sport.",
+    "Stats, vidéos et calendrier de match des athlètes du secondaire, du cégep et de l'université, au même endroit. Les recruteurs comparent les profils et écrivent directement, avec un encadrement prévu pour les mineurs.",
   keywords: [
     "recrutement sportif",
     "athlètes professionnels",
@@ -40,26 +38,26 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "fr_FR",
+    locale: "fr_CA",
     url: siteConfig.url,
-    title: "PlayerConnect - Connectez le Talent aux Opportunités Sportives",
+    title: "PlayerConnect, le profil sportif que les recruteurs consultent",
     description:
-      "La plateforme qui réunit athlètes, recruteurs et médias pour construire l'avenir du sport professionnel.",
+      "Stats, vidéos et calendrier de match des athlètes, au même endroit pour les recruteurs.",
     siteName: siteConfig.name,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "PlayerConnect - Plateforme Sportive Professionnelle",
+        alt: "PlayerConnect",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PlayerConnect - Connectez le Talent aux Opportunités Sportives",
+    title: "PlayerConnect, le profil sportif que les recruteurs consultent",
     description:
-      "Plateforme professionnelle pour athlètes, recruteurs et médias sportifs.",
+      "Stats, vidéos et calendrier de match des athlètes, au même endroit pour les recruteurs.",
     images: [siteConfig.ogImage],
     creator: "@playerconnect",
   },
@@ -83,12 +81,11 @@ export default async function HomePage() {
   return (
     <>
       <RoleDialogs roleCookie={roleCookie} />
-      <HeroLandingNew />
-      <FeaturesNew />
+      <LandingHero />
+      <LandingRoles />
       <TopPlayers />
-      <HowItWorks />
-      <TestimonialsNew />
-      <CTASection />
+      <LandingSafety />
+      <LandingCta />
     </>
   );
 }

@@ -7,36 +7,31 @@ import { DashboardConfig } from "types";
 export const dashboardConfig: DashboardConfig = {
   mainNav: [
     {
-      title: "Landing",
+      title: "Retour au site",
       href: "/",
-    },
-    {
-      title: "Support",
-      href: "/support",
-      disabled: true,
     },
   ],
   sidebarNav: [
     {
-      title: "Dashboard",
+      title: "Ma fiche",
       href: "/dashboard/athlete",
       icon: "layout_dashboard",
       roles: ["ATHLETE"],
     },
     {
-      title: "Dashboard",
+      title: "Tableau de bord",
       href: "/dashboard/recruiter",
       icon: "layout_dashboard",
       roles: ["RECRUITER"],
     },
     {
-      title: "Athletes",
+      title: "Athlètes",
       href: "/dashboard/athlete/athletes",
       icon: "users",
       roles: ["ATHLETE"],
     },
     {
-      title: "Athletes",
+      title: "Athlètes",
       href: "/dashboard/recruiter/athletes",
       icon: "users",
       roles: ["RECRUITER"],
@@ -60,37 +55,37 @@ export const dashboardConfig: DashboardConfig = {
       roles: ["RECRUITER"],
     },
     {
-      title: "Calendar",
+      title: "Calendrier",
       href: "/dashboard/athlete/calendar",
       icon: "calendar_days",
       roles: ["ATHLETE"],
     },
     {
-      title: "Calendar",
+      title: "Calendrier",
       href: "/dashboard/recruiter/calendar",
       icon: "calendar_days",
       roles: ["RECRUITER"],
     },
     {
-      title: "Billing",
+      title: "Abonnement",
       href: "/dashboard/athlete/billing",
       icon: "billing",
       roles: ["ATHLETE"],
     },
     {
-      title: "Billing",
+      title: "Abonnement",
       href: "/dashboard/recruiter/billing",
       icon: "billing",
       roles: ["RECRUITER"],
     },
     {
-      title: "Settings",
+      title: "Profil et réglages",
       href: "/dashboard/athlete/settings",
       icon: "settings",
       roles: ["ATHLETE"],
     },
     {
-      title: "Settings",
+      title: "Profil et réglages",
       href: "/dashboard/recruiter/settings",
       icon: "settings",
       roles: ["RECRUITER"],

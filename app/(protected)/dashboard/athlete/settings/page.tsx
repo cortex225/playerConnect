@@ -4,7 +4,7 @@ import { Settings, Star, ImageIcon, Calendar, ChevronDown } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import prisma from "@/lib/db";
-import { getSportIcon, getSportGradient } from "@/lib/sport-icons";
+import { getSportIcon } from "@/lib/sport-icons";
 import type { Performance, SportType } from "@/types";
 
 import { DashboardShell } from "@/components/dashboard/shell";
@@ -95,7 +95,6 @@ export default async function AthleteProfilePage() {
   const sportName = athlete?.sport?.name ?? null;
   const categoryName = athlete?.category?.name ?? null;
   const sportIcon = getSportIcon(sportName);
-  const sportGradient = getSportGradient(sportName);
 
   const mediaCount = athlete?._count?.media ?? 0;
   const performancesCount = athlete?._count?.performances ?? 0;
@@ -113,7 +112,7 @@ export default async function AthleteProfilePage() {
       {/* ===== PROFILE HEADER ===== */}
       <section className="relative overflow-hidden">
         {/* Gradient banner */}
-        <div className={`h-28 w-full bg-gradient-to-r ${sportGradient} opacity-90`} />
+        <div className="h-24 w-full bg-primary" />
 
         {/* Avatar + core info */}
         <div className="relative -mt-12 px-4 pb-4">
@@ -123,7 +122,7 @@ export default async function AthleteProfilePage() {
               <Avatar className="size-24 ring-4 ring-background">
                 <AvatarImage src={user.image ?? undefined} alt={displayName} />
                 <AvatarFallback
-                  className={`bg-gradient-to-br ${sportGradient} text-2xl font-bold text-white`}
+                  className="bg-brand text-2xl font-bold text-brand-foreground"
                 >
                   {initials}
                 </AvatarFallback>
@@ -141,7 +140,7 @@ export default async function AthleteProfilePage() {
             {/* Level badge */}
             <div className="flex flex-col items-end gap-1 pb-1">
               <Badge
-                className={`bg-gradient-to-r ${sportGradient} border-0 px-3 py-1 text-sm font-bold text-white`}
+                className="border-0 bg-brand px-3 py-1 text-sm font-bold text-brand-foreground"
               >
                 <Star className="mr-1 size-3" />
                 Niv. {level}
@@ -151,7 +150,7 @@ export default async function AthleteProfilePage() {
 
           {/* Name + sport + category */}
           <div className="mt-3">
-            <h1 className="text-xl font-bold leading-tight">{displayName}</h1>
+            <h1 className="font-display text-3xl uppercase">{displayName}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {sportName && (
                 <Badge variant="secondary" className="text-xs font-medium">
@@ -189,7 +188,7 @@ export default async function AthleteProfilePage() {
           <div className="mt-4 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium text-muted-foreground">
-                XP : {xp.toLocaleString("fr-FR")} pts
+                XP : {xp.toLocaleString("fr-CA")} pts
               </span>
               <span className="text-muted-foreground">
                 {xpInCurrentLevel} / {xpNeeded} vers Niv. {level + 1}
@@ -224,8 +223,8 @@ export default async function AthleteProfilePage() {
         {performances.length > 0 && (
           <section>
             <h2 className="mb-3 flex items-center gap-2 font-urban text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              <span className="inline-block size-1.5 rounded-full bg-purple-500" />
-              Indicateurs Clés (KPI)
+              <span className="inline-block size-1.5 rounded-full bg-brand" />
+              Indicateurs clés
             </h2>
             <KPIChart performances={performances} />
           </section>
@@ -235,7 +234,7 @@ export default async function AthleteProfilePage() {
         {athlete && athlete.sport?.id && (
           <section>
             <h2 className="mb-3 flex items-center gap-2 font-urban text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              <span className="inline-block size-1.5 rounded-full bg-yellow-500" />
+              <span className="inline-block size-1.5 rounded-full bg-brand" />
               Classement
             </h2>
             <RankingWidget athleteId={athlete.id} sportId={athlete.sport.id} />
@@ -246,7 +245,7 @@ export default async function AthleteProfilePage() {
         {athlete && (
           <section>
             <h2 className="mb-3 flex items-center gap-2 font-urban text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              <span className="inline-block size-1.5 rounded-full bg-amber-500" />
+              <span className="inline-block size-1.5 rounded-full bg-primary" />
               Trophées
             </h2>
             <GamificationWidget

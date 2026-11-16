@@ -24,7 +24,7 @@ export default async function ConnectedRecruiter() {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-xl font-bold text-transparent">
+          <h1 className="truncate bg-primary font-urban text-xl font-bold text-foreground">
             {session?.name}
           </h1>
           <p className="truncate text-sm text-muted-foreground">

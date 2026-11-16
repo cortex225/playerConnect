@@ -80,7 +80,7 @@ export function PWAProvider() {
   return (
     <div className="fixed inset-x-0 bottom-20 z-[60] mx-4 animate-in slide-in-from-bottom-4 md:bottom-4 md:left-auto md:right-4 md:mx-0 md:max-w-sm">
       <div className="flex items-center gap-3 rounded-2xl border bg-background/95 p-4 shadow-xl backdrop-blur-lg">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary">
           <Download className="size-5 text-white" />
         </div>
         <div className="min-w-0 flex-1">
@@ -104,7 +104,7 @@ export function PWAProvider() {
             <Button
               size="sm"
               onClick={handleInstall}
-              className="h-8 rounded-full bg-gradient-to-r from-primary to-purple-600 px-3 text-xs text-white"
+              className="h-8 rounded-full bg-primary px-3 text-xs text-white"
             >
               Installer
             </Button>

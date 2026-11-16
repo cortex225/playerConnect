@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import Pusher from "pusher-js";
 
 import { useAuth } from "@/lib/hooks/use-auth";
+import { sportLabel } from "@/lib/sport-labels";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -60,7 +61,7 @@ interface Message {
 function getContactRole(contact: Contact): string {
   if (contact.athletes) {
     const sport = contact.athletes.sport?.name;
-    return sport ? `Athlete · ${sport}` : "Athlete";
+    return sport ? `Athlète · ${sportLabel(sport)}` : "Athlète";
   }
   if (contact.recruiters) {
     const org = contact.recruiters.organization;
@@ -315,18 +316,18 @@ export function SecureMessagerie() {
   const renderContactList = () => (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="shrink-0 bg-gradient-to-r from-primary/10 to-purple-600/10 p-4">
+      <div className="shrink-0 bg-muted/60 p-4">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-600">
-            <Shield className="size-5 text-white" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-primary">
+            <Shield className="size-5 text-primary-foreground" />
           </div>
           <div className="flex-1">
-            <h2 className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text font-urban text-xl font-bold text-transparent">
+            <h2 className="font-urban text-xl font-bold">
               Messages
             </h2>
           </div>
           {totalUnread > 0 && (
-            <Badge className="border-0 bg-gradient-to-r from-primary to-purple-600 text-white">
+            <Badge className="border-0 bg-primary text-primary-foreground">
               {totalUnread}
             </Badge>
           )}
@@ -351,7 +352,7 @@ export function SecureMessagerie() {
         <div className="space-y-1 p-2">
           {filteredContacts.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <div className="rounded-full bg-gradient-to-r from-primary/10 to-purple-600/10 p-4">
+              <div className="rounded-full bg-muted/60 p-4">
                 <Users className="size-8 text-primary" />
               </div>
               <h3 className="mt-3 font-urban text-lg font-semibold">
@@ -370,13 +371,13 @@ export function SecureMessagerie() {
                 className={cn(
                   "flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-all hover:bg-accent",
                   selectedContact?.id === contact.id &&
-                    "bg-gradient-to-r from-primary/5 to-purple-600/5"
+                    "bg-muted/60"
                 )}
               >
                 <div className="relative">
                   <Avatar className="size-12">
                     <AvatarImage src={contact.image || ""} />
-                    <AvatarFallback className="bg-gradient-to-r from-primary/20 to-purple-600/20 font-semibold">
+                    <AvatarFallback className="bg-muted/60 font-semibold">
                       {contact.name?.charAt(0).toUpperCase() || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -405,7 +406,7 @@ export function SecureMessagerie() {
                           : "Aucun message"}
                     </p>
                     {contact.unreadCount && contact.unreadCount > 0 ? (
-                      <Badge className="size-5 shrink-0 justify-center rounded-full border-0 bg-gradient-to-r from-primary to-purple-600 p-0 text-[10px] text-white">
+                      <Badge className="size-5 shrink-0 justify-center rounded-full border-0 bg-primary p-0 text-[10px] text-primary-foreground">
                         {contact.unreadCount}
                       </Badge>
                     ) : null}
@@ -423,7 +424,7 @@ export function SecureMessagerie() {
     if (!selectedContact) {
       return (
         <div className="flex h-full flex-col items-center justify-center text-center">
-          <div className="rounded-full bg-gradient-to-r from-primary/10 to-purple-600/10 p-6">
+          <div className="rounded-full bg-muted/60 p-6">
             <MessageCircle className="size-12 text-primary" />
           </div>
           <h3 className="mt-4 font-urban text-xl font-bold">Vos messages</h3>
@@ -447,7 +448,7 @@ export function SecureMessagerie() {
             </button>
             <Avatar className="size-10">
               <AvatarImage src={selectedContact.image || ""} />
-              <AvatarFallback className="bg-gradient-to-r from-primary/20 to-purple-600/20 font-semibold">
+              <AvatarFallback className="bg-muted/60 font-semibold">
                 {selectedContact.name?.charAt(0).toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
@@ -500,7 +501,7 @@ export function SecureMessagerie() {
             </div>
           ) : messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-gradient-to-r from-primary/10 to-purple-600/10 p-4">
+              <div className="rounded-full bg-muted/60 p-4">
                 <MessageCircle className="size-8 text-primary" />
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
@@ -531,7 +532,7 @@ export function SecureMessagerie() {
                       ) : (
                         <Avatar className="size-8 shrink-0">
                           <AvatarImage src={message.sender.image || ""} />
-                          <AvatarFallback className="bg-gradient-to-r from-primary/20 to-purple-600/20 text-xs font-semibold">
+                          <AvatarFallback className="bg-muted/60 text-xs font-semibold">
                             {message.sender.name?.charAt(0).toUpperCase() || "?"}
                           </AvatarFallback>
                         </Avatar>
@@ -542,7 +543,7 @@ export function SecureMessagerie() {
                       className={cn(
                         "max-w-[75%] px-4 py-2",
                         isSent
-                          ? "rounded-2xl rounded-br-md bg-gradient-to-r from-primary to-purple-600 text-white"
+                          ? "rounded-2xl rounded-br-md bg-primary text-white"
                           : "rounded-2xl rounded-bl-md bg-muted"
                       )}
                     >
@@ -588,7 +589,7 @@ export function SecureMessagerie() {
               onClick={sendMessage}
               disabled={!newMessage.trim() || isSending}
               size="icon"
-              className="size-11 shrink-0 rounded-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+              className="size-11 shrink-0 rounded-full bg-primary hover:bg-primary/90"
             >
               <Send className="size-4" />
             </Button>

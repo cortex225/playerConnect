@@ -10,7 +10,10 @@ export function DashboardShell({
   ...props
 }: DashboardShellProps) {
   return (
-    <div className={cn("grid items-start", className)} {...props}>
+    <div
+      className={cn("grid grid-cols-[minmax(0,1fr)] items-start", className)}
+      {...props}
+    >
       {children}
     </div>
   );

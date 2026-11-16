@@ -3,16 +3,33 @@
 import { Athlete } from "@/types";
 
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export async function getAllAthletes() {
   try {
+    // Liste réservée aux recruteurs et administrateurs connectés.
+    const viewer = await getCurrentUser();
+    if (!viewer || !["RECRUITER", "ADMIN"].includes(viewer.role)) {
+      return [];
+    }
+
     const athletes = await prisma.athlete.findMany({
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        gender: true,
+        age: true,
+        city: true,
+        height: true,
+        weight: true,
+        dominantHand: true,
+        dominantFoot: true,
+        programType: true,
+        categoryId: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
           },
         },
@@ -52,6 +69,7 @@ export async function getAllAthletes() {
           select: { id: true },
         },
       },
+      orderBy: { totalScore: "desc" },
     });
 
     return athletes;

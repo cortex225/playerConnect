@@ -1,73 +1,77 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { Bell } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { BrandLogo } from "@/components/shared/brand-logo";
 
 interface AthleteTopBarProps {
   name: string | null;
   image: string | null;
-  sportIcon: string;
-  level: number;
-  xp: number;
-  xpProgress: number;
-  streak: number;
+  sportIcon?: string;
+  level?: number;
+  xp?: number;
+  xpProgress?: number;
+  streak?: number;
+  basePath?: string;
 }
 
+// Barre du haut de l'app mobile (athlète et recruteur).
 export function AthleteTopBar({
   name,
   image,
-  sportIcon,
   level,
-  xp,
   xpProgress,
-  streak,
+  basePath = "/dashboard/athlete",
 }: AthleteTopBarProps) {
-  const initials = name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("") || "?";
+  const initials =
+    name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2) || "?";
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-xl md:hidden">
-      <div className="flex items-center gap-3 px-4 py-2.5">
-        <Link href="/dashboard/athlete" className="shrink-0">
-          <Image
-            src="/images/logo-1.png"
-            width={32}
-            height={32}
-            alt="Player Connect"
-            className="size-8"
-          />
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 md:hidden">
+      <div className="flex h-14 items-center gap-3 px-4">
+        <Link href={basePath} aria-label="Accueil PlayerConnect">
+          <BrandLogo withName={false} />
         </Link>
-        <Avatar className="size-9 shrink-0 ring-2 ring-primary/30 ring-offset-1 ring-offset-background">
-          <AvatarImage src={image || ""} alt={name || ""} />
-          <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-xs font-bold text-white">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate font-urban text-sm font-bold">{name}</h1>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs">{sportIcon}</span>
-            <Badge variant="secondary" className="px-1.5 py-0 text-[9px]">
-              Niv. {level}
-            </Badge>
-            <span className="text-[10px] text-muted-foreground">{xp} XP</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1">
-          <Flame className="size-3.5 text-orange-500" />
-          <span className="text-xs font-bold text-orange-500">{streak}</span>
-        </div>
+        <div className="flex-1" />
+        <Link
+          href={`${basePath}/messages`}
+          className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Notifications et messages"
+        >
+          <Bell className="size-5" aria-hidden />
+        </Link>
+        <Link
+          href={`${basePath}/settings`}
+          className={level ? "flex items-center gap-2 rounded-full border py-1 pl-1 pr-3" : "flex items-center rounded-full"}
+          aria-label={level ? `Mon profil, niveau ${level}` : "Mon profil"}
+        >
+          <Avatar className="size-8">
+            <AvatarImage src={image || ""} alt="" />
+            <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {level ? <span className="text-xs font-semibold">Niv. {level}</span> : null}
+        </Link>
       </div>
-      <div className="px-4 pb-2">
-        <Progress value={xpProgress} className="h-1" />
+      {xpProgress !== undefined && (
+      <div
+        className="h-0.5 bg-muted"
+        role="progressbar"
+        aria-label="Progression vers le niveau suivant"
+        aria-valuenow={Math.round(xpProgress)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div className="h-full bg-brand" style={{ width: `${xpProgress}%` }} />
       </div>
+      )}
     </header>
   );
 }

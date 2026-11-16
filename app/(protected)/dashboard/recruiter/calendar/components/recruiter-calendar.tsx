@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import frLocale from "@fullcalendar/core/locales/fr";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { format, isFuture, isToday, parseISO } from "date-fns";
@@ -86,13 +87,13 @@ export function RecruiterCalendar() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Erreur API:", errorText);
-          throw new Error("Erreur lors du chargement des evenements");
+          throw new Error("Erreur lors du chargement des événements");
         }
         const data = await response.json();
 
         if (!Array.isArray(data)) {
-          console.error("Format de donnees invalide:", data);
-          throw new Error("Format de donnees invalide");
+          console.error("Format de données invalide:", data);
+          throw new Error("Format de données invalide");
         }
 
         setEvents(data);
@@ -103,7 +104,7 @@ export function RecruiterCalendar() {
           description:
             error instanceof Error
               ? error.message
-              : "Impossible de charger les evenements",
+              : "Impossible de charger les événements",
           variant: "destructive",
         });
         setEvents([]);
@@ -156,24 +157,24 @@ export function RecruiterCalendar() {
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden border-0 shadow-md">
-        <div className="h-1 bg-gradient-to-r from-primary to-purple-600" />
+        <div className="h-1 bg-primary" />
         <CardContent className="p-4">
           {isLoading ? (
             <div className="flex h-96 items-center justify-center">
               <p className="text-muted-foreground">
-                Chargement des evenements...
+                Chargement des événements...
               </p>
             </div>
           ) : (
             <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView={isMobile ? "timeGridWeek" : "dayGridMonth"}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+              initialView={isMobile ? "listMonth" : "dayGridMonth"}
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
                 right: isMobile
-                  ? "timeGridWeek,timeGridDay"
-                  : "dayGridMonth,timeGridWeek,timeGridDay",
+                  ? "listMonth,dayGridMonth"
+                  : "dayGridMonth,timeGridWeek,listMonth",
               }}
               locale={frLocale}
               events={events.map((event) => ({
@@ -206,7 +207,7 @@ export function RecruiterCalendar() {
 
       {upcomingEvents.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Prochains evenements</h2>
+          <h2 className="text-lg font-semibold">Prochains événements</h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event) => {
               const startDate =
@@ -223,7 +224,7 @@ export function RecruiterCalendar() {
                   }}
                 >
                   <CardContent className="flex gap-3 p-4">
-                    <div className="flex min-w-[48px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 px-2 py-1 text-white">
+                    <div className="flex min-w-[48px] flex-col items-center justify-center rounded-lg bg-primary px-2 py-1 text-primary-foreground">
                       <span className="text-xs font-medium uppercase">
                         {format(startDate, "MMM", { locale: fr })}
                       </span>
@@ -352,7 +353,7 @@ export function RecruiterCalendar() {
                 }}
               >
                 <MessageCircle className="mr-2 size-4" />
-                Contacter l&apos;athlete
+                Contacter l&apos;athlète
               </Button>
             )}
             <Button onClick={handleCloseDialog}>Fermer</Button>

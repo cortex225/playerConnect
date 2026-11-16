@@ -1,8 +1,7 @@
 import "@/styles/globals.css";
 
 // Import des polices avec Next.js 13+
-import { Inter, Urbanist } from "next/font/google";
-import localFont from "next/font/local";
+import { Archivo } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
 import { cn, constructMetadata } from "@/lib/utils";
@@ -12,20 +11,11 @@ import ModalProvider from "@/components/modals/providers";
 import { PWAProvider } from "@/components/pwa/pwa-provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
-// Configuration des polices
-const fontSans = Inter({
+// Une seule famille, Archivo (axe de largeur) : étroite pour les titres, normale pour le texte.
+const fontSans = Archivo({
   subsets: ["latin"],
   variable: "--font-sans",
-});
-
-const fontUrban = Urbanist({
-  subsets: ["latin"],
-  variable: "--font-urban",
-});
-
-const fontHeading = localFont({
-  src: "../assets/fonts/CalSans-SemiBold.woff2",
-  variable: "--font-heading",
+  axes: ["wdth"],
 });
 
 interface RootLayoutProps {
@@ -43,21 +33,19 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="PlayerConnect" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: dark)" />
-        <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
-          fontUrban.variable,
-          fontHeading.variable,
         )}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

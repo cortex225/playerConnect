@@ -8,18 +8,20 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "pnpm db:migrate && node scripts/ensure-verification-table.js && contentlayer build && next build",
-    "build:migrate": "pnpm db:migrate && pnpm build",
+    "build": "prisma generate && contentlayer build && next build",
+    "build:migrate": "pnpm db:deploy && pnpm build",
     "turbo": "next dev --turbo",
     "start": "next start",
     "lint": "next lint",
     "preview": "next build && next start",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "db:deploy": "prisma migrate deploy && node scripts/ensure-verification-table.js",
     "db:verify": "prisma migrate status",
     "db:push": "prisma db push",
     "db:ensure-verification": "node scripts/ensure-verification-table.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:demo": "node prisma/demo-seed.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

@@ -136,6 +136,17 @@ export default async function ProtectedLayout({
             <NavBar />
           </div>
         </>
+      ) : user.role === ROLES.RECRUITER ? (
+        <>
+          <AthleteTopBar
+            name={user.name ?? null}
+            image={user.image ?? null}
+            basePath="/dashboard/recruiter"
+          />
+          <div className="hidden md:block">
+            <NavBar />
+          </div>
+        </>
       ) : (
         <NavBar />
       )}

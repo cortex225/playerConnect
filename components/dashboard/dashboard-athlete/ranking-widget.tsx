@@ -110,7 +110,7 @@ export function RankingWidget({ athleteId, sportId }: RankingWidgetProps) {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-primary/10 to-purple-600/10">
+      <CardHeader className="bg-muted/60">
         <div className="flex items-center gap-2">
           <Award className="size-5 text-primary" />
           <CardTitle>Ton Classement</CardTitle>
@@ -180,7 +180,7 @@ export function RankingWidget({ athleteId, sportId }: RankingWidgetProps) {
               </div>
 
               {/* Improvement Tips */}
-              <div className="space-y-3 rounded-lg border bg-gradient-to-br from-primary/5 to-purple-600/5 p-4">
+              <div className="space-y-3 rounded-lg border bg-muted/60 p-4">
                 <div className="flex items-center gap-2">
                   <ChevronUp className="size-4 text-primary" />
                   <span className="text-sm font-semibold">

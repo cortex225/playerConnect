@@ -99,10 +99,10 @@ export const PerformanceStats = ({ positions, sportType, performances }: Perform
       <Card className="col-span-3">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center justify-between">
-            Performance Summary
+            Évolution des performances
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button>Add Stats</Button>
+                <Button>Ajouter un match</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px]">
                 <VisuallyHidden>
@@ -117,16 +117,16 @@ export const PerformanceStats = ({ positions, sportType, performances }: Perform
           </CardTitle>
           <CardDescription className="text-sm">
             {performanceData.length > 0
-              ? `Showing performance for the last ${performanceData.length} month${performanceData.length > 1 ? "s" : ""}`
-              : "No performance data available"}
+              ? `Moyenne mensuelle, ${performanceData.length} dernier${performanceData.length > 1 ? "s" : ""} mois`
+              : "Aucune performance enregistrée"}
           </CardDescription>
         </CardHeader>
         <CardContent className="h-[300px]">
           {performanceData.length === 0 ? (
             <div className="flex h-full items-center justify-center text-muted-foreground">
               <div className="text-center">
-                <p className="mb-2">No performance data yet</p>
-                <p className="text-sm">Add your first stats to see your progress!</p>
+                <p className="mb-2">Aucune performance pour l'instant</p>
+                <p className="text-sm">Ajoute ton premier match pour suivre ta progression.</p>
               </div>
             </div>
           ) : (
@@ -184,7 +184,7 @@ export const PerformanceStats = ({ positions, sportType, performances }: Perform
             <div className="flex w-full items-start gap-2 text-sm">
               <div className="grid gap-2">
                 <div className="flex items-center gap-2 font-medium leading-none">
-                  {trend.isUp ? "Trending up" : "Trending down"} by {trend.percentage}%{" "}
+                  {trend.isUp ? "En hausse" : "En baisse"} de {trend.percentage} %{" "}
                   {trend.isUp ? (
                     <TrendingUp className="size-4" />
                   ) : (

@@ -50,6 +50,11 @@ const config = {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          foreground: "hsl(var(--brand-foreground))",
+          ink: "hsl(var(--brand-ink))",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -62,8 +67,8 @@ const config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
-        urban: ["var(--font-urban)", ...fontFamily.sans],
-        heading: ["var(--font-heading)", ...fontFamily.sans],
+        urban: ["var(--font-sans)", ...fontFamily.sans],
+        heading: ["var(--font-sans)", ...fontFamily.sans],
       },
       keyframes: {
         "accordion-down": {

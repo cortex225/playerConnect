@@ -64,7 +64,7 @@ const RARITY_STYLES: Record<string, string> = {
 const RARITY_BG: Record<string, string> = {
   COMMON: "bg-gray-500/10 border-gray-500/20",
   RARE: "bg-blue-500/10 border-blue-500/20",
-  EPIC: "bg-purple-500/10 border-purple-500/20",
+  EPIC: "bg-accent border-brand",
   LEGENDARY: "bg-yellow-500/10 border-yellow-500/20",
 };
 
@@ -83,7 +83,7 @@ export function GamificationWidget({ athleteId, level, xp }: GamificationWidgetP
   if (loading) {
     return (
       <Card className="overflow-hidden rounded-2xl">
-        <CardHeader className="bg-gradient-to-r from-purple-600/10 to-primary/10 pb-3">
+        <CardHeader className="bg-muted/60 pb-3">
           <Skeleton className="h-6 w-40" />
         </CardHeader>
         <CardContent className="p-4">
@@ -107,7 +107,7 @@ export function GamificationWidget({ athleteId, level, xp }: GamificationWidgetP
 
   return (
     <Card className="overflow-hidden rounded-2xl">
-      <CardHeader className="bg-gradient-to-r from-purple-600/10 to-primary/10 pb-3">
+      <CardHeader className="bg-muted/60 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="size-5 text-primary" />
